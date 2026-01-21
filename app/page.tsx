@@ -16,7 +16,8 @@ export default function Home() {
             StoryLab
           </p>
           <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-[1.08] tracking-tight text-zinc-950 sm:text-5xl">
-            Helping students develop a voice worth reading.
+            Helping students develop a<br />
+            voice worth reading.
           </h1>
           <div className="mt-6 max-w-2xl space-y-3 text-lg leading-relaxed text-zinc-700">
             <p>Hi, I’m Sam. In 2020, I was admitted to Yale, Harvard, Stanford, and Princeton.</p>
