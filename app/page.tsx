@@ -8,20 +8,20 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <div className="bg-stone-50">
-      <div className="mx-auto w-full max-w-6xl px-6">
+    <div className="bg-transparent">
+      <div className="mx-auto w-full max-w-6xl px-6 bg-paper/90 backdrop-blur-[1px]">
         {/* Hero */}
         <section className="py-16 sm:py-20">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
             StoryLab
           </p>
           <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-[1.08] tracking-tight text-zinc-950 sm:text-5xl">
-            Helping students find a voice worth reading.
+            Helping students develop a voice worth reading.
           </h1>
           <div className="mt-6 max-w-2xl space-y-3 text-lg leading-relaxed text-zinc-700">
             <p>Hi, I’m Sam. In 2020, I was admitted to Yale, Harvard, Stanford, and Princeton.</p>
             <p>
-              I chose Yale, studied the humanities, graduated magna cum laude and Phi Beta Kappa,
+              I chose Yale, studied creative writing, graduated magna cum laude and Phi Beta Kappa,
               won university writing prizes, and worked at the Yale Admissions Office as
               an interviewer.
             </p>
@@ -60,9 +60,9 @@ export default function Home() {
             <div className="md:col-span-7">
               <dl className="grid gap-4 sm:grid-cols-3">
                 {[
-                  { k: "Radically personal", v: "Turn the ordinary into meaning; avoid copy-paste impressiveness." },
-                  { k: "Reader empathy", v: "Readers are tired humans with taste—write for them, not a rubric or a bot." },
-                  { k: "Calm rigor", v: "High standards, low drama, every line doing work." },
+                  { k: "Radically personal", v: "Most applications blur because they optimize for impressive instead of radically personal." },
+                  { k: "Reader empathy", v: "Readers are tired humans with taste. Write for someone wanting to go on lunch break, not a rubric." },
+                  { k: "Calm rigor", v: "High standards, low drama, every line doing work. Your essay is a story that should entertain." },
                 ].map((item) => (
                   <div
                     key={item.k}
@@ -76,67 +76,6 @@ export default function Home() {
                 ))}
               </dl>
             </div>
-          </div>
-        </section>
-
-        {/* How it works */}
-        <section className="border-t border-zinc-200/70 py-14 sm:py-16">
-          <div className="flex items-end justify-between gap-6">
-            <div>
-              <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
-                How it works
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">
-                A simple three-step cadence to keep momentum without burning goodwill.
-              </p>
-            </div>
-          </div>
-          <ol className="mt-8 grid gap-4 md:grid-cols-3">
-            {[
-              {
-                n: "01",
-                t: "Align on goals",
-                d: "Map goals and constraints. Decide what your application must quietly prove.",
-              },
-              {
-                n: "02",
-                t: "Build the story",
-                d: "Shape the arc across activities and essays—one voice, many angles.",
-              },
-              {
-                n: "03",
-                t: "Edit with rigor",
-                d: "Iterate with precise, human feedback so every line earns its space.",
-              },
-            ].map((s) => (
-              <li key={s.n} className="rounded-2xl border border-zinc-200 bg-white p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">
-                  {s.n}
-                </p>
-                <h3 className="mt-3 text-lg font-semibold tracking-tight text-zinc-950">
-                  {s.t}
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-zinc-600">{s.d}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        {/* Philosophy moments */}
-        <section className="border-t border-zinc-200/70 py-14 sm:py-16">
-          <div className="grid gap-4 md:grid-cols-3">
-            {[
-              "Most applications blur because they optimize for impressive instead of radically personal.",
-              "Essays are proof of personhood: reflection, vulnerability, specificity.",
-              "College is a social and intellectual ecosystem—peers matter as much as classes.",
-            ].map((line) => (
-              <div
-                key={line}
-                className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm leading-relaxed text-zinc-700"
-              >
-                {line}
-              </div>
-            ))}
           </div>
         </section>
 
@@ -212,8 +151,8 @@ export default function Home() {
                 a: "Student admitted to Northwestern ’28",
               },
               {
-                q: "“For families who want their student remembered, not summarized.”",
-                a: "Family note",
+                q: "“My other counselor has plenty of clients and experience, but it was only when I started working with Sam that my essays finally felt like mine.”",
+                a: "Student admitted to UChicago '30",
               },
             ].map((t) => (
               <figure
@@ -238,7 +177,7 @@ export default function Home() {
               For families who want their student remembered, not summarized.
             </h2>
             <p className="mt-4 max-w-2xl text-sm leading-relaxed text-zinc-600">
-              Email Sam. We’ll map what your application must prove and how to do it without losing your voice.
+            Thoughtful guidance for a noisy process.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <a

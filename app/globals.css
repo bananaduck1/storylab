@@ -8,8 +8,13 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Display / body font: Recoleta stack (with graceful fallbacks) */
+  --font-display: "Recoleta", "Fraunces", "Iowan Old Style", "Georgia", ui-serif, serif;
+  --font-body: var(--font-display);
+  /* Tailwind v4 font tokens */
+  --font-sans: var(--font-body);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -20,12 +25,34 @@
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  background-image:
+    radial-gradient(circle at 10% 0%, rgba(214, 235, 222, 0.9) 0, transparent 55%),
+    radial-gradient(circle at 80% 20%, rgba(199, 224, 210, 0.9) 0, transparent 60%),
+    radial-gradient(circle at 0% 80%, rgba(221, 239, 228, 0.9) 0, transparent 55%),
+    url("/watercolor-wash.svg");
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+  background-size: 1200px 800px, 900px 700px, 1000px 800px, 600px 600px;
+  background-attachment: fixed, fixed, fixed, scroll;
   color: var(--foreground);
-  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-body), ui-serif, serif;
+  line-height: 1.7;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {
   background: rgba(143, 191, 163, 0.22);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.005em;
+}
+
+p,
+li {
+  line-height: 1.7;
 }

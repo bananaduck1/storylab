@@ -12,7 +12,7 @@ const navLinks: Array<{ href: string; label: string }> = [
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-40 border-b border-zinc-200/70 bg-stone-50/80 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-line/80 bg-soft/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-4">
         <Link href="/" className="group inline-flex items-baseline gap-2">
           <span className="text-sm font-semibold tracking-wide text-zinc-950">

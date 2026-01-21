@@ -4,7 +4,7 @@ const EMAIL_SAM = "mailto:storylab.ivy@gmail.com";
 
 export function Footer() {
   return (
-    <footer className="border-t border-zinc-200/70 bg-stone-50">
+    <footer className="border-t border-zinc-200/70 bg-wash">
       <div className="mx-auto w-full max-w-6xl px-6 py-12">
         <div className="grid gap-10 md:grid-cols-12 md:gap-8">
           <div className="md:col-span-5">

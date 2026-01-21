@@ -18,6 +18,10 @@ const config: Config = {
         soft: "#E8F1EB", // subtle fills
         line: "#C9D8CC", // dividers
       },
+      fontFamily: {
+        sans: ["var(--font-body)", "ui-serif", "serif"],
+        serif: ["var(--font-display)", "ui-serif", "serif"],
+      },
     },
   },
   plugins: [],

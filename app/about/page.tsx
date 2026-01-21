@@ -8,8 +8,8 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="bg-stone-50">
-      <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-20">
+    <div className="bg-transparent">
+      <div className="mx-auto w-full max-w-6xl bg-paper/92 px-6 py-16 sm:py-20">
         <header className="max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
             About
@@ -64,7 +64,7 @@ export default function AboutPage() {
                     d: "High standards, low theatrics. Calm coaching, sharp notes.",
                   },
                 ].map((v) => (
-                  <li key={v.t} className="rounded-2xl border border-zinc-200/80 bg-stone-50 p-5">
+                  <li key={v.t} className="rounded-2xl border border-zinc-200/80 bg-paper p-5">
                     <p className="font-semibold text-zinc-950">{v.t}</p>
                     <p className="mt-2 text-sm leading-relaxed text-zinc-600">{v.d}</p>
                   </li>
