@@ -17,7 +17,7 @@ export function Navbar() {
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 min-h-20 py-5">
         <Link href="/" className="inline-flex items-center">
           <Image
-            src="/storylab-logo2.png"
+            src="/storylab-logo3.png"
             alt="StoryLab"
             width={272}
             height={68}

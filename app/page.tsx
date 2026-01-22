@@ -12,34 +12,44 @@ export default function Home() {
     <div className="bg-transparent">
       <div className="mx-auto w-full max-w-6xl px-6 bg-paper/90 backdrop-blur-[1px]">
         {/* Hero */}
-        <section className="relative py-16 sm:py-20">
+        <section className="py-16 sm:py-20">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
             StoryLab
           </p>
-          <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-[1.08] tracking-tight text-zinc-950 sm:text-5xl">
-            Helping students develop a<br />
-            voice worth reading.
-          </h1>
-          <div className="relative mt-6 max-w-2xl space-y-3 text-lg leading-relaxed text-zinc-700">
-            <p>Hi, I’m Sam. In 2020, I was admitted to Yale, Harvard, Stanford, and Princeton.</p>
-            <p>
-              I chose Yale, studied creative writing, graduated magna cum laude and Phi Beta Kappa,
-              won university writing prizes, and worked at the Yale Admissions Office as
-              an interviewer.
-            </p>
-            <p>
-              I now coach a small number of students. Essays stay radically personal: clear strategy,
-              gentle rigor, and a voice that still sounds like you.
-            </p>
+          
+          <div className="mt-5 grid gap-8 lg:grid-cols-[1fr_auto] lg:gap-12 lg:items-start">
+            {/* Text content */}
+            <div>
+              <h1 className="max-w-3xl text-4xl font-semibold leading-[1.08] tracking-tight text-zinc-950 sm:text-5xl">
+                Helping students develop a<br />
+                voice worth reading.
+              </h1>
+              <div className="mt-6 max-w-2xl space-y-3 text-lg leading-relaxed text-zinc-700">
+                <p>Hi, I'm Sam. In 2020, I was admitted to Yale, Harvard, Stanford, and Princeton.</p>
+                <p>
+                  I chose Yale, studied creative writing, graduated magna cum laude and Phi Beta Kappa,
+                  won university writing prizes, and worked at the Yale Admissions Office as
+                  an interviewer.
+                </p>
+                <p>
+                  I now coach a small number of students. Essays stay radically personal: clear strategy,
+                  gentle rigor, and a voice that still sounds like you.
+                </p>
+              </div>
+            </div>
+            
+            {/* Profile photo */}
+            <div className="flex justify-center lg:justify-end">
+              <Image
+                src="/sam-photo.jpg"
+                alt="Founder"
+                width={360}
+                height={360}
+                className="h-32 w-32 rounded-full object-cover shadow-md border border-line/30 md:h-40 md:w-40 lg:h-[360px] lg:w-[360px]"
+                priority
+              />
+            </div>
           </div>
-          <Image
-            src="/sam-photo.jpg"
-            alt="Founder"
-            width={360}
-            height={360}
-            className="absolute top-[80px] right-4 h-[192px] w-[192px] rounded-full object-cover shadow-md border border-line/30 md:h-[280px] md:w-[280px] md:top-[100px] md:right-8 lg:h-[360px] lg:w-[360px] lg:top-[120px] lg:right-12"
-            priority
-          />
           <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
             <a
               href="mailto:storylab.ivy@gmail.com"
