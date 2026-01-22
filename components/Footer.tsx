@@ -9,11 +9,11 @@ export function Footer() {
         <div className="grid gap-10 md:grid-cols-12 md:gap-8">
           <div className="md:col-span-5">
             <p className="text-sm font-semibold tracking-wide text-zinc-950">
-              Ivy StoryLab
+              StoryLab
             </p>
             <p className="mt-3 max-w-md text-sm leading-relaxed text-zinc-600">
-              Editorial, minimalist coaching for students who want to sound like
-              themselves—only clearer.
+              Editorial coaching for students who want to sound like
+              themselves, only clearer.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
               <a
@@ -65,12 +65,11 @@ export function Footer() {
                   Notes
                 </p>
                 <p className="mt-4 text-sm leading-relaxed text-zinc-600">
-                  Testimonials and outcomes are shown as placeholders until you add
-                  your approved language.
+                  We do not guarantee outcomes.
                 </p>
                 <p className="mt-4 text-sm text-zinc-600">
                   <span className="text-zinc-500">© </span>
-                  {new Date().getFullYear()} Ivy StoryLab. All rights reserved.
+                  {new Date().getFullYear()} StoryLab. All rights reserved.
                 </p>
               </div>
             </div>

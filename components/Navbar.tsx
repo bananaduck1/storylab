@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const EMAIL_SAM = "mailto:storylab.ivy@gmail.com";
 
@@ -13,14 +14,16 @@ const navLinks: Array<{ href: string; label: string }> = [
 export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-line/80 bg-soft/90 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-4">
-        <Link href="/" className="group inline-flex items-baseline gap-2">
-          <span className="text-sm font-semibold tracking-wide text-zinc-950">
-            StoryLab
-          </span>
-          <span className="hidden text-sm text-zinc-600 sm:inline">
-            admissions coaching
-          </span>
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 min-h-20 py-5">
+        <Link href="/" className="inline-flex items-center">
+          <Image
+            src="/storylab-logo2.png"
+            alt="StoryLab"
+            width={272}
+            height={68}
+            className="h-[52px] w-auto flex-shrink-0 md:h-[68px]"
+            priority
+          />
           <span className="sr-only">Home</span>
         </Link>
 

@@ -8,15 +8,15 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        forest: "#1F3D2B", // primary text / headlines
-        ink: "#102018", // deep contrast option
-        sage: "#6F8E7C", // accent
-        eucalyptus: "#8FBFA3", // soft accent
-        muted: "#4D6457", // body text
-        paper: "#F6FAF5", // surface paper
-        wash: "#EDF4EA", // background wash
-        soft: "#E8F1EB", // subtle fills
-        line: "#C9D8CC", // dividers
+        forest: "#2D3E29", // primary text / headlines (warmer olive-green)
+        ink: "#1C2619", // deep contrast option (warmer dark green)
+        sage: "#7D8F70", // accent (warmer olive-sage)
+        eucalyptus: "#9CBF90", // soft accent (warmer yellow-green)
+        muted: "#5C6555", // body text (warmer muted green)
+        paper: "#F8FAF5", // surface paper (slightly warmer)
+        wash: "#F2F5E9", // background wash (warmer yellow-green tint)
+        soft: "#EDF2E5", // subtle fills (warmer light green)
+        line: "#D2D9C9", // dividers (warmer green-gray)
       },
       fontFamily: {
         sans: ["var(--font-body)", "ui-serif", "serif"],

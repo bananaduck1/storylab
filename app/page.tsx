@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Home",
@@ -11,7 +12,7 @@ export default function Home() {
     <div className="bg-transparent">
       <div className="mx-auto w-full max-w-6xl px-6 bg-paper/90 backdrop-blur-[1px]">
         {/* Hero */}
-        <section className="py-16 sm:py-20">
+        <section className="relative py-16 sm:py-20">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
             StoryLab
           </p>
@@ -19,7 +20,7 @@ export default function Home() {
             Helping students develop a<br />
             voice worth reading.
           </h1>
-          <div className="mt-6 max-w-2xl space-y-3 text-lg leading-relaxed text-zinc-700">
+          <div className="relative mt-6 max-w-2xl space-y-3 text-lg leading-relaxed text-zinc-700">
             <p>Hi, I’m Sam. In 2020, I was admitted to Yale, Harvard, Stanford, and Princeton.</p>
             <p>
               I chose Yale, studied creative writing, graduated magna cum laude and Phi Beta Kappa,
@@ -31,6 +32,14 @@ export default function Home() {
               gentle rigor, and a voice that still sounds like you.
             </p>
           </div>
+          <Image
+            src="/sam-photo.jpg"
+            alt="Founder"
+            width={360}
+            height={360}
+            className="absolute top-[80px] right-4 h-[192px] w-[192px] rounded-full object-cover shadow-md border border-line/30 md:h-[280px] md:w-[280px] md:top-[100px] md:right-8 lg:h-[360px] lg:w-[360px] lg:top-[120px] lg:right-12"
+            priority
+          />
           <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
             <a
               href="mailto:storylab.ivy@gmail.com"

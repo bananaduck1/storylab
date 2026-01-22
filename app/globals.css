@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6faf5;
-  --foreground: #1f3d2b;
+  --background: #f8faf5;
+  --foreground: #2d3e29;
 }
 
 @theme inline {
@@ -27,9 +27,9 @@
 body {
   background-color: var(--background);
   background-image:
-    radial-gradient(circle at 10% 0%, rgba(214, 235, 222, 0.9) 0, transparent 55%),
-    radial-gradient(circle at 80% 20%, rgba(199, 224, 210, 0.9) 0, transparent 60%),
-    radial-gradient(circle at 0% 80%, rgba(221, 239, 228, 0.9) 0, transparent 55%),
+    radial-gradient(circle at 10% 0%, rgba(232, 242, 222, 0.9) 0, transparent 55%),
+    radial-gradient(circle at 80% 20%, rgba(220, 235, 210, 0.9) 0, transparent 60%),
+    radial-gradient(circle at 0% 80%, rgba(238, 247, 230, 0.9) 0, transparent 55%),
     url("/watercolor-wash.svg");
   background-repeat: no-repeat, no-repeat, no-repeat, repeat;
   background-size: 1200px 800px, 900px 700px, 1000px 800px, 600px 600px;
@@ -41,7 +41,7 @@ body {
 }
 
 ::selection {
-  background: rgba(143, 191, 163, 0.22);
+  background: rgba(156, 191, 144, 0.22);
 }
 
 h1,
