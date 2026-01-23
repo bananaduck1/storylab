@@ -26,15 +26,15 @@ export default function ResultsPage() {
           {[
             {
               q: "“What stood out most was the genuine sense of care. Our meetings were effective and motivating, and having a real game plan made the entire process far less stressful—for both me and my mom.”",
-              a: "Student admitted to Vanderbilt '29",
+              a: "Student from San Diego admitted to Vanderbilt '29",
             },
             {
               q: "“My tutor told me honestly when a draft felt cheesy and pushed me to rewrite it into something more sincere. They taught me to write logically and authentically, without over-flexing, and helped me discover what actually made my story unique.”",
-              a: "Student admitted to Northwestern '28",
+              a: "Student from Beijing admitted to Northwestern '28",
             },
             {
-              q: "“My other counselor has plenty of clients and experience, but it was only when I started working with StoryLab that my essays finally felt like mine.”",
-              a: "Student admitted to UChicago '30",
+              q: "I worked with another company that has plenty of clients and experience, but it was only when I started working with StoryLab that my essays finally felt like mine.”",
+              a: "Student from Beijing admitted to UChicago '30",
             },
           ].map((t) => (
             <figure
