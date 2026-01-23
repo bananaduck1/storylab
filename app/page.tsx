@@ -132,7 +132,7 @@ export default function Home() {
           <div className="grid gap-8 lg:grid-cols-[auto_1fr] lg:gap-12 lg:items-start">
             <div className="flex justify-center lg:justify-start order-2 lg:order-1">
               <Image
-                src="/photo-3.png"
+                src="/photo-4.png"
                 alt=""
                 width={400}
                 height={400}
@@ -148,7 +148,7 @@ export default function Home() {
                   In a world increasingly shaped by technology, what people crave most is meaning.
                 </p>
                 <p>
-                  Tools change quickly. Human attention does not. We still gather around stories — in
+                  Tools change quickly. Human needs do not. We still gather around stories — in
                   books, films, television, and music — because storytelling is how we understand
                   ourselves and each other. The medium evolves; the impulse does not.
                 </p>
