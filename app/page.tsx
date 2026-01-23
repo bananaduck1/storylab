@@ -127,12 +127,12 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Tutors */}
+        {/* Why humanities */}
         <section className="border-t border-zinc-200/70 py-14 sm:py-16">
           <div className="grid gap-8 lg:grid-cols-[auto_1fr] lg:gap-12 lg:items-start">
             <div className="flex justify-center lg:justify-start order-2 lg:order-1">
               <Image
-                src="/photo-2.png"
+                src="/photo-3.png"
                 alt=""
                 width={400}
                 height={400}
@@ -140,6 +140,41 @@ export default function Home() {
               />
             </div>
             <div className="order-1 lg:order-2">
+              <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
+                Why humanities
+              </h2>
+              <div className="mt-6 max-w-3xl space-y-4 text-sm leading-relaxed text-zinc-600">
+                <p>
+                  In a world increasingly shaped by technology, what people crave most is meaning.
+                </p>
+                <p>
+                  Tools change quickly. Human attention does not. We still gather around stories — in
+                  books, films, television, and music — because storytelling is how we understand
+                  ourselves and each other. The medium evolves; the impulse does not.
+                </p>
+                <p>
+                  Universities recognize this. Many admissions officers are trained in the humanities,
+                  and they respond to writing that shows judgment, voice, and interpretive skill — not
+                  just technical proficiency.
+                </p>
+                <p>
+                  When students are guided toward the same achievements, they become indistinguishable
+                  on paper. What differentiates them is not another credential, but the ability to make
+                  meaning from experience.
+                </p>
+                <p>
+                  Humanities training develops that capacity — turning strong students into compelling
+                  applicants.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Tutors */}
+        <section className="border-t border-zinc-200/70 py-14 sm:py-16">
+          <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:gap-12 lg:items-start">
+            <div>
               <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
                 Our tutors
               </h2>
@@ -166,6 +201,15 @@ export default function Home() {
                   Meet the team
                 </a>
               </div>
+            </div>
+            <div className="flex justify-center lg:justify-end">
+              <Image
+                src="/photo-2.png"
+                alt=""
+                width={400}
+                height={400}
+                className="h-auto w-full max-w-sm rounded-lg object-cover shadow-md border border-line/30 lg:max-w-md"
+              />
             </div>
           </div>
         </section>
