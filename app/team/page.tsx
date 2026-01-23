@@ -95,7 +95,7 @@ export default function TeamPage() {
         </section>
 
         <section className="mt-14 border-t border-zinc-200/70 pt-12">
-          <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">Founding</h2>
+          <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">Founder</h2>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">
             StoryLab was founded to help students build the reading, writing, and thinking skills
             elite universities still select for. The method has been refined and taught by a team

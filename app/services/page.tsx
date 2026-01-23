@@ -26,7 +26,7 @@ export default function ServicesPage() {
         <section className="mt-12 space-y-10">
           <div className="space-y-4">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
-              Humanities Foundations
+              Humanities Foundations (7th-11th grade)
             </p>
             <div className="grid gap-4 md:grid-cols-2">
               {[
@@ -57,7 +57,7 @@ export default function ServicesPage() {
 
           <div className="space-y-4">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
-              College Applications
+              College Applications (12th grade)
             </p>
             <div className="grid gap-4 md:grid-cols-2">
               {[

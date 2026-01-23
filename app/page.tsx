@@ -62,7 +62,7 @@ export default function Home() {
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             <div className="rounded-2xl border border-zinc-200 bg-white p-6">
               <h3 className="text-lg font-semibold tracking-tight text-zinc-950">
-                Humanities Foundations
+                Humanities Foundations (7th-11th grade)
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-zinc-600">
                 Middle school through high school. Reading, analytical writing, thinking, and
@@ -72,7 +72,7 @@ export default function Home() {
             </div>
             <div className="rounded-2xl border border-zinc-200 bg-white p-6">
               <h3 className="text-lg font-semibold tracking-tight text-zinc-950">
-                College Applications
+                College Applications (12th grade)
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-zinc-600">
                 11th and 12th grade. Personal statements, supplements, positioning. We help students
