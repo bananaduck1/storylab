@@ -12,15 +12,15 @@ export function Footer() {
               StoryLab
             </p>
             <p className="mt-3 max-w-md text-sm leading-relaxed text-zinc-600">
-              Editorial coaching for students who want to sound like
-              themselves, only clearer.
+              Elite humanities training and college applications support—reading, writing, and
+              thinking skills taught by trained humanities graduates.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
               <a
                 href={EMAIL_SAM}
                 className="inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-5 py-3 text-sm font-medium text-zinc-900 hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
               >
-                Email Sam
+                Contact
               </a>
             </div>
           </div>
@@ -34,12 +34,12 @@ export function Footer() {
                 <ul className="mt-4 space-y-3 text-sm">
                   <li>
                     <Link className="text-zinc-700 hover:text-zinc-950" href="/services">
-                      Services
+                      Programs
                     </Link>
                   </li>
                   <li>
                     <Link className="text-zinc-700 hover:text-zinc-950" href="/about">
-                      About
+                      Our Approach
                     </Link>
                   </li>
                   <li>

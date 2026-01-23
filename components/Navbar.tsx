@@ -4,8 +4,9 @@ import Image from "next/image";
 const EMAIL_SAM = "mailto:storylab.ivy@gmail.com";
 
 const navLinks: Array<{ href: string; label: string }> = [
-  { href: "/services", label: "Services" },
-  { href: "/about", label: "About" },
+  { href: "/services", label: "Programs" },
+  { href: "/about", label: "Our Approach" },
+  { href: "/team", label: "Our Tutors" },
   { href: "/results", label: "Results" },
   { href: "/faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },
@@ -44,7 +45,7 @@ export function Navbar() {
             href={EMAIL_SAM}
             className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-zinc-900/15 hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
           >
-            Email Sam
+            Contact
           </a>
         </div>
       </div>

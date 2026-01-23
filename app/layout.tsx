@@ -11,24 +11,24 @@ const literata = Literata({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://example.com"),
+  metadataBase: new URL("https://www.ivystorylab.com"),
   title: {
-    default: "Ivy StoryLab",
-    template: "%s · Ivy StoryLab",
+    default: "StoryLab",
+    template: "%s · StoryLab",
   },
   description:
-    "Premium, editorial college admissions coaching—strategy, voice, and calm rigor for high-achieving students and families.",
+    "Elite humanities training and college applications support—reading, writing, and thinking skills taught by trained humanities graduates.",
   openGraph: {
-    title: "Ivy StoryLab",
+    title: "StoryLab",
     description:
-      "Premium, editorial college admissions coaching—strategy, voice, and calm rigor for high-achieving students and families.",
+      "Elite humanities training and college applications support—reading, writing, and thinking skills taught by trained humanities graduates.",
     type: "website",
     images: [
       {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "Ivy StoryLab",
+        alt: "StoryLab",
       },
     ],
   },

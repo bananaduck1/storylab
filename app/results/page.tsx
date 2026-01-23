@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Results",
   description:
-    "Testimonials for Ivy StoryLab—honest notes from students and families. No invented stats or guarantees.",
+    "Testimonials for StoryLab—honest notes from students and families. No invented stats or guarantees.",
 };
 
 export default function ResultsPage() {
@@ -25,16 +25,16 @@ export default function ResultsPage() {
         <section className="mt-12 grid gap-4 md:grid-cols-3">
           {[
             {
-              q: "“What stood out most was Sam’s genuine sense of care. Our meetings were effective and motivating, and having a real game plan made the entire process far less stressful—for both me and my mom.”",
-              a: "Student from San Diego admitted to Vanderbilt ’29",
+              q: "“What stood out most was the genuine sense of care. Our meetings were effective and motivating, and having a real game plan made the entire process far less stressful—for both me and my mom.”",
+              a: "Student admitted to Vanderbilt '29",
             },
             {
-              q: "“Sam told me honestly when a draft felt cheesy and pushed me to rewrite it into something more sincere. He taught me to write logically and authentically, without over-flexing, and helped me discover what actually made my story unique.”",
-              a: "Student from Beijing admitted to Northwestern ’28",
+              q: "“My tutor told me honestly when a draft felt cheesy and pushed me to rewrite it into something more sincere. They taught me to write logically and authentically, without over-flexing, and helped me discover what actually made my story unique.”",
+              a: "Student admitted to Northwestern '28",
             },
             {
-              q: "“My other counselor has plenty of clients and experience, but it was only when I started working with Sam that my essays finally felt like mine.”",
-              a: "Student from Beijing admitted to UChicago '30",
+              q: "“My other counselor has plenty of clients and experience, but it was only when I started working with StoryLab that my essays finally felt like mine.”",
+              a: "Student admitted to UChicago '30",
             },
           ].map((t) => (
             <figure
@@ -56,21 +56,14 @@ export default function ResultsPage() {
             Want to talk through your situation?
           </h2>
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-zinc-600">
-            Start with a free consult. We’ll clarify what support would help—and what
-            would be unnecessary.
+            We'll clarify what support would help—and what would be unnecessary.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
             <a
-              href="https://calendly.com/your-calendly-link"
+              href="/contact"
               className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
             >
-              Book a free consult
-            </a>
-            <a
-              href="mailto:sam@yourdomain.com"
-              className="inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-900 hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
-            >
-              Email Sam
+              Contact
             </a>
           </div>
         </section>
@@ -78,4 +71,3 @@ export default function ResultsPage() {
     </div>
   );
 }
-

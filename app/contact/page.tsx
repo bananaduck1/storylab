@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Contact Ivy StoryLab: email Sam directly—gentle, direct, and human.",
+    "Contact StoryLab: reach out to discuss which program fits your student's timeline and goals.",
 };
 
 export default function ContactPage() {
@@ -18,7 +18,8 @@ export default function ContactPage() {
             Let’s keep next steps simple.
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-zinc-700">
-            Email Sam with your timeline, goals, and any questions. Gentle, direct, no pressure.
+            Reach out with your student's grade level, timeline, and goals. We'll respond with an
+            honest read on which program fits best.
           </p>
         </header>
 

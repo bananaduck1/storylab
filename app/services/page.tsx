@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Services",
+  title: "Programs",
   description:
-    "Admissions coaching services for Ivy StoryLab: focused support for 12th graders and early advising that keeps essays human and specific.",
+    "StoryLab programs: Humanities Foundations for middle and high school, and College Applications support for 11th and 12th graders.",
 };
 
 export default function ServicesPage() {
@@ -12,43 +12,39 @@ export default function ServicesPage() {
       <div className="mx-auto w-full max-w-6xl bg-paper/92 px-6 py-16 sm:py-20">
         <header className="max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
-            Services
+            Programs
           </p>
           <h1 className="mt-5 text-4xl font-semibold leading-[1.1] tracking-tight text-zinc-950 sm:text-5xl">
-            Support that stays human.
+            Two paths. One foundation.
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-zinc-700">
-            Choose the level that fits your bandwidth. No invented outcomes—just clear thinking,
-            close reads, and steady edits.
+            Humanities foundations build the skills. College applications put them to use. Choose
+            the path that matches your student's timeline and goals.
           </p>
         </header>
 
         <section className="mt-12 space-y-10">
           <div className="space-y-4">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
-              For 12th Graders
+              Humanities Foundations
             </p>
             <div className="grid gap-4 md:grid-cols-2">
               {[
                 {
-                  t: "Common App Bootcamp",
-                  d: "A focused sprint to draft, edit, and ready the core application without losing voice.",
+                  t: "Reading and analysis",
+                  d: "Close reading, critical thinking, and analytical writing skills that compound over time.",
                 },
                 {
-                  t: "Essay Concierge Service",
-                  d: "Hands-on outlining, drafting, and line edits for personal statement and supplements.",
+                  t: "Intellectual voice",
+                  d: "Students learn to think and write with clarity and originality, developing their voice naturally.",
                 },
                 {
-                  t: "Mock Interviews",
-                  d: "Calm, candid practice that favors clarity and presence over rehearsed talking points.",
+                  t: "Writing workshops",
+                  d: "Structured practice in analytical and creative writing, with consistent feedback from trained tutors.",
                 },
                 {
-                  t: "Full Package",
-                  d: "Comprehensive strategy plus full essay editing for students who want end-to-end support.",
-                },
-                {
-                  t: "Group Classes",
-                  d: "Small, live sessions with tight feedback loops to keep work moving between meetings.",
+                  t: "Early preparation",
+                  d: "Starting in middle school or early high school builds skills that make strong college essays possible.",
                 },
               ].map((c) => (
                 <div key={c.t} className="rounded-2xl border border-zinc-200 bg-white p-6">
@@ -61,48 +57,50 @@ export default function ServicesPage() {
 
           <div className="space-y-4">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
-              Pre-12th Grade Advising
+              College Applications
             </p>
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6 md:col-span-2">
-                <h2 className="text-lg font-semibold tracking-tight text-zinc-950">
-                  Early, thoughtful guidance
-                </h2>
-                <div className="mt-3 space-y-3 text-sm leading-relaxed text-zinc-600">
-                  <p>
-                    I strongly recommend working together before senior year—sometimes as early as
-                    eighth grade. By 12th grade, many students are locked into narratives that don’t
-                    fully reflect who they are.
-                  </p>
-                  <p>
-                    Earlier guidance lets students grow organically into strong applicants, instead
-                    of retrofitting meaning at the last minute. My role isn’t to manufacture
-                    accomplishments, but to help make thoughtful choices over time—choices that lead
-                    to clearer, more authentic applications when it counts.
-                  </p>
-                  <p>
-                    We also workshop prize and competition essays as skill-building: sharpening
-                    clarity, originality, and structure—never as résumé padding.
-                  </p>
+              {[
+                {
+                  t: "Personal statements",
+                  d: "Main essay development and editing, applying the writing skills students have built.",
+                },
+                {
+                  t: "Supplements",
+                  d: "School-specific essays and short answers, with clear positioning and authentic voice.",
+                },
+                {
+                  t: "Strategy and positioning",
+                  d: "Application narrative, school list logic, and a plan that respects the student's authentic story.",
+                },
+                {
+                  t: "Full application support",
+                  d: "Comprehensive guidance for students who want end-to-end support through the application process.",
+                },
+              ].map((c) => (
+                <div key={c.t} className="rounded-2xl border border-zinc-200 bg-white p-6">
+                  <h2 className="text-lg font-semibold tracking-tight text-zinc-950">{c.t}</h2>
+                  <p className="mt-3 text-sm leading-relaxed text-zinc-600">{c.d}</p>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>
 
         <section className="mt-14 rounded-3xl border border-zinc-200 bg-white p-8 sm:p-10">
           <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
-            Email to discuss fit
+            Ready to get started?
           </h2>
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-zinc-600">
-            Share your grade level, timeline, and goals. I’ll respond with an honest read on fit.
+            Share your student's grade level, timeline, and goals. We'll respond with an honest
+            read on which program fits best.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
             <a
-              href="mailto:storylab.ivy@gmail.com"
+              href="/contact"
               className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
             >
-              Email Sam
+              Contact
             </a>
           </div>
         </section>
@@ -110,4 +108,3 @@ export default function ServicesPage() {
     </div>
   );
 }
-

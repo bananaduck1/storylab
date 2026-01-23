@@ -4,7 +4,7 @@ import Image from "next/image";
 export const metadata: Metadata = {
   title: "Home",
   description:
-    "Admissions coaching that keeps essays radically personal, reader-aware, and rigorously clear—without hype.",
+    "Elite humanities training and college applications support—reading, writing, and thinking skills taught by trained humanities graduates.",
 };
 
 export default function Home() {
@@ -16,82 +16,110 @@ export default function Home() {
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
             StoryLab
           </p>
-          
           <div className="mt-5 grid gap-8 lg:grid-cols-[1fr_auto] lg:gap-12 lg:items-start">
-            {/* Text content */}
             <div>
               <h1 className="max-w-3xl text-4xl font-semibold leading-[1.08] tracking-tight text-zinc-950 sm:text-5xl">
-                Helping students develop a<br />
-                voice worth reading.
+                Elite humanities training for the AI age
               </h1>
-              <div className="mt-6 max-w-2xl space-y-3 text-lg leading-relaxed text-zinc-700">
-                <p>Hi, I'm Sam. In 2020, I was admitted to Yale, Harvard, Stanford, and Princeton.</p>
-                <p>
-                  I chose Yale, studied creative writing, graduated magna cum laude and Phi Beta Kappa,
-                  won university writing prizes, and worked at the Yale Admissions Office as
-                  an interviewer.
-                </p>
-                <p>
-                  I now coach a small number of students. Essays stay radically personal: clear strategy,
-                  gentle rigor, and a voice that still sounds like you.
-                </p>
+              <p className="mt-6 max-w-2xl text-lg leading-relaxed text-zinc-700">
+                StoryLab builds the reading, writing, and thinking skills that make you
+                future-proof, college and beyond. Taught by trained Ivy League humanities graduates.
+              </p>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <a
+                  href="/services"
+                  className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white shadow-sm shadow-zinc-900/15 hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
+                >
+                  Explore Programs
+                </a>
               </div>
             </div>
-            
-            {/* Profile photo */}
             <div className="flex justify-center lg:justify-end">
               <Image
-                src="/sam-photo.jpg"
-                alt="Founder"
-                width={360}
-                height={360}
-                className="h-32 w-32 rounded-full object-cover shadow-md border border-line/30 md:h-40 md:w-40 lg:h-[360px] lg:w-[360px]"
+                src="/photo-1.png"
+                alt=""
+                width={400}
+                height={400}
+                className="h-auto w-full max-w-sm rounded-lg object-cover shadow-md border border-line/30 lg:max-w-md"
                 priority
               />
             </div>
           </div>
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <a
-              href="mailto:storylab.ivy@gmail.com"
-              className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white shadow-sm shadow-zinc-900/15 hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
-            >
-              Email Sam
-            </a>
+        </section>
+
+        {/* What We Do - Two paths */}
+        <section className="border-t border-zinc-200/70 py-14 sm:py-16">
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
+                Two paths. One foundation.
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">
+                Humanities foundations build the skills. College applications put them to use.
+              </p>
+            </div>
+          </div>
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+              <h3 className="text-lg font-semibold tracking-tight text-zinc-950">
+                Humanities Foundations
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+                Middle school through high school. Reading, analytical writing, thinking, and
+                intellectual voice. The skills that compound over years and make strong college
+                essays possible.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+              <h3 className="text-lg font-semibold tracking-tight text-zinc-950">
+                College Applications
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+                11th and 12th grade. Personal statements, supplements, positioning. We help students
+                apply the foundation they've built to tell their story clearly and authentically.
+              </p>
+            </div>
           </div>
         </section>
 
-        {/* Approach / Credibility */}
+        {/* Philosophy - Why start early */}
         <section className="border-t border-zinc-200/70 py-14 sm:py-16">
           <div className="grid gap-10 md:grid-cols-12 md:gap-8">
             <div className="md:col-span-5">
               <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
-                Warm, incisive, honest.
+                Why start early
               </h2>
               <p className="mt-4 text-sm leading-relaxed text-zinc-600">
-                Strategy = empathy for the reader + ruthless specificity. No invented stats.
-                No pressure tactics. Just clear thinking and careful edits.
+                Reading, writing, and thinking are skills that compound. The best college essays
+                aren't written in a month—they're built over years of practice.
               </p>
               <p className="mt-4 text-sm leading-relaxed text-zinc-600">
-                In an AI-saturated era, the only real moat is a human voice. We keep writing
-                unmistakably yours—original thought, specific images, and calm structure over tech
-                tricks or fear.
+                Students who start early develop intellectual voice naturally. By 12th grade, they
+                have something real to say, not just achievements to list.
               </p>
             </div>
             <div className="md:col-span-7">
               <dl className="grid gap-4 sm:grid-cols-3">
                 {[
-                  { k: "Radically personal", v: "Most applications blur because they optimize for impressive instead of radically personal." },
-                  { k: "Reader empathy", v: "Readers are tired humans with taste. Write for someone wanting to go on lunch break, not a rubric." },
-                  { k: "Calm rigor", v: "High standards, low drama, every line doing work. Your essay is a story that should entertain." },
+                  {
+                    k: "Compounding skills",
+                    v: "Reading and writing improve through consistent practice, not last-minute cramming.",
+                  },
+                  {
+                    k: "Intellectual voice",
+                    v: "Students learn to think and write with clarity and originality over time.",
+                  },
+                  {
+                    k: "Authentic essays",
+                    v: "Strong applications come from students who've developed their voice, not manufactured it.",
+                  },
                 ].map((item) => (
                   <div
                     key={item.k}
                     className="rounded-2xl border border-zinc-200 bg-white p-5"
                   >
                     <dt className="text-sm font-semibold text-zinc-950">{item.k}</dt>
-                    <dd className="mt-2 text-sm leading-relaxed text-zinc-600">
-                      {item.v}
-                    </dd>
+                    <dd className="mt-2 text-sm leading-relaxed text-zinc-600">{item.v}</dd>
                   </div>
                 ))}
               </dl>
@@ -99,50 +127,93 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Services preview */}
+        {/* Tutors */}
         <section className="border-t border-zinc-200/70 py-14 sm:py-16">
-          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-              <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
-                Services
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">
-                Take what serves your bandwidth. Strategy, essay craft, or a final hard edit.
-              </p>
+          <div className="grid gap-8 lg:grid-cols-[auto_1fr] lg:gap-12 lg:items-start">
+            <div className="flex justify-center lg:justify-start order-2 lg:order-1">
+              <Image
+                src="/photo-2.png"
+                alt=""
+                width={400}
+                height={400}
+                className="h-auto w-full max-w-sm rounded-lg object-cover shadow-md border border-line/30 lg:max-w-md"
+              />
             </div>
-            <a
-              href="/services"
-              className="text-sm font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-700"
-            >
-              View all services
-            </a>
-          </div>
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {[
-              {
-                t: "Strategy + positioning",
-                d: "Narrative spine, school logic, and a plan that respects your time.",
-              },
-              {
-                t: "Essay development",
-                d: "From blank page to clean draft—structure first, then voice and line-level craft.",
-              },
-              {
-                t: "Review + refinement",
-                d: "Targeted review for existing drafts that need clear, human edits.",
-              },
-            ].map((c) => (
-              <div key={c.t} className="rounded-2xl border border-zinc-200 bg-white p-6">
-                <h3 className="text-lg font-semibold tracking-tight text-zinc-950">
-                  {c.t}
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-zinc-600">{c.d}</p>
+            <div className="order-1 lg:order-2">
+              <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
+                Our tutors
+              </h2>
+              <div className="mt-6 max-w-3xl space-y-4 text-sm leading-relaxed text-zinc-600">
+                <p>
+                  StoryLab tutors are trained humanities graduates admitted to multiple top universities.
+                  We vet for strong writing, clear thinking, and the ability to teach.
+                </p>
+                <p>
+                  All tutors use the same StoryLab pedagogy—a consistent method for building reading,
+                  writing, and thinking skills. Students work one-on-one with a StoryLab tutor, but the
+                  approach is shared across the program.
+                </p>
+                <p>
+                  This isn't a one-person operation. It's a team of trained educators using a proven
+                  method to help students develop the skills elite universities still select for.
+                </p>
               </div>
-            ))}
+              <div className="mt-8">
+                <a
+                  href="/team"
+                  className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white shadow-sm shadow-zinc-900/15 hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
+                >
+                  Meet the team
+                </a>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* Testimonials preview (placeholders) */}
+        {/* How it works */}
+        <section className="border-t border-zinc-200/70 py-14 sm:py-16">
+          <div className="flex items-end justify-between gap-6">
+            <div>
+              <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
+                How it works
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">
+                A simple process designed to build skills over time, not rush results.
+              </p>
+            </div>
+          </div>
+          <ol className="mt-8 grid gap-4 md:grid-cols-3">
+            {[
+              {
+                n: "01",
+                t: "Assess and plan",
+                d: "We evaluate current skills and create a plan that matches the student's timeline and goals.",
+              },
+              {
+                n: "02",
+                t: "Build the foundation",
+                d: "For humanities foundations, we focus on reading, analytical writing, and thinking. For college applications, we apply these skills to essays and positioning.",
+              },
+              {
+                n: "03",
+                t: "Iterate and refine",
+                d: "Regular feedback and revision. Students see their progress over time, not just at the end.",
+              },
+            ].map((s) => (
+              <li key={s.n} className="rounded-2xl border border-zinc-200 bg-white p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                  {s.n}
+                </p>
+                <h3 className="mt-3 text-lg font-semibold tracking-tight text-zinc-950">
+                  {s.t}
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-zinc-600">{s.d}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        {/* Testimonials */}
         <section className="border-t border-zinc-200/70 py-14 sm:py-16">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
@@ -150,28 +221,30 @@ export default function Home() {
                 What families say
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">
-                A few notes from students and parents.
+                Notes from students and parents.
               </p>
             </div>
-            <a
-              href="/results"
-              className="text-sm font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-700"
-            >
-              Read more
-            </a>
+            <div className="flex-shrink-0">
+              <a
+                href="/results"
+                className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white shadow-sm shadow-zinc-900/15 hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
+              >
+                Read more
+              </a>
+            </div>
           </div>
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             {[
               {
-                q: "“What stood out most was Sam’s genuine sense of care. Our meetings were effective and motivating, and having a real game plan made the entire process far less stressful—for both me and my mom.”",
-                a: "Student admitted to Vanderbilt ’29",
+                q: "“What stood out most was the genuine sense of care. Our meetings were effective and motivating, and having a real game plan made the entire process far less stressful—for both me and my mom.”",
+                a: "Student admitted to Vanderbilt '29",
               },
               {
-                q: "“Sam told me honestly when a draft felt cheesy and pushed me to rewrite it into something more sincere. He taught me to write logically and authentically, without over-flexing, and helped me discover what actually made my story unique.”",
-                a: "Student admitted to Northwestern ’28",
+                q: "“My tutor told me honestly when a draft felt cheesy and pushed me to rewrite it into something more sincere. They taught me to write logically and authentically, without over-flexing, and helped me discover what actually made my story unique.”",
+                a: "Student admitted to Northwestern '28",
               },
               {
-                q: "“My other counselor has plenty of clients and experience, but it was only when I started working with Sam that my essays finally felt like mine.”",
+                q: "“My other counselor has plenty of clients and experience, but it was only when I started working with StoryLab that my essays finally felt like mine.”",
                 a: "Student admitted to UChicago '30",
               },
             ].map((t) => (
@@ -194,17 +267,24 @@ export default function Home() {
         <section className="border-t border-zinc-200/70 py-16 sm:py-20">
           <div className="rounded-3xl border border-zinc-200 bg-white p-8 sm:p-10">
             <h2 className="text-2xl font-semibold tracking-tight text-zinc-950 sm:text-3xl">
-              For families who want their student remembered, not summarized.
+              Ready to build the foundation?
             </h2>
             <p className="mt-4 max-w-2xl text-sm leading-relaxed text-zinc-600">
-            Thoughtful guidance for a noisy process.
+              Explore our programs or reach out to discuss which path fits your student's timeline
+              and goals.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <a
-                href="mailto:storylab.ivy@gmail.com"
+                href="/services"
                 className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white shadow-sm shadow-zinc-900/15 hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
               >
-                Email Sam
+                Explore Programs
+              </a>
+              <a
+                href="/contact"
+                className="inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-900 hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
+              >
+                Contact
               </a>
             </div>
           </div>

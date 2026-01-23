@@ -1,65 +1,37 @@
-import Image from "next/image";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
   title: "FAQ",
   description:
-    "FAQ for Ivy StoryLab, answered by Sam—student-first, calm, and honest.",
+    "FAQ for StoryLab—answers about our humanities training and college applications programs.",
 };
 
 export default function FAQPage() {
   const faqs: Array<{ q: string; a: ReactNode }> = [
     {
-      q: "How did you get into Harvard, Yale, Princeton, and Stanford?",
-      a: (
-        <div className="space-y-4">
-          <p>I genuinely loved writing my college essays.</p>
-
-          <p>
-            Many students approach the application process with anxiety, but I saw it as a rare
-            opportunity: a chance to tell my own story, on my own terms. I leaned into that freedom.
-          </p>
-
-          <p>
-            Strong essays will never guarantee admission—but they can make the difference between
-            being skimmed and being remembered. One of my admissions officers wrote me a personal
-            note singling out my essays as a deciding factor in my admission. I was also the first
-            student from my high school in years to be admitted to Stanford without legacy.
-          </p>
-
-          <div className="mt-4 flex justify-center">
-            <Image
-              src="/stanford-admissions-note.jpg"
-              alt="Stanford admissions officer note"
-              width={1200}
-              height={800}
-              className="h-auto w-full max-w-sm object-contain"
-              priority
-            />
-          </div>
-        </div>
-      ),
+      q: "What makes StoryLab different?",
+      a: "StoryLab tutors are trained humanities graduates admitted to multiple top universities, all using the same pedagogy. We focus on building reading, writing, and thinking skills that compound over time, not just last-minute essay editing.",
     },
     {
-      q: "Do you work directly with students or mostly with parents?",
-      a: "I work directly with students and loop parents in as appropriate. Transparency and alignment matter for the whole family.",
+      q: "Do tutors work directly with students or mostly with parents?",
+      a: "Tutors work directly with students and loop parents in as appropriate. Transparency and alignment matter for the whole family.",
     },
     {
       q: "How do you think about AI tools like ChatGPT?",
-      a: "AI can help at the surface level, but when everyone uses the same tools, everyone sounds the same. Essays work when they feel lived-in and personal, not optimized.",
+      a: "AI can help at the surface level, but when everyone uses the same tools, everyone sounds the same. Essays work when they feel lived-in and personal, not optimized. We teach students to develop their own voice and thinking.",
     },
     {
       q: "Do you guarantee outcomes?",
-      a: "No one can guarantee admissions results. What I guarantee is thoughtful, well-written essays that help students find and articulate their voice.",
+      a: "No one can guarantee admissions results. What we guarantee is thoughtful teaching that helps students build reading, writing, and thinking skills—skills that serve them in college and beyond.",
     },
     {
-      q: "When is the right time to start working together?",
-      a: "As early as possible. Earlier work lets students develop their voice over time instead of trying to manufacture depth during senior year.",
+      q: "When is the right time to start?",
+      a: "For humanities foundations, as early as middle school. Skills compound over time. For college applications, typically 11th or 12th grade. Earlier work lets students develop their voice over time instead of trying to manufacture depth during senior year.",
     },
     {
-      q: "How hands-on are you with essays?",
-      a: "It depends on the package. I’m meticulous with feedback—editing carefully while preserving the student’s voice.",
+      q: "How hands-on are tutors with student work?",
+      a: "It depends on the program. Tutors provide consistent feedback—teaching carefully while preserving and developing the student's voice. All tutors use the same StoryLab method.",
     },
   ];
 
@@ -74,7 +46,7 @@ export default function FAQPage() {
             Clear answers. No haze.
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-zinc-700">
-            If you’re deciding whether coaching is worth it, start here.
+            If you're deciding whether StoryLab is a fit, start here.
           </p>
         </header>
 
@@ -99,23 +71,17 @@ export default function FAQPage() {
 
         <section className="mt-14 rounded-3xl border border-zinc-200 bg-white p-8 sm:p-10">
           <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
-            Still unsure? Start with a call.
+            Still unsure?
           </h2>
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-zinc-600">
-            We’ll clarify what you actually need—then decide if coaching is the right move.
+            We'll clarify what you actually need—then decide if StoryLab is the right fit.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
             <a
-              href="https://calendly.com/your-calendly-link"
+              href="/contact"
               className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
             >
-              Book a free consult
-            </a>
-            <a
-              href="mailto:sam@yourdomain.com"
-              className="inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-900 hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
-            >
-              Email Sam
+              Contact
             </a>
           </div>
         </section>
@@ -123,4 +89,3 @@ export default function FAQPage() {
     </div>
   );
 }
-
