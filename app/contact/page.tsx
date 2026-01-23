@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ContactForm } from "./ContactForm";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -15,33 +16,32 @@ export default function ContactPage() {
             Contact
           </p>
           <h1 className="mt-5 text-4xl font-semibold leading-[1.1] tracking-tight text-zinc-950 sm:text-5xl">
-            Let’s keep next steps simple.
+            Let's keep next steps simple.
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-zinc-700">
-            Reach out with your student's grade level, timeline, and goals. We'll respond with an
-            honest read on which program fits best.
+            Share your student's grade level, timeline, and goals. We'll respond with an honest read
+            on which program fits best.
           </p>
         </header>
 
         <section className="mt-12">
           <div className="rounded-3xl border border-zinc-200 bg-white p-8 sm:p-10">
-            <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">Email</h2>
-            <p className="mt-4 text-sm leading-relaxed text-zinc-600">
-              For inquiries, please share your grade, timeline, and what kind of help you’re
-              considering. Email only; no booking link.
-            </p>
-            <div className="mt-7">
-              <a
-                href="mailto:storylab.ivy@gmail.com"
-                className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
-              >
-                storylab.ivy@gmail.com
-              </a>
-            </div>
+            <ContactForm />
           </div>
+        </section>
+
+        <section className="mt-8 text-center">
+          <p className="text-sm text-zinc-600">
+            Prefer email?{" "}
+            <a
+              href="mailto:storylab.ivy@gmail.com"
+              className="text-zinc-900 underline underline-offset-4 hover:text-zinc-700"
+            >
+              storylab.ivy@gmail.com
+            </a>
+          </p>
         </section>
       </div>
     </div>
   );
 }
-
