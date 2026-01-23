@@ -80,20 +80,6 @@ export default function TeamPage() {
           </p>
         </header>
 
-        <section className="mt-12">
-          <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">Tutors</h2>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">
-            Our tutors are vetted for strong writing, clear thinking, and the ability to teach. Each
-            brings expertise in humanities foundations or college applications, all using the same
-            StoryLab method.
-          </p>
-          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {tutors.map((tutor) => (
-              <TeamCard key={tutor.name} member={tutor} />
-            ))}
-          </div>
-        </section>
-
         <section className="mt-14 border-t border-zinc-200/70 pt-12">
           <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">Founder</h2>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">
