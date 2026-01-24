@@ -1,0 +1,129 @@
+{
+  "version": "0.1.0",
+  "source": {
+    "doc": "Principles.docx",
+    "notes": "Misconception taxonomy derived from repeated warnings and teaching moves in Principles."
+  },
+  "misconceptions": [
+    {
+      "id": "M001",
+      "label": "A-and-B storytelling",
+      "belief": "A story is a list of events with a beginning/middle/end.",
+      "reality": "A story is causality: A leads to B; remove A and the story breaks.",
+      "signals_in_text": [
+        "Chronological sequencing with few causal links",
+        "Minimal internal change; mostly external events",
+        "Transitions like 'then' without 'because'"
+      ],
+      "best_interventions": ["Ask for turning point", "Force because-chain", "Cut one event test"]
+    },
+    {
+      "id": "M002",
+      "label": "First-why is enough",
+      "belief": "One layer of explanation/reflection is sufficient.",
+      "reality": "The second why is where psychological specificity and originality appear.",
+      "signals_in_text": [
+        "Generic moral/lesson statements",
+        "Reflection paragraphs that restate events",
+        "Motivations that could fit any applicant"
+      ],
+      "best_interventions": ["Second-why ladder", "Name the discomfort", "Counterfactual motive test"]
+    },
+    {
+      "id": "M003",
+      "label": "Theme = uniqueness",
+      "belief": "A big theme makes an essay original.",
+      "reality": "Themes are universal; uniqueness is in the plot’s specific causal chain and details.",
+      "signals_in_text": [
+        "Abstract thematic framing without scenes",
+        "Grand statements ('I learned about life')",
+        "Few concrete anchors (names, objects, place)"
+      ],
+      "best_interventions": ["Scene mandate", "Object anchor", "Specificity checklist"]
+    },
+    {
+      "id": "M004",
+      "label": "Impress the reader with achievements",
+      "belief": "Admissions wants to be impressed by accomplishments.",
+      "reality": "Readers want to understand who you are and what you became; insight beats flexing.",
+      "signals_in_text": [
+        "Résumé narration tone",
+        "Achievement claims with little meaning-making",
+        "Impact quantification without personal stakes"
+      ],
+      "best_interventions": ["Identity extraction", "Meaning-over-metric rewrite", "Friend-at-3am test"]
+    },
+    {
+      "id": "M005",
+      "label": "Vulnerability = tragedy",
+      "belief": "The more intense the hardship, the better the essay.",
+      "reality": "Depth of reflection matters; unresolved crisis reads as risk, not maturity.",
+      "signals_in_text": [
+        "Trauma foregrounded with minimal insight",
+        "Tone of unresolved despair",
+        "Over-sharing without forward motion"
+      ],
+      "best_interventions": ["Boundary guidance", "Reflection-first restructuring", "Stability framing"]
+    },
+    {
+      "id": "M006",
+      "label": "Sounding smart requires fancy nouns",
+      "belief": "Complex nouns/jargon make writing impressive.",
+      "reality": "Clear, forceful verbs and simple language are more readable and persuasive.",
+      "signals_in_text": [
+        "Abstract noun clusters (e.g., 'the proliferation of...')",
+        "Frequent adverbs as crutches",
+        "High density of Latinate diction that slows reading"
+      ],
+      "best_interventions": ["Verb swap pass", "Adverb deletion constraint", "Plain-language rewrite"]
+    },
+    {
+      "id": "M007",
+      "label": "Show don’t tell is optional",
+      "belief": "Stating traits/feelings is enough.",
+      "reality": "Readers believe objects/actions; find the emblematic detail ('left clavicle').",
+      "signals_in_text": [
+        "Trait claims ('I am resilient')",
+        "Emotion labels without embodiment",
+        "Few concrete objects that carry meaning"
+      ],
+      "best_interventions": ["Evidence span demand", "Object substitution", "One-scene proof"]
+    },
+    {
+      "id": "M008",
+      "label": "More explanation = more clarity",
+      "belief": "Explaining everything prevents misunderstanding.",
+      "reality": "Restraint creates power; what’s left unsaid can resonate more (especially endings).",
+      "signals_in_text": [
+        "Lesson restated multiple times",
+        "Ending recap paragraph",
+        "Overuse of 'this shows that...' phrasing"
+      ],
+      "best_interventions": ["Cut-the-last-paragraph test", "Stop-at-resonance rewrite", "Implicit ending prompt"]
+    },
+    {
+      "id": "M009",
+      "label": "Single-tone essay is fine",
+      "belief": "Being consistently serious (or funny) is engaging.",
+      "reality": "Controlled tonal contrast keeps readers awake ('pickle amidst grease').",
+      "signals_in_text": [
+        "Unbroken solemn register",
+        "Joke density that avoids depth",
+        "No rhythm of tension/release"
+      ],
+      "best_interventions": ["Tonal counterpoint insert", "One-pickle constraint", "Purposeful levity check"]
+    },
+    {
+      "id": "M010",
+      "label": "Details are decoration",
+      "belief": "Specific details are optional flourishes.",
+      "reality": "Details create immersion and intimacy; names and senses make you memorable.",
+      "signals_in_text": [
+        "Unnamed people/places",
+        "Generic setting ('a room', 'a day')",
+        "Abstract imagery with no concrete anchor"
+      ],
+      "best_interventions": ["Name-everyone pass", "5-sense audit", "One-object-to-carry-meaning"]
+    }
+  ]
+}

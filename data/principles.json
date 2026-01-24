@@ -1,0 +1,199 @@
+{
+  "version": "0.1.0",
+  "source": {
+    "doc": "Principles.docx",
+    "notes": "Principles distilled into operational rules for StoryLab evaluator."
+  },
+  "principles": [
+    {
+      "id": "P001",
+      "name": "Causality over chronology",
+      "thesis": "Great stories show why A led to B (A → B), not just that A and B happened.",
+      "what_to_look_for": [
+        "Clear turning points where a decision/revelation causes a new action or belief",
+        "Explicit or implicit 'because' links between events",
+        "A change in the narrator’s internal model of self/world"
+      ],
+      "common_failure_modes": [
+        "Laundry-list timeline of activities/events",
+        "Growth asserted but not explained (no mechanism)",
+        "Events feel interchangeable; remove one and nothing changes"
+      ],
+      "diagnostic_questions": [
+        "If the first key event didn’t happen, could the ending still happen?",
+        "Where does the narrator change—exactly what belief shifts, and why?"
+      ]
+    },
+    {
+      "id": "P002",
+      "name": "Ask the second why",
+      "thesis": "Depth comes from iterating past the first satisfactory explanation into the murkier psychological layer.",
+      "what_to_look_for": [
+        "A 'why behind the why' (motivation → deeper motivation)",
+        "Specific emotional logic, not generic moral",
+        "Moments of honest uncertainty or self-interrogation"
+      ],
+      "common_failure_modes": [
+        "Surface-level reflection (lesson statement with no excavation)",
+        "Therapy-speak abstractions without lived detail",
+        "Canned growth arc"
+      ],
+      "diagnostic_questions": [
+        "What is the uncomfortable truth the writer is circling?",
+        "What feeling is the writer protecting themselves from naming?"
+      ]
+    },
+    {
+      "id": "P003",
+      "name": "Themes are universal; plot is specific",
+      "thesis": "The theme isn’t what makes it memorable; the specific chain of events and choices does.",
+      "what_to_look_for": [
+        "Concrete scenes that embody the theme",
+        "Distinctive cause-and-effect sequence",
+        "Specific stakes and constraints"
+      ],
+      "common_failure_modes": [
+        "Theme essay disguised as narrative",
+        "Big messages without scene-level proof",
+        "Generic framing (could belong to anyone)"
+      ],
+      "diagnostic_questions": [
+        "Which scene could only happen to this person in this context?",
+        "What is the most specific, irreducible detail that anchors the theme?"
+      ]
+    },
+    {
+      "id": "P004",
+      "name": "Insight over impressiveness",
+      "thesis": "Admissions readers care less about what you did than what it reveals about who you are.",
+      "what_to_look_for": [
+        "Interpretation of experience rather than résumé narration",
+        "Self-awareness, tradeoffs, tension, contradiction",
+        "Relational or human stakes (how you affect others / are affected)"
+      ],
+      "common_failure_modes": [
+        "Flexing accomplishments without meaning-making",
+        "Performing worthiness instead of revealing personhood",
+        "Trying to 'win' the reader with scale/impact claims"
+      ],
+      "diagnostic_questions": [
+        "What would a friend learn about the writer that isn’t on the activity list?",
+        "What did the writer’s interpretation of the world become after this?"
+      ]
+    },
+    {
+      "id": "P005",
+      "name": "Vulnerability is rare; tragedy is not the point",
+      "thesis": "Depth of reflection matters more than magnitude of hardship; avoid risky disclosures that read as unresolved crisis.",
+      "what_to_look_for": [
+        "Vulnerability paired with reflection and forward motion",
+        "Emotional specificity without melodrama",
+        "Boundaries: what is left unsaid but felt"
+      ],
+      "common_failure_modes": [
+        "Trauma-dumping without insight",
+        "Wallowing / bleakness without meaning",
+        "Safety-red-flag disclosures framed as unresolved"
+      ],
+      "diagnostic_questions": [
+        "Is the writer showing growth in understanding, not just pain?",
+        "Does the essay leave the reader worried rather than moved?"
+      ]
+    },
+    {
+      "id": "P006",
+      "name": "Verbs drive writing",
+      "thesis": "Strong verbs and clean syntax beat fancy nouns; avoid adverbs when a better verb exists.",
+      "what_to_look_for": [
+        "Concrete actions and choices",
+        "Verbs that carry nuance without extra modifiers",
+        "Noun phrases that are readable (not jargon)"
+      ],
+      "common_failure_modes": [
+        "Over-nominalization (too many abstract nouns)",
+        "Adverb crutches (\"really,\" \"very,\" \"deeply\")",
+        "Scientific diction that slows comprehension"
+      ],
+      "diagnostic_questions": [
+        "Where can one verb replace an adverb+verb pair?",
+        "Where is abstraction hiding weak thinking?"
+      ]
+    },
+    {
+      "id": "P007",
+      "name": "God is in the details",
+      "thesis": "Specific names, objects, and senses build immersion and likability; details can create love for the narrator.",
+      "what_to_look_for": [
+        "Named people/places/objects",
+        "Sensory grounding (not all five, but tangible specificity)",
+        "Objects that embody meaning"
+      ],
+      "common_failure_modes": [
+        "Vague placeholders (\"my friend,\" \"the event\")",
+        "Abstract claims without anchors",
+        "Details that are decorative rather than revelatory"
+      ],
+      "diagnostic_questions": [
+        "What single object best carries the essay’s meaning?",
+        "Which detail makes the narrator feel real?"
+      ]
+    },
+    {
+      "id": "P008",
+      "name": "Show don’t tell — find the ‘left clavicle’",
+      "thesis": "Replace abstract assertions with a concrete object/action that encapsulates the idea.",
+      "what_to_look_for": [
+        "One vivid emblematic detail per claim",
+        "Scene-level evidence instead of summary statements",
+        "Metonymy: part standing for whole"
+      ],
+      "common_failure_modes": [
+        "Telling feelings (\"I was sad\") with no embodiment",
+        "Moralizing voice with no scene proof",
+        "Generalizations that never land in the world"
+      ],
+      "diagnostic_questions": [
+        "What is the physical proof of this feeling/claim?",
+        "If you deleted all abstract sentences, what remains?"
+      ]
+    },
+    {
+      "id": "P009",
+      "name": "Balance with ‘the pickle’",
+      "thesis": "Interrupt a single-note register (too pensive or too funny) with a tonal counterpoint that keeps the reader engaged.",
+      "what_to_look_for": [
+        "Strategic tonal variation",
+        "Relief moments that deepen rather than distract",
+        "Rhythm: tension and release"
+      ],
+      "common_failure_modes": [
+        "Monotone solemnity",
+        "Stand-up comedy essay with no stakes",
+        "Jarring jokes that feel defensive"
+      ],
+      "diagnostic_questions": [
+        "Where does the reader need air?",
+        "Is the tonal shift purposeful or avoidance?"
+      ]
+    },
+    {
+      "id": "P010",
+      "name": "Resist overexplanation (especially endings)",
+      "thesis": "Leave meaningful space; strong endings stop at the resonant edge rather than spelling everything out.",
+      "what_to_look_for": [
+        "Ending that implies more than it states",
+        "Last line that echoes earlier imagery or choice",
+        "No extended moral recap"
+      ],
+      "common_failure_modes": [
+        "Summary paragraph that kills momentum",
+        "Explaining the lesson twice",
+        "Ending that tries to control interpretation"
+      ],
+      "diagnostic_questions": [
+        "Where is the essay’s natural stopping point before it drags?",
+        "What is most powerful left unsaid?"
+      ]
+    }
+  ]
+}
