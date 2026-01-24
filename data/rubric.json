@@ -1,0 +1,105 @@
+{
+  "version": "0.1.0",
+  "source": {
+    "doc": "Principles.docx",
+    "notes": "Rubric for evaluating college essays aligned with StoryLab principles."
+  },
+  "dimensions": [
+    {
+      "id": "R001",
+      "name": "Causal structure",
+      "description": "The essay shows clear cause-and-effect relationships between events, not just chronological sequencing.",
+      "scale": {
+        "min": 1,
+        "max": 5
+      },
+      "score_2": "Events are listed chronologically but lack clear causal links. Removing one event wouldn't change the story's outcome. Transitions rely on 'then' rather than 'because'.",
+      "score_5": "Each event meaningfully causes the next. The story would break if any key event were removed. Turning points are clear and consequential.",
+      "diagnostic_question": "If the first key event didn't happen, could the ending still occur?"
+    },
+    {
+      "id": "R002",
+      "name": "Psychological depth",
+      "description": "The essay goes beyond surface-level reflection to reveal specific emotional logic and deeper motivations.",
+      "scale": {
+        "min": 1,
+        "max": 5
+      },
+      "score_2": "Reflection stays at the first 'why' level with generic moral statements. Motivations could fit any applicant. No uncomfortable truths are explored.",
+      "score_5": "The second 'why' reveals specific psychological complexity. The writer names uncomfortable feelings and shows genuine self-interrogation. Insights feel lived-in, not generic.",
+      "diagnostic_question": "What uncomfortable truth is the writer circling but not fully naming?"
+    },
+    {
+      "id": "R003",
+      "name": "Specificity and detail",
+      "description": "The essay uses concrete names, objects, and sensory details that create immersion and make the narrator memorable.",
+      "scale": {
+        "min": 1,
+        "max": 5
+      },
+      "score_2": "People and places are unnamed or generic ('my friend,' 'a room'). Abstract imagery lacks concrete anchors. Details feel decorative rather than meaningful.",
+      "score_5": "Specific names, objects, and sensory details ground every scene. At least one object carries deeper meaning. The narrator feels real and specific.",
+      "diagnostic_question": "What single object best carries the essay's meaning?"
+    },
+    {
+      "id": "R004",
+      "name": "Insight over achievement",
+      "description": "The essay prioritizes meaning-making and self-revelation over listing accomplishments or impressing the reader.",
+      "scale": {
+        "min": 1,
+        "max": 5
+      },
+      "score_2": "Résumé narration tone dominates. Achievements are listed with minimal interpretation. The essay tries to impress rather than reveal.",
+      "score_5": "Accomplishments serve as vehicles for insight. The essay reveals who the writer is, not just what they did. Self-awareness and tradeoffs are evident.",
+      "diagnostic_question": "What would a friend learn about the writer that isn't on the activity list?"
+    },
+    {
+      "id": "R005",
+      "name": "Show vs. tell",
+      "description": "Abstract claims are supported by concrete evidence—scenes, objects, or actions that prove the point.",
+      "scale": {
+        "min": 1,
+        "max": 5
+      },
+      "score_2": "Trait claims ('I am resilient') and emotion labels ('I was sad') lack embodiment. Few scenes provide proof. Generalizations never land in the world.",
+      "score_5": "Every abstract claim has a concrete anchor—a scene, object, or action that proves it. The 'left clavicle' detail encapsulates larger ideas. Show dominates.",
+      "diagnostic_question": "If you deleted all abstract sentences, what concrete evidence remains?"
+    },
+    {
+      "id": "R006",
+      "name": "Voice and restraint",
+      "description": "The essay uses clear, forceful language and knows when to stop—avoiding overexplanation, especially in endings.",
+      "scale": {
+        "min": 1,
+        "max": 5
+      },
+      "score_2": "Over-nominalization and adverb crutches slow reading. The ending restates the lesson multiple times. 'This shows that' phrasing is overused.",
+      "score_5": "Strong verbs drive the prose. The ending stops at the resonant edge, leaving meaningful space. Restraint creates power rather than confusion.",
+      "diagnostic_question": "Where is the essay's natural stopping point before it drags?"
+    },
+    {
+      "id": "R007",
+      "name": "Tonal balance",
+      "description": "The essay uses strategic tonal variation to keep readers engaged, avoiding monotone solemnity or defensive humor.",
+      "scale": {
+        "min": 1,
+        "max": 5
+      },
+      "score_2": "Unbroken solemn register or joke density that avoids depth. No rhythm of tension and release. Tonal shifts feel jarring or defensive.",
+      "score_5": "Strategic tonal counterpoint ('the pickle') provides relief without distraction. Rhythm of tension and release keeps readers engaged. Shifts feel purposeful.",
+      "diagnostic_question": "Where does the reader need air, and is the tonal shift purposeful?"
+    },
+    {
+      "id": "R008",
+      "name": "Vulnerability and boundaries",
+      "description": "The essay shows appropriate vulnerability paired with reflection and forward motion, avoiding unresolved crisis or trauma-dumping.",
+      "scale": {
+        "min": 1,
+        "max": 5
+      },
+      "score_2": "Trauma is foregrounded with minimal insight, or tone suggests unresolved despair. Over-sharing without forward motion. Reader is left worried rather than moved.",
+      "score_5": "Vulnerability is paired with reflection and growth. Emotional specificity without melodrama. Boundaries are clear—what's left unsaid but felt. Reader is moved, not concerned.",
+      "diagnostic_question": "Does the essay show growth in understanding, not just pain?"
+    }
+  ]
+}

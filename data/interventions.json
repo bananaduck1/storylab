@@ -1,0 +1,129 @@
+{
+  "version": "0.1.0",
+  "source": {
+    "doc": "Principles.docx",
+    "notes": "Teaching interventions to address common misconceptions in essay writing."
+  },
+  "interventions": [
+    {
+      "id": "I001",
+      "target_misconception": "M001",
+      "type": "question",
+      "name": "Ask for turning point",
+      "description": "Ask: 'What is the moment where something changed? What decision or realization made the next event possible?'",
+      "intended_effect": "Forces writer to identify causal relationships rather than just sequencing events chronologically."
+    },
+    {
+      "id": "I002",
+      "target_misconception": "M001",
+      "type": "constraint",
+      "name": "Force because-chain",
+      "description": "Require the writer to add 'because' between every pair of events. If they can't, the events aren't causally linked.",
+      "intended_effect": "Makes missing causal links visible and forces restructuring to show A → B relationships."
+    },
+    {
+      "id": "I003",
+      "target_misconception": "M001",
+      "type": "cut",
+      "name": "Cut one event test",
+      "description": "Have writer remove one event from the essay. If the story still works, that event isn't necessary.",
+      "intended_effect": "Reveals which events are decorative vs. essential to the causal chain."
+    },
+    {
+      "id": "I004",
+      "target_misconception": "M002",
+      "type": "question",
+      "name": "Second-why ladder",
+      "description": "After the first 'why,' ask 'And why was that important to you specifically?' Continue until reaching psychological specificity.",
+      "intended_effect": "Pushes past generic moral statements into the writer's unique emotional logic and motivations."
+    },
+    {
+      "id": "I005",
+      "target_misconception": "M002",
+      "type": "question",
+      "name": "Name the discomfort",
+      "description": "Ask: 'What feeling are you avoiding naming here? What's the uncomfortable truth you're circling?'",
+      "intended_effect": "Surfaces deeper psychological layers that create originality and authenticity."
+    },
+    {
+      "id": "I006",
+      "target_misconception": "M003",
+      "type": "constraint",
+      "name": "Scene mandate",
+      "description": "Require at least one concrete scene that embodies the theme. No abstract thematic statements without scene-level proof.",
+      "intended_effect": "Forces specificity and prevents generic theme essays disguised as narratives."
+    },
+    {
+      "id": "I007",
+      "target_misconception": "M003",
+      "type": "constraint",
+      "name": "Object anchor",
+      "description": "Identify one specific object that carries the essay's meaning. Every abstract claim must connect to this concrete anchor.",
+      "intended_effect": "Creates a tangible center that prevents the essay from floating in abstraction."
+    },
+    {
+      "id": "I008",
+      "target_misconception": "M004",
+      "type": "question",
+      "name": "Friend-at-3am test",
+      "description": "Ask: 'If a friend called you at 3am, what would they learn about you from this essay that isn't on your résumé?'",
+      "intended_effect": "Shifts focus from impressive achievements to personal revelation and meaning-making."
+    },
+    {
+      "id": "I009",
+      "target_misconception": "M004",
+      "type": "cut",
+      "name": "Meaning-over-metric rewrite",
+      "description": "Remove all numbers, statistics, and impact claims. Rewrite focusing only on what the experience meant to the writer.",
+      "intended_effect": "Eliminates résumé narration tone and forces interpretation over quantification."
+    },
+    {
+      "id": "I010",
+      "target_misconception": "M005",
+      "type": "constraint",
+      "name": "Reflection-first restructuring",
+      "description": "Move all reflection and insight to the beginning. Only include hardship if it serves the reflection, not the other way around.",
+      "intended_effect": "Prioritizes depth of understanding over magnitude of difficulty, avoiding trauma-dumping."
+    },
+    {
+      "id": "I011",
+      "target_misconception": "M006",
+      "type": "cut",
+      "name": "Verb swap pass",
+      "description": "Replace every adverb+verb pair with a single stronger verb. Delete abstract noun clusters in favor of concrete actions.",
+      "intended_effect": "Creates clearer, more forceful prose that reads faster and persuades better."
+    },
+    {
+      "id": "I012",
+      "target_misconception": "M007",
+      "type": "constraint",
+      "name": "Evidence span demand",
+      "description": "For every trait claim ('I am resilient'), require a scene or concrete detail that proves it. No assertions without proof.",
+      "intended_effect": "Forces show-don't-tell by making abstract claims impossible without concrete anchors."
+    },
+    {
+      "id": "I013",
+      "target_misconception": "M008",
+      "type": "cut",
+      "name": "Cut-the-last-paragraph test",
+      "description": "Delete the final paragraph. If the essay still works, the ending was overexplaining. Keep only what's necessary.",
+      "intended_effect": "Creates more powerful endings by stopping at the resonant edge rather than spelling everything out."
+    },
+    {
+      "id": "I014",
+      "target_misconception": "M009",
+      "type": "constraint",
+      "name": "One-pickle constraint",
+      "description": "Add exactly one moment of levity or tonal contrast to interrupt solemnity. Make it purposeful, not defensive.",
+      "intended_effect": "Prevents monotone writing and keeps readers engaged through strategic tonal variation."
+    },
+    {
+      "id": "I015",
+      "target_misconception": "M010",
+      "type": "constraint",
+      "name": "Name-everyone pass",
+      "description": "Replace all generic references ('my friend,' 'the teacher') with specific names. Add at least one sensory detail per scene.",
+      "intended_effect": "Builds immersion and makes the narrator feel real and memorable through concrete specificity."
+    }
+  ]
+}
