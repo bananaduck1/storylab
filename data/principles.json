@@ -194,6 +194,30 @@
         "Where is the essay’s natural stopping point before it drags?",
         "What is most powerful left unsaid?"
       ]
+    },
+    {
+      "id": "P011",
+      "name": "Choose the David, then carve",
+      "thesis": "An essay needs one clear center (or one intersection of two ideas) to create coherence and depth. The writer must (a) CHOOSE: pick one 'David'—one central claim/story or one intersection—and commit to it; (b) CARVE: remove any material that does not serve that chosen core ('murder your darlings'). Students often try to write about multiple things; the remedy is selection before subtraction.",
+      "what_to_look_for": [
+        "One clear central claim or story that everything else serves",
+        "A single intersection of two ideas (if the essay explores a convergence)",
+        "Material that has been removed because it doesn't serve the core",
+        "Coherence: all scenes/ideas connect to the chosen center"
+      ],
+      "common_failure_modes": [
+        "Topic sprawl: essay tries to cover multiple unrelated themes or stories",
+        "Multiple centers: essay feels like several essays stitched together",
+        "Safety-through-breadth: writer includes many topics to avoid choosing",
+        "Shifting thesis: the essay's central claim changes mid-essay",
+        "Frequent topic pivots without clear connection"
+      ],
+      "diagnostic_questions": [
+        "What is this essay about in ONE sentence?",
+        "If you could only keep ONE scene/idea, which must remain for the essay to still be itself?",
+        "What material can be removed without the essay losing its core meaning?",
+        "Is there one 'David' here, or multiple competing centers?"
+      ]
     }
   ]
 }

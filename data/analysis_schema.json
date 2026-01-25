@@ -1,0 +1,201 @@
+{
+  "schema_version": "1.0.0",
+  "description": "Output contract for StoryLab essay analysis. Defines required structure for LLM analysis output.",
+  "allowed_values": {
+    "rubric_ids": ["R001", "R002", "R003", "R004", "R005", "R006", "R007", "R008"],
+    "score_range": {
+      "min": 1,
+      "max": 5
+    },
+    "intervention_types": ["question", "constraint", "cut", "example"],
+    "effort_levels": ["low", "medium", "high"],
+    "confidence_range": {
+      "min": 0.0,
+      "max": 1.0
+    }
+  },
+  "required_structure": {
+    "schema_version": "string (e.g., '1.0.0')",
+    "analysis": {
+      "rubric_scores": "array of exactly 8 objects, one per rubric_id (R001–R008). Each object must include:",
+      "rubric_scores_items": {
+        "rubric_id": "string (must match one of R001-R008)",
+        "score": "integer (1-5)",
+        "evidence_spans": [
+          {
+            "quote": "string (exact quote from essay)",
+            "why_it_matters": "string (brief explanation of why this evidence supports the score)"
+          }
+        ],
+        "notes": "string (short internal note for tutor reference)"
+      },
+      "weakest_dimensions": "array of 1-3 rubric IDs (strings) that the model identifies as the most limiting issues (must be from R001–R008)",
+      "dominant_misconception": {
+        "misconception_id": "string (must match one from misconceptions.json at runtime)",
+        "confidence": "float (0.0-1.0)",
+        "evidence_spans": [
+          {
+            "quote": "string (exact quote from essay)",
+            "why_it_matters": "string (brief explanation of why this signals the misconception)"
+          }
+        ],
+        "why_this_matters": "string (internal note, 1-2 sentences)"
+      },
+      "recommended_intervention": {
+        "intervention_id": "string (must match one from interventions.json at runtime)",
+        "rationale": "string (internal, 1-3 sentences tied to misconception and weakest rubric dimensions)",
+        "effort_level": "string (low/medium/high)",
+        "output_format": "string (what the student must produce, copied from interventions.json)"
+      }
+    },
+    "student_output": {
+      "headline": "string (one sentence, non-judgmental, e.g., 'Your essay has strong scenes but needs clearer connections between events.')",
+      "what_to_fix_first": "string (1-2 sentences, actionable priority)",
+      "brief_explanation": "string (2-4 sentences; may reference metaphor like Michelangelo/David if relevant, but keep short)",
+      "one_assignment": {
+        "title": "string (e.g., 'Force because-chain')",
+        "instructions": "string (bulleted list as single string with \\n for newlines, e.g., '• Step 1\\n• Step 2\\n• Step 3')",
+        "time_estimate_minutes": "integer (e.g., 20)",
+        "success_check": "string (how student knows it worked, 1-2 sentences)"
+      },
+      "optional_next_step": "string (one sentence, optional, can be empty string)"
+    },
+    "meta": {
+      "safety_flags": ["array of strings (e.g., ['possible_unresolved_crisis']), can be empty array"],
+      "needs_human_escalation": "boolean",
+      "privacy_note": "string (e.g., 'Do not store essay text')",
+      "model_limits": "string (explicitly state: 'Do not rewrite the full essay; at most provide micro-snippets (≤2 sentences) only when necessary.')"
+    }
+  },
+  "example_output": {
+    "schema_version": "1.0.0",
+    "analysis": {
+      "rubric_scores": [
+        {
+          "rubric_id": "R001",
+          "score": 2,
+          "evidence_spans": [
+            {
+              "quote": "Then I joined the debate team. Then I started volunteering.",
+              "why_it_matters": "Events are sequenced with 'then' but lack causal links showing why one led to the next."
+            }
+          ],
+          "notes": "Chronological structure without clear turning points or cause-and-effect relationships."
+        },
+        {
+          "rubric_id": "R002",
+          "score": 3,
+          "evidence_spans": [
+            {
+              "quote": "Then I joined the debate team. Then I started volunteering.",
+              "why_it_matters": "Some reflection present but stays at surface level without deeper psychological specificity."
+            }
+          ],
+          "notes": "First 'why' is present but second 'why' is missing."
+        },
+        {
+          "rubric_id": "R003",
+          "score": 4,
+          "evidence_spans": [
+            {
+              "quote": "Then I joined the debate team. Then I started volunteering.",
+              "why_it_matters": "Specific names and places mentioned, though could use more concrete objects."
+            }
+          ],
+          "notes": "Good use of named places and people."
+        },
+        {
+          "rubric_id": "R004",
+          "score": 3,
+          "evidence_spans": [
+            {
+              "quote": "Then I joined the debate team. Then I started volunteering.",
+              "why_it_matters": "Achievements mentioned but interpretation is minimal."
+            }
+          ],
+          "notes": "Some meaning-making present but could go deeper."
+        },
+        {
+          "rubric_id": "R005",
+          "score": 3,
+          "evidence_spans": [
+            {
+              "quote": "Then I joined the debate team. Then I started volunteering.",
+              "why_it_matters": "Some abstract claims present without sufficient scene-level proof."
+            }
+          ],
+          "notes": "Mix of showing and telling."
+        },
+        {
+          "rubric_id": "R006",
+          "score": 4,
+          "evidence_spans": [
+            {
+              "quote": "Then I joined the debate team. Then I started volunteering.",
+              "why_it_matters": "Language is clear and readable, though some adverb use could be tightened."
+            }
+          ],
+          "notes": "Generally strong prose with minor verb/adverb issues."
+        },
+        {
+          "rubric_id": "R007",
+          "score": 3,
+          "evidence_spans": [
+            {
+              "quote": "Then I joined the debate team. Then I started volunteering.",
+              "why_it_matters": "Tone is consistent but could benefit from strategic variation."
+            }
+          ],
+          "notes": "Single-note register throughout."
+        },
+        {
+          "rubric_id": "R008",
+          "score": 4,
+          "evidence_spans": [
+            {
+              "quote": "Then I joined the debate team. Then I started volunteering.",
+              "why_it_matters": "Appropriate boundaries maintained, no concerning disclosures."
+            }
+          ],
+          "notes": "No safety concerns."
+        }
+      ],
+      "weakest_dimensions": ["R001"],
+      "dominant_misconception": {
+        "misconception_id": "M001",
+        "confidence": 0.85,
+        "evidence_spans": [
+          {
+            "quote": "Then I joined the debate team. Then I started volunteering.",
+            "why_it_matters": "Transitions rely on 'then' rather than showing cause-and-effect, signaling A-and-B storytelling misconception."
+          }
+        ],
+        "why_this_matters": "The essay reads as a list of events rather than a story with causal relationships. This prevents depth and coherence."
+      },
+      "recommended_intervention": {
+        "intervention_id": "I002",
+        "rationale": "R001 is weakest (score 2), and M001 (A-and-B storytelling) is clearly present. I002 (Force because-chain) directly addresses the missing causal links.",
+        "effort_level": "medium",
+        "output_format": "Write 3 sentences connecting Event A → Event B using 'because' clauses. If you can't, restructure the events."
+      }
+    },
+    "student_output": {
+      "headline": "Your essay has strong individual scenes but needs clearer connections showing why events led to each other.",
+      "what_to_fix_first": "Add explicit 'because' links between your main events to show cause-and-effect, not just sequence.",
+      "brief_explanation": "Right now your essay reads like a timeline: this happened, then that happened. Great stories show why A led to B. Think of it like carving a statue—you need to choose your 'David' (the core story) and remove everything that doesn't serve it. Start by connecting your events with 'because' clauses.",
+      "one_assignment": {
+        "title": "Force because-chain",
+        "instructions": "• Identify your 3 main events in the essay\n• Write 3 sentences connecting Event A → Event B using 'because' clauses\n• If you can't connect two events with 'because', restructure them",
+        "time_estimate_minutes": 25,
+        "success_check": "You'll know it worked when removing one event would break your story, and each event clearly causes the next."
+      },
+      "optional_next_step": "After connecting events, we can work on deepening the psychological 'why' behind your choices."
+    },
+    "meta": {
+      "safety_flags": [],
+      "needs_human_escalation": false,
+      "privacy_note": "Do not store essay text. Analysis metadata only.",
+      "model_limits": "Cite specific evidence from the essay. Do not rewrite the full essay; at most provide micro-snippets (≤2 sentences) only when necessary. Do not invent facts about the student or their experiences."
+    }
+  }
+}

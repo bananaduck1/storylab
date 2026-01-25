@@ -11,7 +11,10 @@
       "type": "question",
       "name": "Ask for turning point",
       "description": "Ask: 'What is the moment where something changed? What decision or realization made the next event possible?'",
-      "intended_effect": "Forces writer to identify causal relationships rather than just sequencing events chronologically."
+      "intended_effect": "Forces writer to identify causal relationships rather than just sequencing events chronologically.",
+      "when_to_use": "Use when R001 ≤ 2 and events read like A then B without explicit causality.",
+      "effort_level": "low",
+      "output_format": "Write 2-3 sentences identifying the turning point: what decision or realization made the next event possible?"
     },
     {
       "id": "I002",
@@ -19,7 +22,10 @@
       "type": "constraint",
       "name": "Force because-chain",
       "description": "Require the writer to add 'because' between every pair of events. If they can't, the events aren't causally linked.",
-      "intended_effect": "Makes missing causal links visible and forces restructuring to show A → B relationships."
+      "intended_effect": "Makes missing causal links visible and forces restructuring to show A → B relationships.",
+      "when_to_use": "Use when R001 ≤ 2 and transitions rely on 'then' rather than showing cause-and-effect.",
+      "effort_level": "medium",
+      "output_format": "Write 3 sentences connecting Event A → Event B using 'because' clauses. If you can't, restructure the events."
     },
     {
       "id": "I003",
@@ -27,7 +33,10 @@
       "type": "cut",
       "name": "Cut one event test",
       "description": "Have writer remove one event from the essay. If the story still works, that event isn't necessary.",
-      "intended_effect": "Reveals which events are decorative vs. essential to the causal chain."
+      "intended_effect": "Reveals which events are decorative vs. essential to the causal chain.",
+      "when_to_use": "Use when R001 ≤ 3 and the essay has multiple events that feel interchangeable.",
+      "effort_level": "low",
+      "output_format": "Remove one event from your essay. If the story still works, delete it permanently. If it breaks, keep it and explain why it's essential."
     },
     {
       "id": "I004",
@@ -35,7 +44,10 @@
       "type": "question",
       "name": "Second-why ladder",
       "description": "After the first 'why,' ask 'And why was that important to you specifically?' Continue until reaching psychological specificity.",
-      "intended_effect": "Pushes past generic moral statements into the writer's unique emotional logic and motivations."
+      "intended_effect": "Pushes past generic moral statements into the writer's unique emotional logic and motivations.",
+      "when_to_use": "Use when R002 ≤ 2 and reflection stays at generic moral/lesson statements.",
+      "effort_level": "medium",
+      "output_format": "Answer 'why' three times in sequence, each time going deeper. Write: 'I did X because [first why]. And that mattered because [second why]. And that was important to me because [third why—psychological specificity].'"
     },
     {
       "id": "I005",
@@ -43,7 +55,10 @@
       "type": "question",
       "name": "Name the discomfort",
       "description": "Ask: 'What feeling are you avoiding naming here? What's the uncomfortable truth you're circling?'",
-      "intended_effect": "Surfaces deeper psychological layers that create originality and authenticity."
+      "intended_effect": "Surfaces deeper psychological layers that create originality and authenticity.",
+      "when_to_use": "Use when R002 ≤ 2 and motivations could fit any applicant (lack psychological specificity).",
+      "effort_level": "low",
+      "output_format": "Write 1-2 sentences naming the uncomfortable feeling or truth you're avoiding. Be specific, not generic."
     },
     {
       "id": "I006",
@@ -51,7 +66,10 @@
       "type": "constraint",
       "name": "Scene mandate",
       "description": "Require at least one concrete scene that embodies the theme. No abstract thematic statements without scene-level proof.",
-      "intended_effect": "Forces specificity and prevents generic theme essays disguised as narratives."
+      "intended_effect": "Forces specificity and prevents generic theme essays disguised as narratives.",
+      "when_to_use": "Use when R003 ≤ 2 and the essay has abstract thematic framing without concrete scenes.",
+      "effort_level": "high",
+      "output_format": "Write one concrete scene (3-5 sentences) that shows your theme through specific actions, dialogue, or details. No abstract statements allowed in this scene."
     },
     {
       "id": "I007",
@@ -59,7 +77,10 @@
       "type": "constraint",
       "name": "Object anchor",
       "description": "Identify one specific object that carries the essay's meaning. Every abstract claim must connect to this concrete anchor.",
-      "intended_effect": "Creates a tangible center that prevents the essay from floating in abstraction."
+      "intended_effect": "Creates a tangible center that prevents the essay from floating in abstraction.",
+      "when_to_use": "Use when R003 ≤ 2 and the essay lacks concrete anchors (names, objects, places) that ground abstract claims.",
+      "effort_level": "medium",
+      "output_format": "Identify one specific object that carries your essay's meaning (the 'left clavicle'). Write 2 sentences connecting your main abstract claim to this object."
     },
     {
       "id": "I008",
@@ -67,7 +88,10 @@
       "type": "question",
       "name": "Friend-at-3am test",
       "description": "Ask: 'If a friend called you at 3am, what would they learn about you from this essay that isn't on your résumé?'",
-      "intended_effect": "Shifts focus from impressive achievements to personal revelation and meaning-making."
+      "intended_effect": "Shifts focus from impressive achievements to personal revelation and meaning-making.",
+      "when_to_use": "Use when R004 ≤ 2 and the essay reads like résumé narration with achievement claims and minimal meaning-making.",
+      "effort_level": "low",
+      "output_format": "Write 2-3 sentences answering: 'What would a friend learn about you from this essay that isn't on your résumé?' Focus on who you are, not what you did."
     },
     {
       "id": "I009",
@@ -75,7 +99,10 @@
       "type": "cut",
       "name": "Meaning-over-metric rewrite",
       "description": "Remove all numbers, statistics, and impact claims. Rewrite focusing only on what the experience meant to the writer.",
-      "intended_effect": "Eliminates résumé narration tone and forces interpretation over quantification."
+      "intended_effect": "Eliminates résumé narration tone and forces interpretation over quantification.",
+      "when_to_use": "Use when R004 ≤ 2 and the essay includes impact quantification, statistics, or achievement claims without personal stakes.",
+      "effort_level": "medium",
+      "output_format": "Delete all numbers, statistics, and impact claims. Rewrite those sections (2-3 sentences each) focusing only on what the experience meant to you personally."
     },
     {
       "id": "I010",
@@ -83,7 +110,10 @@
       "type": "constraint",
       "name": "Reflection-first restructuring",
       "description": "Move all reflection and insight to the beginning. Only include hardship if it serves the reflection, not the other way around.",
-      "intended_effect": "Prioritizes depth of understanding over magnitude of difficulty, avoiding trauma-dumping."
+      "intended_effect": "Prioritizes depth of understanding over magnitude of difficulty, avoiding trauma-dumping.",
+      "when_to_use": "Use when R008 ≤ 2 and the essay foregrounds trauma/hardship with minimal insight, or tone suggests unresolved crisis/despair.",
+      "effort_level": "high",
+      "output_format": "Restructure: Write 2-3 sentences of reflection/insight first. Then include hardship only if it serves the reflection. End with forward motion (what you learned, how you grew). Total: 4-6 sentences max."
     },
     {
       "id": "I011",
@@ -91,7 +121,10 @@
       "type": "cut",
       "name": "Verb swap pass",
       "description": "Replace every adverb+verb pair with a single stronger verb. Delete abstract noun clusters in favor of concrete actions.",
-      "intended_effect": "Creates clearer, more forceful prose that reads faster and persuades better."
+      "intended_effect": "Creates clearer, more forceful prose that reads faster and persuades better.",
+      "when_to_use": "Use when R006 ≤ 2 and the essay has abstract noun clusters, frequent adverbs as crutches, or Latinate diction that slows reading.",
+      "effort_level": "medium",
+      "output_format": "Do two passes: (a) Replace every adverb+verb pair (e.g., 'quickly ran' → 'sprinted') with one stronger verb. (b) Delete abstract noun clusters (e.g., 'the proliferation of...') and replace with concrete actions. Rewrite 3-5 sentences."
     },
     {
       "id": "I012",
@@ -99,7 +132,10 @@
       "type": "constraint",
       "name": "Evidence span demand",
       "description": "For every trait claim ('I am resilient'), require a scene or concrete detail that proves it. No assertions without proof.",
-      "intended_effect": "Forces show-don't-tell by making abstract claims impossible without concrete anchors."
+      "intended_effect": "Forces show-don't-tell by making abstract claims impossible without concrete anchors.",
+      "when_to_use": "Use when R005 ≤ 2 and the essay has trait claims or emotion labels without embodiment or scene-level proof.",
+      "effort_level": "medium",
+      "output_format": "For each trait claim in your essay, write one sentence with concrete evidence (a scene, object, or action) that proves it. No abstract assertions allowed without proof."
     },
     {
       "id": "I013",
@@ -107,7 +143,10 @@
       "type": "cut",
       "name": "Cut-the-last-paragraph test",
       "description": "Delete the final paragraph. If the essay still works, the ending was overexplaining. Keep only what's necessary.",
-      "intended_effect": "Creates more powerful endings by stopping at the resonant edge rather than spelling everything out."
+      "intended_effect": "Creates more powerful endings by stopping at the resonant edge rather than spelling everything out.",
+      "when_to_use": "Use when R006 ≤ 2 and the ending has lesson restatements, recap paragraphs, or 'this shows that' phrasing.",
+      "effort_level": "low",
+      "output_format": "Delete the last paragraph. If the essay still works, keep it deleted. If it breaks, rewrite the ending in 2 lines max, stopping at the resonant edge."
     },
     {
       "id": "I014",
@@ -115,7 +154,10 @@
       "type": "constraint",
       "name": "One-pickle constraint",
       "description": "Add exactly one moment of levity or tonal contrast to interrupt solemnity. Make it purposeful, not defensive.",
-      "intended_effect": "Prevents monotone writing and keeps readers engaged through strategic tonal variation."
+      "intended_effect": "Prevents monotone writing and keeps readers engaged through strategic tonal variation.",
+      "when_to_use": "Use when R007 ≤ 2 and the essay has unbroken solemn register or lacks rhythm of tension/release.",
+      "effort_level": "medium",
+      "output_format": "Add exactly one moment of levity or tonal contrast (1-2 sentences) that interrupts solemnity. Make it purposeful—it should deepen rather than distract. Mark where it goes in your essay."
     },
     {
       "id": "I015",
@@ -123,7 +165,32 @@
       "type": "constraint",
       "name": "Name-everyone pass",
       "description": "Replace all generic references ('my friend,' 'the teacher') with specific names. Add at least one sensory detail per scene.",
-      "intended_effect": "Builds immersion and makes the narrator feel real and memorable through concrete specificity."
+      "intended_effect": "Builds immersion and makes the narrator feel real and memorable through concrete specificity.",
+      "when_to_use": "Use when R003 ≤ 2 and the essay has unnamed people/places, generic settings, or abstract imagery without concrete anchors.",
+      "effort_level": "medium",
+      "output_format": "List 5 proper nouns (names of people/places) + 1 meaning-carrying object (the 'left clavicle' that embodies your essay's meaning) + 2 sensory details to insert. Then rewrite 2-3 sentences incorporating these specifics."
+    },
+    {
+      "id": "I016",
+      "target_misconception": "M011",
+      "type": "question",
+      "name": "One-sentence David",
+      "description": "Force the writer to identify the essay's single core in one sentence. If they can't, the essay lacks a clear center.",
+      "intended_effect": "Forces selection of one central claim/story or one intersection before any carving can happen.",
+      "when_to_use": "Use when the essay has multiple unrelated anecdotes, shifting thesis, or feels like several essays stitched together.",
+      "effort_level": "low",
+      "output_format": "Write ONE sentence that captures what this essay is about. If you can't, list all the topics/ideas in your essay, then choose ONE (or ONE intersection of two) to be your 'David.' Write: 'This essay is about [one sentence].'"
+    },
+    {
+      "id": "I017",
+      "target_misconception": "M011",
+      "type": "cut",
+      "name": "David test / murder-your-darlings pass",
+      "description": "For every scene/paragraph/idea, ask: 'Does this serve my chosen David?' If not, remove it. Be ruthless.",
+      "intended_effect": "Eliminates material that doesn't serve the chosen core, creating coherence and depth through subtraction.",
+      "when_to_use": "Use after I016 (or when the essay has a chosen center but still includes material that doesn't serve it).",
+      "effort_level": "high",
+      "output_format": "List every scene/paragraph/idea in your essay. For each, ask: 'Does this serve my chosen David?' Mark which ones don't. Then delete all marked items. If you can't delete something, write 1 sentence explaining why it's essential to your core."
     }
   ]
 }

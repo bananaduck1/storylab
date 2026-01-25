@@ -124,6 +124,20 @@
         "Abstract imagery with no concrete anchor"
       ],
       "best_interventions": ["Name-everyone pass", "5-sense audit", "One-object-to-carry-meaning"]
+    },
+    {
+      "id": "M011",
+      "label": "Comprehensive = impressive",
+      "belief": "I should include multiple topics/identities/achievements to be comprehensive or impressive.",
+      "reality": "An essay needs a single center (or a single intersection) to create coherence and depth; without choosing, there is no 'David' to carve.",
+      "signals_in_text": [
+        "Multiple unrelated anecdotes that don't connect",
+        "Shifting thesis or central claim mid-essay",
+        "Essay feels like several essays stitched together",
+        "Frequent topic pivots without clear connection",
+        "Safety-through-breadth: many topics included to avoid choosing"
+      ],
+      "best_interventions": ["One-sentence David", "One-core selection", "David test / murder-your-darlings pass", "Keep-one-scene rule"]
     }
   ]
 }
