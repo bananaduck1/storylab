@@ -3,11 +3,14 @@ import Image from "next/image";
 
 const EMAIL_SAM = "mailto:storylab.ivy@gmail.com";
 
+const aiEditorEnabled = process.env.AI_EDITOR_ENABLED === "true";
+
 const navLinks: Array<{ href: string; label: string }> = [
   { href: "/services", label: "Programs" },
   { href: "/about", label: "Our Approach" },
   { href: "/team", label: "Our Tutors" },
   { href: "/results", label: "Results" },
+  ...(aiEditorEnabled ? [{ href: "/ai-editor", label: "AI Editor" }] : []),
   { href: "/faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },
 ];
@@ -66,4 +69,3 @@ export function Navbar() {
     </header>
   );
 }
-
