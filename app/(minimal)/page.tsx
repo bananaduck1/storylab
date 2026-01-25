@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Home",
@@ -9,10 +10,15 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <div className="bg-transparent">
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-center px-6 py-24 text-center sm:py-28">
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
-          StoryLab
-        </p>
+      <div className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col items-center justify-center px-6 py-16 text-center sm:py-20">
+        <Image
+          src="/storylab-logo3.png"
+          alt="StoryLab"
+          width={220}
+          height={55}
+          className="h-auto w-44 sm:w-52"
+          priority
+        />
         <h1 className="mt-5 text-4xl font-semibold leading-[1.1] tracking-tight text-zinc-950 sm:text-5xl">
           Choose your path.
         </h1>

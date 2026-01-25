@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 export default function AiEditorPage() {
-  const aiEditorEnabled = process.env.AI_EDITOR_ENABLED === "true";
+  const aiEditorEnabled = process.env.AI_EDITOR_ENABLED !== "false";
 
   if (!aiEditorEnabled) {
     return (
