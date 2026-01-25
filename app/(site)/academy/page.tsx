@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import Image from "next/image";
 
 export const metadata: Metadata = {
-  title: "Home",
+  title: "Academy",
   description:
     "Elite humanities training and college applications support—reading, writing, and thinking skills taught by trained humanities graduates.",
 };
 
-export default function Home() {
+export default function AcademyPage() {
   return (
     <div className="bg-transparent">
       <div className="mx-auto w-full max-w-6xl px-6 bg-paper/90 backdrop-blur-[1px]">

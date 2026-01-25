@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Literata } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "../components/Navbar";
-import { Footer } from "../components/Footer";
 
 const literata = Literata({
   variable: "--font-literata",
@@ -46,19 +44,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full scroll-smooth">
       <body className={`${literata.variable} min-h-dvh text-zinc-900 antialiased`}>
-        <a
-          href="#content"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-zinc-900 focus:shadow"
-        >
-          Skip to content
-        </a>
-        <div className="flex min-h-dvh flex-col">
-          <Navbar />
-          <main id="content" className="flex-1">
-            {children}
-          </main>
-          <Footer />
-        </div>
+        {children}
       </body>
     </html>
   );
