@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Navbar } from "../components/Navbar";
-import { Footer } from "../components/Footer";
 
 const literata = localFont({
   src: [
@@ -57,13 +55,7 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <div className="flex min-h-dvh flex-col">
-          <Navbar />
-          <main id="content" className="flex-1">
-            {children}
-          </main>
-          <Footer />
-        </div>
+        {children}
       </body>
     </html>
   );
