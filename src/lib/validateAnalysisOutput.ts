@@ -111,16 +111,6 @@ export function validateAnalysisOutput(
         errors.push(`Missing rubric_id "${id}" in analysis.rubric_scores`);
       }
     });
-
-    // Check for at least one score >= 4 (relative strength)
-    const scoresWithStrength = rubricScores.filter((score) => {
-      const s = score as Record<string, unknown>;
-      const scoreValue = s.score;
-      return typeof scoreValue === "number" && scoreValue >= 4;
-    });
-    if (scoresWithStrength.length < 1) {
-      errors.push("At least one rubric dimension must be scored 4+ (relative strength).");
-    }
   }
 
   // Validate weakest_dimensions

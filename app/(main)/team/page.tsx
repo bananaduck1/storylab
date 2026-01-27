@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { tutors, founders, type TeamMember } from "../../lib/team";
+import { tutors, founders, type TeamMember } from "../../../lib/team";
 
 export const metadata: Metadata = {
   title: "Our Team",

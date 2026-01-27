@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
-import { Literata } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
-import { Navbar } from "../components/Navbar";
-import { Footer } from "../components/Footer";
 
-const literata = Literata({
+const literata = localFont({
+  src: [
+    { path: "../public/Literata/Literata-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../public/Literata/Literata-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../public/Literata/Literata-SemiBold.woff2", weight: "600", style: "normal" },
+    { path: "../public/Literata/Literata-Bold.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-literata",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -52,13 +55,7 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <div className="flex min-h-dvh flex-col">
-          <Navbar />
-          <main id="content" className="flex-1">
-            {children}
-          </main>
-          <Footer />
-        </div>
+        {children}
       </body>
     </html>
   );

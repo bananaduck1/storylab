@@ -1,5 +1,92 @@
 import { analyzeEssay } from "@/src/lib/analyzeEssay";
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
+import mammoth from "mammoth";
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
+const SUPPORTED_TYPES: Record<string, string> = {
+  "text/plain": "txt",
+  "application/pdf": "pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+};
+
+function extFromName(name: string): string | null {
+  const m = name.match(/\.(txt|pdf|docx)$/i);
+  return m ? m[1].toLowerCase() : null;
+}
+
+async function extractText(buf: Buffer, fileType: string): Promise<string> {
+  switch (fileType) {
+    case "txt":
+      return buf.toString("utf-8");
+    case "pdf": {
+      // Dynamic import to avoid pdf-parse loading test fixtures at build time
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const pdfParse = require("pdf-parse");
+      const pdf = await pdfParse(buf);
+      return pdf.text;
+    }
+    case "docx": {
+      const result = await mammoth.extractRawText({ buffer: buf });
+      return result.value;
+    }
+    default:
+      throw new Error("Unsupported file type");
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const formData = await req.formData();
+    const prompt = formData.get("prompt");
+    const file = formData.get("file");
+
+    if (!file || !(file instanceof File)) {
+      return NextResponse.json({ error: "Missing file" }, { status: 400 });
+    }
+
+    // Size check
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: "File exceeds 10 MB limit" }, { status: 413 });
+    }
+
+    // Determine file type
+    const mimeType = SUPPORTED_TYPES[file.type] ?? null;
+    const extType = extFromName(file.name);
+    const fileType = mimeType ?? extType;
+
+    if (!fileType) {
+      return NextResponse.json(
+        { error: "Unsupported file type. Accepted: .txt, .pdf, .docx" },
+        { status: 415 },
+      );
+    }
+
+    // Extract text
+    const arrayBuf = await file.arrayBuffer();
+    const buf = Buffer.from(arrayBuf);
+    let text: string;
+    try {
+      text = await extractText(buf, fileType);
+    } catch {
+      return NextResponse.json({ error: "Could not extract text from file" }, { status: 422 });
+    }
+
+    text = text.trim().replace(/\s{3,}/g, "  ");
+    if (!text || text.length < 10) {
+      return NextResponse.json({ error: "Extracted text is empty or too short" }, { status: 422 });
+    }
+
+    // Combine optional prompt context with extracted essay text
+    const promptText = typeof prompt === "string" ? prompt.trim() : "";
+    const essayInput = promptText ? promptText + "\n\n" + text : text;
+    const result = await analyzeEssay(essayInput);
+    return NextResponse.json(result);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
+  }
+}
 
 export async function GET() {
   const essay = `While I anticipated my experience at Calarts to be different, I was shocked my first day of classes. If my private school scenery represented a monotone palette (partly because we have uniforms), the students at Calarts characterized a rainbow. From a theater girl who would only wear hot pink and giant accessories to a tall visual arts person dressed in a variety of dark colors, everyone was so stained with their own distinctive color. In stark contrast to my private school teachers wearing a checkered pattern shirt stiffened with a tie and khaki pants, my drawing class teacher walked in wearing a hot pink, leopard print blouse with tight red shorts and red high heels, proudly talking about his art which was about a pregnant lady eating babies. 
