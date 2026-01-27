@@ -2,7 +2,8 @@
 
 import { useState, useRef, useCallback, type FormEvent, type DragEvent } from "react";
 
-const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+/* ── constants ── */
+const MAX_SIZE = 10 * 1024 * 1024;
 const ACCEPT = ".txt,.pdf,.docx";
 const ACCEPTED_TYPES = new Set([
   "text/plain",
@@ -10,15 +11,208 @@ const ACCEPTED_TYPES = new Set([
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ]);
 const ACCEPTED_EXTS = /\.(txt|pdf|docx)$/i;
-
-function isAcceptedFile(file: File) {
-  return ACCEPTED_TYPES.has(file.type) || ACCEPTED_EXTS.test(file.name);
+function isAcceptedFile(f: File) {
+  return ACCEPTED_TYPES.has(f.type) || ACCEPTED_EXTS.test(f.name);
 }
 
+const RUBRIC_LABELS: Record<string, string> = {
+  R001: "Causal structure",
+  R002: "Psychological depth",
+  R003: "Specificity & detail",
+  R004: "Insight over achievement",
+  R005: "Show vs. tell",
+  R006: "Voice & restraint",
+  R007: "Tonal balance",
+  R008: "Vulnerability & boundaries",
+};
+
+/* ── types (mirrors AnalysisOutput) ── */
+type EvidenceSpan = { quote: string; why_it_matters: string };
+type RubricScore = {
+  rubric_id: string;
+  score: number;
+  evidence_spans: EvidenceSpan[];
+  notes: string;
+};
+type AnalysisResult = {
+  analysis: {
+    rubric_scores: RubricScore[];
+    weakest_dimensions: string[];
+    dominant_misconception: {
+      misconception_id: string;
+      confidence: number;
+      evidence_spans: EvidenceSpan[];
+      why_this_matters: string;
+    };
+    recommended_intervention: {
+      intervention_id: string;
+      rationale: string;
+      effort_level: string;
+      output_format: string;
+    };
+  };
+  student_output: {
+    headline: string;
+    what_to_fix_first: string;
+    brief_explanation: string;
+    one_assignment: {
+      title: string;
+      instructions: string;
+      time_estimate_minutes: number;
+      success_check: string;
+    };
+    optional_next_step: string;
+  };
+};
+
+/* ── score helpers ── */
+function scoreColor(s: number) {
+  if (s <= 2) return "bg-red-400";
+  if (s === 3) return "bg-amber-400";
+  return "bg-emerald-500";
+}
+function scoreLabel(s: number) {
+  if (s <= 2) return "Needs work";
+  if (s === 3) return "Developing";
+  if (s === 4) return "Strong";
+  return "Excellent";
+}
+
+/* ── formatted result ── */
+function AnalysisReport({ data }: { data: AnalysisResult }) {
+  const { analysis, student_output: so } = data;
+
+  return (
+    <div className="mt-10 space-y-10">
+      {/* Headline */}
+      <section>
+        <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
+          {so.headline}
+        </h2>
+        <p className="mt-3 text-base leading-relaxed text-zinc-700">
+          {so.brief_explanation}
+        </p>
+      </section>
+
+      {/* What to fix first */}
+      <section className="rounded-2xl border border-zinc-200 bg-white p-6">
+        <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+          What to fix first
+        </h3>
+        <p className="mt-2 text-sm leading-relaxed text-zinc-800">
+          {so.what_to_fix_first}
+        </p>
+      </section>
+
+      {/* Rubric scores */}
+      <section>
+        <h3 className="text-lg font-semibold tracking-tight text-zinc-950">
+          Rubric scores
+        </h3>
+        <div className="mt-4 space-y-4">
+          {analysis.rubric_scores.map((rs) => (
+            <div key={rs.rubric_id}>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-zinc-900">
+                  {RUBRIC_LABELS[rs.rubric_id] ?? rs.rubric_id}
+                </span>
+                <span className="text-xs text-zinc-500">
+                  {rs.score}/5 — {scoreLabel(rs.score)}
+                </span>
+              </div>
+              {/* bar */}
+              <div className="mt-1.5 h-2 w-full rounded-full bg-zinc-100">
+                <div
+                  className={`h-2 rounded-full transition-all ${scoreColor(rs.score)}`}
+                  style={{ width: `${(rs.score / 5) * 100}%` }}
+                />
+              </div>
+              {rs.notes && (
+                <p className="mt-1.5 text-xs leading-relaxed text-zinc-500">
+                  {rs.notes}
+                </p>
+              )}
+              {rs.evidence_spans.length > 0 && (
+                <div className="mt-2 space-y-2">
+                  {rs.evidence_spans.map((ev, i) => (
+                    <blockquote
+                      key={i}
+                      className="border-l-2 border-zinc-200 pl-3 text-xs leading-relaxed"
+                    >
+                      <p className="italic text-zinc-700">&ldquo;{ev.quote}&rdquo;</p>
+                      <p className="mt-0.5 text-zinc-500">{ev.why_it_matters}</p>
+                    </blockquote>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Assignment */}
+      <section className="rounded-2xl border border-zinc-200 bg-zinc-50 p-6">
+        <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+          Your assignment
+        </h3>
+        <p className="mt-2 text-base font-semibold text-zinc-950">
+          {so.one_assignment.title}
+        </p>
+        <div className="mt-3 space-y-2 text-sm leading-relaxed text-zinc-700">
+          {so.one_assignment.instructions.split("\n").map((line, i) => (
+            <p key={i}>{line}</p>
+          ))}
+        </div>
+        <div className="mt-4 flex flex-wrap gap-4 text-xs text-zinc-500">
+          <span>~{so.one_assignment.time_estimate_minutes} min</span>
+          <span className="text-zinc-300">|</span>
+          <span>{so.one_assignment.success_check}</span>
+        </div>
+      </section>
+
+      {/* Optional next step */}
+      {so.optional_next_step && (
+        <section>
+          <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+            Optional next step
+          </h3>
+          <p className="mt-2 text-sm leading-relaxed text-zinc-700">
+            {so.optional_next_step}
+          </p>
+        </section>
+      )}
+
+      {/* Key insight (misconception) */}
+      <section className="rounded-2xl border border-zinc-200 bg-white p-6">
+        <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+          Key insight
+        </h3>
+        <p className="mt-2 text-sm leading-relaxed text-zinc-800">
+          {analysis.dominant_misconception.why_this_matters}
+        </p>
+        {analysis.dominant_misconception.evidence_spans.length > 0 && (
+          <div className="mt-3 space-y-2">
+            {analysis.dominant_misconception.evidence_spans.map((ev, i) => (
+              <blockquote
+                key={i}
+                className="border-l-2 border-zinc-200 pl-3 text-xs leading-relaxed"
+              >
+                <p className="italic text-zinc-700">&ldquo;{ev.quote}&rdquo;</p>
+                <p className="mt-0.5 text-zinc-500">{ev.why_it_matters}</p>
+              </blockquote>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+/* ── page ── */
 export default function AiEditorPage() {
   const [prompt, setPrompt] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [result, setResult] = useState<string | null>(null);
+  const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -41,15 +235,12 @@ export default function AiEditorPage() {
   function handleDrop(e: DragEvent) {
     e.preventDefault();
     setDragging(false);
-    const f = e.dataTransfer.files[0];
-    handleFile(f ?? null);
+    handleFile(e.dataTransfer.files[0] ?? null);
   }
-
   function handleDragOver(e: DragEvent) {
     e.preventDefault();
     setDragging(true);
   }
-
   function handleDragLeave(e: DragEvent) {
     e.preventDefault();
     setDragging(false);
@@ -66,9 +257,7 @@ export default function AiEditorPage() {
     }
 
     const body = new FormData();
-    if (prompt.trim()) {
-      body.append("prompt", prompt.trim());
-    }
+    if (prompt.trim()) body.append("prompt", prompt.trim());
     body.append("file", file);
 
     setLoading(true);
@@ -78,7 +267,7 @@ export default function AiEditorPage() {
       if (!res.ok) {
         setError(json.error ?? `Server error ${res.status}`);
       } else {
-        setResult(JSON.stringify(json, null, 2));
+        setResult(json as AnalysisResult);
       }
     } catch {
       setError("Network error — could not reach server.");
@@ -198,11 +387,7 @@ export default function AiEditorPage() {
         </div>
       )}
 
-      {result && (
-        <pre className="mt-6 max-h-[60vh] overflow-auto rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-xs leading-relaxed text-zinc-800">
-          {result}
-        </pre>
-      )}
+      {result && <AnalysisReport data={result} />}
     </div>
   );
 }
