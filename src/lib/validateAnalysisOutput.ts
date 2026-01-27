@@ -261,8 +261,11 @@ export function validateAnalysisOutput(
     "headline",
     "what_to_fix_first",
     "brief_explanation",
+    "concept_taught",
     "one_assignment",
     "optional_next_step",
+    "revision_paths",
+    "questions_for_student",
   ];
   requiredStudentFields.forEach((field) => {
     if (!(field in studentOutput)) {

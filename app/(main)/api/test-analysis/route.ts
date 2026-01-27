@@ -40,6 +40,10 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const prompt = formData.get("prompt");
     const file = formData.get("file");
+    const tierParam = formData.get("tier");
+    const tier = (typeof tierParam === "string" && ["free", "plus", "pro"].includes(tierParam))
+      ? tierParam as "free" | "plus" | "pro"
+      : "free";
 
     if (!file || !(file instanceof File)) {
       return NextResponse.json({ error: "Missing file" }, { status: 400 });
@@ -80,7 +84,7 @@ export async function POST(req: NextRequest) {
     // Combine optional prompt context with extracted essay text
     const promptText = typeof prompt === "string" ? prompt.trim() : "";
     const essayInput = promptText ? promptText + "\n\n" + text : text;
-    const result = await analyzeEssay(essayInput);
+    const result = await analyzeEssay(essayInput, tier);
     return NextResponse.json(result);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";

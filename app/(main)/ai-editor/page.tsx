@@ -26,6 +26,14 @@ const RUBRIC_LABELS: Record<string, string> = {
   R008: "Vulnerability & boundaries",
 };
 
+const TIER_OPTIONS = [
+  { value: "free", label: "Free", desc: "Diagnosis only" },
+  { value: "plus", label: "Plus", desc: "Coaching + revision paths" },
+  { value: "pro", label: "Pro", desc: "Full strategic coaching" },
+] as const;
+
+type Tier = "free" | "plus" | "pro";
+
 /* ── types (mirrors AnalysisOutput) ── */
 type EvidenceSpan = { quote: string; why_it_matters: string };
 type RubricScore = {
@@ -34,6 +42,7 @@ type RubricScore = {
   evidence_spans: EvidenceSpan[];
   notes: string;
 };
+type RevisionPath = { label: string; description: string };
 type AnalysisResult = {
   analysis: {
     rubric_scores: RubricScore[];
@@ -55,6 +64,7 @@ type AnalysisResult = {
     headline: string;
     what_to_fix_first: string;
     brief_explanation: string;
+    concept_taught: string;
     one_assignment: {
       title: string;
       instructions: string;
@@ -62,6 +72,8 @@ type AnalysisResult = {
       success_check: string;
     };
     optional_next_step: string;
+    revision_paths: RevisionPath[];
+    questions_for_student: string[];
   };
 };
 
@@ -94,6 +106,18 @@ function AnalysisReport({ data }: { data: AnalysisResult }) {
         </p>
       </section>
 
+      {/* Concept taught */}
+      {so.concept_taught && (
+        <section className="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-6">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
+            Concept to learn
+          </h3>
+          <p className="mt-2 text-sm leading-relaxed text-zinc-800">
+            {so.concept_taught}
+          </p>
+        </section>
+      )}
+
       {/* What to fix first */}
       <section className="rounded-2xl border border-zinc-200 bg-white p-6">
         <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
@@ -103,6 +127,34 @@ function AnalysisReport({ data }: { data: AnalysisResult }) {
           {so.what_to_fix_first}
         </p>
       </section>
+
+      {/* Revision paths (Plus/Pro only) */}
+      {so.revision_paths && so.revision_paths.length > 0 && (
+        <section>
+          <h3 className="text-lg font-semibold tracking-tight text-zinc-950">
+            Two ways to revise
+          </h3>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            {so.revision_paths.map((path, i) => (
+              <div
+                key={i}
+                className={`rounded-2xl border p-5 ${
+                  i === 0
+                    ? "border-zinc-200 bg-white"
+                    : "border-amber-200 bg-amber-50/50"
+                }`}
+              >
+                <h4 className="text-sm font-semibold text-zinc-900">
+                  {path.label}
+                </h4>
+                <p className="mt-2 text-sm leading-relaxed text-zinc-700">
+                  {path.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Rubric scores */}
       <section>
@@ -170,6 +222,22 @@ function AnalysisReport({ data }: { data: AnalysisResult }) {
         </div>
       </section>
 
+      {/* Questions for student (Plus/Pro only) */}
+      {so.questions_for_student && so.questions_for_student.length > 0 && (
+        <section className="rounded-2xl border border-zinc-200 bg-white p-6">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+            Questions to think about
+          </h3>
+          <ul className="mt-3 space-y-2">
+            {so.questions_for_student.map((q, i) => (
+              <li key={i} className="text-sm leading-relaxed text-zinc-800">
+                {q}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* Optional next step */}
       {so.optional_next_step && (
         <section>
@@ -212,6 +280,7 @@ function AnalysisReport({ data }: { data: AnalysisResult }) {
 export default function AiEditorPage() {
   const [prompt, setPrompt] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [tier, setTier] = useState<Tier>("free");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -259,6 +328,7 @@ export default function AiEditorPage() {
     const body = new FormData();
     if (prompt.trim()) body.append("prompt", prompt.trim());
     body.append("file", file);
+    body.append("tier", tier);
 
     setLoading(true);
     try {
@@ -355,6 +425,34 @@ export default function AiEditorPage() {
               Remove file
             </button>
           )}
+        </div>
+
+        {/* Tier selector */}
+        <div>
+          <label className="block text-sm font-medium text-zinc-900 mb-2">
+            Coaching level
+          </label>
+          <div className="flex gap-3">
+            {TIER_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setTier(opt.value)}
+                className={`flex-1 rounded-xl border-2 px-4 py-3 text-left transition-colors ${
+                  tier === opt.value
+                    ? "border-zinc-900 bg-zinc-900 text-white"
+                    : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400"
+                }`}
+              >
+                <span className="block text-sm font-semibold">{opt.label}</span>
+                <span className={`block text-xs mt-0.5 ${
+                  tier === opt.value ? "text-zinc-300" : "text-zinc-500"
+                }`}>
+                  {opt.desc}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
         <div>

@@ -3,14 +3,14 @@ import { buildAnalysisPrompt } from "./buildAnalysisPrompt";
 import { getOpenAIClient, DEFAULT_ANALYSIS_MODEL } from "./openaiClient";
 import { validateAnalysisOutput } from "./validateAnalysisOutput";
 import { truncateForLogs } from "./redact";
-import type { AnalysisOutput } from "./types";
+import type { AnalysisOutput, CoachingTier } from "./types";
 
-export async function analyzeEssay(essayText: string): Promise<AnalysisOutput> {
+export async function analyzeEssay(essayText: string, tier: CoachingTier = "free"): Promise<AnalysisOutput> {
   // Load data files
   const data = await loadStoryLabData();
 
   // Build prompts
-  const { system, user } = buildAnalysisPrompt(essayText, data);
+  const { system, user } = buildAnalysisPrompt(essayText, data, tier);
 
   // Debug: confirm prompt contents
   const hasPreserveFirstScoring = system.includes("PRESERVE-FIRST SCORING (MANDATORY)");
@@ -66,8 +66,11 @@ export async function analyzeEssay(essayText: string): Promise<AnalysisOutput> {
         "headline",
         "what_to_fix_first",
         "brief_explanation",
+        "concept_taught",
         "one_assignment",
         "optional_next_step",
+        "revision_paths",
+        "questions_for_student",
       ];
       const studentOutputObj = studentOutput as Record<string, unknown>;
       const unknownKeys = Object.keys(studentOutputObj).filter(

@@ -121,6 +121,13 @@ export type OneAssignment = {
   success_check: string;
 };
 
+export type CoachingTier = "free" | "plus" | "pro";
+
+export type RevisionPath = {
+  label: string;
+  description: string;
+};
+
 export type StudentOutput = {
   headline: string;
   what_to_fix_first: string;
@@ -128,6 +135,9 @@ export type StudentOutput = {
   no_ghostwriting_note: string;
   one_assignment: OneAssignment;
   optional_next_step: string;
+  concept_taught: string;
+  revision_paths: RevisionPath[];
+  questions_for_student: string[];
 };
 
 export type Meta = {
