@@ -16,6 +16,7 @@ export function validateAnalysisOutput(
   if (typeof o.schema_version !== "string") {
     errors.push("schema_version must be a string");
   }
+  // reader_reaction is optional but accepted (3-step pipeline output)
   if (!o.analysis || typeof o.analysis !== "object") {
     errors.push("analysis must be an object");
   }

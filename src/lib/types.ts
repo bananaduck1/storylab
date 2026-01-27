@@ -154,6 +154,22 @@ export type AnalysisOutput = {
   meta: Meta;
 };
 
+// ── Pro chat types ──
+
+export type ProChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+export type ProChatResponse = {
+  mode: "chat";
+  coach_message_markdown: string;
+  questions: string[];
+  suggested_next_actions: string[];
+  internal_rubric: Analysis;
+  meta: Meta;
+};
+
 export type StoryLabData = {
   rubric: RubricFile;
   misconceptions: MisconceptionsFile;

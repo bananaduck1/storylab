@@ -12,10 +12,6 @@ export async function analyzeEssay(essayText: string, tier: CoachingTier = "free
   // Build prompts
   const { system, user } = buildAnalysisPrompt(essayText, data, tier);
 
-  // Debug: confirm prompt contents
-  const hasPreserveFirstScoring = system.includes("PRESERVE-FIRST SCORING (MANDATORY)");
-  console.log("Prompt contains PRESERVE-FIRST SCORING (MANDATORY):", hasPreserveFirstScoring);
-
   // Call OpenAI
   const client = await getOpenAIClient();
   const response = await client.chat.completions.create({
@@ -24,7 +20,7 @@ export async function analyzeEssay(essayText: string, tier: CoachingTier = "free
       { role: "system", content: system },
       { role: "user", content: user },
     ],
-    temperature: 0.2,
+    temperature: 0.4,
     response_format: { type: "json_object" },
   });
 
@@ -34,19 +30,16 @@ export async function analyzeEssay(essayText: string, tier: CoachingTier = "free
     throw new Error("OpenAI response has no content");
   }
 
-  // Parse JSON (strip leading/trailing whitespace)
+  // Parse JSON
   let parsed: unknown;
   try {
     const trimmed = content.trim();
-    
-    // Check for concatenated JSON objects
     if (trimmed.includes("}{")) {
       throw new Error(
         "Model returned multiple JSON objects; expected exactly one.\n\nResponse (truncated):\n" +
           truncateForLogs(content)
       );
     }
-    
     parsed = JSON.parse(trimmed);
   } catch (error) {
     if (error instanceof Error && error.message.includes("Model returned multiple JSON objects")) {
@@ -57,7 +50,7 @@ export async function analyzeEssay(essayText: string, tier: CoachingTier = "free
       `Failed to parse OpenAI response as JSON: ${errorMessage}\n\nResponse (truncated):\n${truncateForLogs(content)}`
     );
   }
-  
+
   // Check for unknown keys in student_output
   if (parsed && typeof parsed === "object" && "student_output" in parsed) {
     const studentOutput = (parsed as Record<string, unknown>).student_output;
