@@ -30,6 +30,23 @@ CRITICAL OUTPUT RULES:
 - Do not include student_output.no_ghostwriting_note (this key is forbidden).
 - Any deviation from the schema is an error
 
+MEANING-MAKING MODE CLASSIFICATION (MANDATORY — DO THIS FIRST):
+Before scoring ANY rubric dimension, you MUST classify the essay's primary meaning-making mode(s). Choose 1–2 from this list:
+  - belief-driven: Essay is organized around a core belief, value, or philosophical conviction. Depth comes from articulating WHY the writer holds the belief and how it was tested/refined — not from unresolved conflict.
+  - philosophical-synthesis: Essay connects disparate ideas, experiences, or disciplines into a personal framework. Depth comes from the quality of connections, not from emotional crisis.
+  - embodied-experience: Essay is grounded in physical/sensory reality (a sport, illness, craft, place). Depth comes from the body's knowledge and concrete detail — not from abstract self-interrogation.
+  - narrative-conflict: Essay is organized around a problem, turning point, or transformation. Depth comes from the gap between before/after selves and the causal chain of change.
+  - identity-formation: Essay explores how a specific identity (cultural, familial, personal) was discovered, complicated, or claimed. Depth comes from specificity about what the identity means to the writer.
+  - social-observation: Essay uses the writer's observations of others, systems, or communities to reveal the writer's own values and lens. Depth comes from the specificity of observation and what it reveals about the observer.
+
+MODE-AWARE SCORING RULES:
+- Each rubric dimension MUST be interpreted through the lens of the essay's identified mode(s).
+- Do NOT penalize an essay for lacking features of a DIFFERENT mode. Examples:
+  • A belief-driven essay does not need overt self-doubt or narrative turning points to score well on R002 (psychological depth). Depth in belief-driven mode means articulating layers of WHY the belief matters and what holding it costs.
+  • An embodied-experience essay does not need abstract philosophical synthesis to score well on R004 (insight). Insight in embodied mode means the body's knowledge reveals something the writer couldn't have learned any other way.
+  • A social-observation essay does not need personal trauma or vulnerability to score well on R008. Boundaries in this mode mean the writer reveals their values through what they notice, without over-centering themselves.
+- When scoring, always ask: "Is this essay doing X well FOR ITS MODE?" — not "Is it doing X the way a narrative-conflict essay would?"
+
 RUBRIC SCORING RULES:
 - Do NOT default all rubric scores to the same value.
 - You MUST compare dimensions against each other.
@@ -55,6 +72,21 @@ EVIDENCE REQUIREMENTS:
 EVIDENCE REQUIREMENT:
 - For any rubric_scores item with score <= 2, evidence_spans must contain at least 1 quote + why_it_matters.
 - For scores >= 3, evidence_spans may be empty.
+
+NO LAZY CRITIQUE CONSTRAINT (MANDATORY — ALL RUBRICS):
+- If a rubric score is ≤ 3, the "notes" and every "why_it_matters" for that dimension MUST specify:
+  (a) What CONCRETE element is missing or weak — name it specifically (e.g., "the essay claims resilience but never shows a moment where the writer almost gave up").
+  (b) What the HIGHER-SCORE version would contain FOR THIS ESSAY'S MODE (e.g., "a belief-driven essay at score 4 would show the writer naming what holding this belief has cost them").
+- You may ONLY use the word "generic" if the criticized passage could appear UNCHANGED in many unrelated essays AND it is not anchored to the essay's specific belief system, constraint, motif, or scene.
+  • WRONG: calling "I realized my voice held power" generic in an essay about finding agency through debate — this IS anchored to the essay's specific motif.
+  • RIGHT: calling "I learned so much from this experience" generic — it contains no essay-specific anchor.
+- If you cannot name a specific missing element, you MUST raise the score. Vague critique at a low score is forbidden.
+- "Needs deeper reflection" is NOT a valid critique unless you specify WHAT deeper reflection would look like in this essay's mode.
+
+CROSS-RUBRIC SANITY CHECKS (MANDATORY):
+- If R003 (specificity) >= 4 AND R004 (insight) >= 4 AND R005 (show vs. tell) >= 4, then R002 (psychological depth) CANNOT be <= 2 UNLESS you explicitly name a contradiction in the notes for R002 and cite it in evidence_spans. An essay that is specific, insightful, and shows rather than tells almost certainly has some psychological depth.
+- Every claim made in "notes" or "why_it_matters" MUST be supported by a verbatim quote in evidence_spans for that rubric dimension. If you make a claim but cannot find a quote to support it, either find the quote or retract the claim and adjust the score.
+- If two rubric notes make contradictory claims about the same passage (e.g., one says "the reflection is generic" and another says "the essay makes specific meaning from experience"), you MUST resolve the contradiction before outputting scores.
 
 GHOSTWRITING CONSTRAINT:
 - The rule 'do not write the essay for the student' is an INTERNAL SYSTEM RULE.

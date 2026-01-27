@@ -111,6 +111,39 @@ export function validateAnalysisOutput(
         errors.push(`Missing rubric_id "${id}" in analysis.rubric_scores`);
       }
     });
+
+    // Cross-rubric sanity check: if R003 >= 4 AND R004 >= 4 AND R005 >= 4, then R002 cannot be <= 2
+    // unless R002 notes explicitly cite a contradiction with evidence
+    const scoreMap = new Map<string, { score: number; evidence_spans: unknown[]; notes: string }>();
+    rubricScores.forEach((item) => {
+      const s = item as Record<string, unknown>;
+      if (typeof s.rubric_id === "string" && typeof s.score === "number") {
+        scoreMap.set(s.rubric_id, {
+          score: s.score,
+          evidence_spans: Array.isArray(s.evidence_spans) ? s.evidence_spans : [],
+          notes: typeof s.notes === "string" ? s.notes : "",
+        });
+      }
+    });
+
+    const r002 = scoreMap.get("R002");
+    const r003 = scoreMap.get("R003");
+    const r004 = scoreMap.get("R004");
+    const r005 = scoreMap.get("R005");
+    if (
+      r002 && r003 && r004 && r005 &&
+      r003.score >= 4 && r004.score >= 4 && r005.score >= 4 &&
+      r002.score <= 2
+    ) {
+      // R002 <= 2 is only valid if evidence_spans cite a specific contradiction
+      if (r002.evidence_spans.length === 0) {
+        errors.push(
+          "Cross-rubric sanity: R003 >= 4, R004 >= 4, R005 >= 4 but R002 <= 2 with no evidence_spans. " +
+          "An essay that is specific, insightful, and shows rather than tells must have some psychological depth. " +
+          "Either raise R002 or provide explicit evidence of a contradiction."
+        );
+      }
+    }
   }
 
   // Validate weakest_dimensions
