@@ -1,7 +1,5 @@
 import { analyzeEssay } from "@/src/lib/analyzeEssay";
 import { NextResponse, NextRequest } from "next/server";
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require("pdf-parse");
 import mammoth from "mammoth";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -22,6 +20,9 @@ async function extractText(buf: Buffer, fileType: string): Promise<string> {
     case "txt":
       return buf.toString("utf-8");
     case "pdf": {
+      // Dynamic import to avoid pdf-parse loading test fixtures at build time
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const pdfParse = require("pdf-parse");
       const pdf = await pdfParse(buf);
       return pdf.text;
     }
