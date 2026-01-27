@@ -41,9 +41,6 @@ export async function POST(req: NextRequest) {
     const prompt = formData.get("prompt");
     const file = formData.get("file");
 
-    if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
-      return NextResponse.json({ error: "Missing or empty prompt" }, { status: 400 });
-    }
     if (!file || !(file instanceof File)) {
       return NextResponse.json({ error: "Missing file" }, { status: 400 });
     }
@@ -80,9 +77,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Extracted text is empty or too short" }, { status: 422 });
     }
 
-    // Combine prompt context with extracted essay text
-    const essayWithContext = prompt.trim() + "\n\n" + text;
-    const result = await analyzeEssay(essayWithContext);
+    // Combine optional prompt context with extracted essay text
+    const promptText = typeof prompt === "string" ? prompt.trim() : "";
+    const essayInput = promptText ? promptText + "\n\n" + text : text;
+    const result = await analyzeEssay(essayInput);
     return NextResponse.json(result);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
