@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { PageTransition } from "../components/PageTransition";
 
 const literata = localFont({
   src: [
@@ -55,7 +56,7 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        {children}
+        <PageTransition>{children}</PageTransition>
       </body>
     </html>
   );

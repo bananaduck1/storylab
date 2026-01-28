@@ -1,18 +1,42 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import {
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-  type ReactNode,
-} from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 /**
- * Smooth page transition with soft landing effect.
- * - Exit: gentle fade + slight upward drift + subtle blur
- * - Enter: fade in from below with deceleration curve for "soft landing"
+ * Enhanced Link component that triggers transition before navigation.
+ */
+export function TransitionLink({
+  href,
+  children,
+  className,
+  ...props
+}: React.ComponentProps<typeof Link>) {
+  const router = useRouter();
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    // Dispatch custom event to trigger exit animation
+    window.dispatchEvent(new CustomEvent("page-transition-start"));
+    // Navigate after a brief delay to allow exit animation
+    setTimeout(() => {
+      router.push(href.toString());
+    }, 180);
+  };
+
+  return (
+    <Link href={href} onClick={handleClick} className={className} {...props}>
+      {children}
+    </Link>
+  );
+}
+
+/**
+ * Seamless page transition with soft landing effect.
+ * - Listens for transition-start event to begin exit immediately on click
+ * - Enter animation plays as soon as new content mounts
  * - Respects prefers-reduced-motion
  */
 export function PageTransition({ children }: { children: ReactNode }) {
@@ -21,15 +45,27 @@ export function PageTransition({ children }: { children: ReactNode }) {
   const [phase, setPhase] = useState<"idle" | "exit" | "enter-prep" | "enter">("idle");
   const prevPath = useRef(pathname);
   const reducedMotion = useReducedMotion();
-  const exitTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const enterTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const mounted = useRef(false);
 
-  const cleanup = useCallback(() => {
-    clearTimeout(exitTimer.current);
-    clearTimeout(enterTimer.current);
-  }, []);
-
+  // Listen for manual transition trigger (from TransitionLink)
   useEffect(() => {
+    const handleTransitionStart = () => {
+      if (reducedMotion) return;
+      setPhase("exit");
+    };
+
+    window.addEventListener("page-transition-start", handleTransitionStart);
+    return () => window.removeEventListener("page-transition-start", handleTransitionStart);
+  }, [reducedMotion]);
+
+  // Handle pathname changes
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+
     if (pathname === prevPath.current) {
       setDisplayChildren(children);
       return;
@@ -38,34 +74,34 @@ export function PageTransition({ children }: { children: ReactNode }) {
 
     if (reducedMotion) {
       setDisplayChildren(children);
+      setPhase("idle");
       return;
     }
 
-    cleanup();
+    // If we're not already in exit phase, start it now
+    if (phase !== "exit") {
+      setPhase("exit");
+    }
 
-    // Phase 1: Exit - fade out with gentle upward motion
-    setPhase("exit");
-
-    exitTimer.current = setTimeout(() => {
-      // Phase 2: Swap content, prepare entry position
+    // After exit, swap content and enter
+    clearTimeout(enterTimer.current);
+    enterTimer.current = setTimeout(() => {
       setDisplayChildren(children);
       setPhase("enter-prep");
 
-      // Phase 3: Trigger enter animation (needs 2 frames for browser to paint prep state)
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           setPhase("enter");
-
           enterTimer.current = setTimeout(() => {
             setPhase("idle");
-          }, 380); // Match enter duration
+          }, 380);
         });
       });
-    }, 180); // Exit duration
+    }, phase === "exit" ? 0 : 180); // If already exiting, proceed immediately
 
-    return cleanup;
+    return () => clearTimeout(enterTimer.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, reducedMotion, cleanup]);
+  }, [pathname, reducedMotion]);
 
   // Keep children fresh on same-route updates
   useEffect(() => {
@@ -74,8 +110,6 @@ export function PageTransition({ children }: { children: ReactNode }) {
     }
   }, [children, pathname, phase]);
 
-  // Cubic-bezier for soft landing: slow start, smooth deceleration
-  // cubic-bezier(0.22, 1, 0.36, 1) = easeOutQuint-like
   const softLanding = "cubic-bezier(0.22, 1, 0.36, 1)";
   const gentleExit = "cubic-bezier(0.4, 0, 1, 1)";
 

@@ -96,12 +96,14 @@ type ProChatResult = {
 };
 
 /* ── progress bar hook ── */
-function useAnalysisProgress(active: boolean) {
+function useAnalysisProgress(active: boolean, onComplete?: () => void) {
   const [progress, setProgress] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined);
+  const wasActive = useRef(false);
 
   useEffect(() => {
     if (active) {
+      wasActive.current = true;
       setProgress(0);
       let p = 0;
       intervalRef.current = setInterval(() => {
@@ -112,17 +114,19 @@ function useAnalysisProgress(active: boolean) {
         else p = Math.min(p + 0.05, 92);
         setProgress(Math.min(p, 92));
       }, 300);
-    } else {
-      // Jump to 100% and then reset
-      if (progress > 0) {
-        setProgress(100);
-        const t = setTimeout(() => setProgress(0), 600);
-        return () => clearTimeout(t);
-      }
+    } else if (wasActive.current) {
+      // Was active, now complete - jump to 100%
+      clearInterval(intervalRef.current);
+      setProgress(100);
+      const t = setTimeout(() => {
+        setProgress(0);
+        wasActive.current = false;
+        onComplete?.();
+      }, 500);
+      return () => clearTimeout(t);
     }
     return () => clearInterval(intervalRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active]);
+  }, [active, onComplete]);
 
   return progress;
 }
@@ -143,7 +147,7 @@ function scoreLabel(s: number) {
 /* ══════════════════════════════════════════
    Report view (Free / Plus)
    ══════════════════════════════════════════ */
-function AnalysisReport({ data }: { data: ReportResult }) {
+function AnalysisReport({ data, tier, onUpgrade }: { data: ReportResult; tier: Tier; onUpgrade: () => void }) {
   const { analysis, student_output: so } = data;
 
   return (
@@ -323,6 +327,25 @@ function AnalysisReport({ data }: { data: ReportResult }) {
           </div>
         )}
       </section>
+
+      {/* Free tier upgrade CTA */}
+      {tier === "free" && (
+        <section className="rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50/50 p-8 text-center">
+          <h3 className="text-lg font-semibold text-zinc-900">
+            Want more personalized coaching?
+          </h3>
+          <p className="mt-2 text-sm text-zinc-600 max-w-md mx-auto">
+            Upgrade to Pro for interactive conversations with your coach and specific suggestions on exactly where to improve your essay.
+          </p>
+          <button
+            type="button"
+            onClick={onUpgrade}
+            className="mt-5 inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white shadow-sm hover:bg-zinc-800 transition-colors"
+          >
+            Upgrade to Pro
+          </button>
+        </section>
+      )}
     </div>
   );
 }
@@ -519,6 +542,9 @@ export default function AiEditorPage() {
   const [essayText, setEssayText] = useState(""); // cached for pro follow-ups
   const [coachState, setCoachState] = useState<CoachState | null>(null);
 
+  // Track if we're doing initial analysis (for progress bar)
+  const [isInitialAnalysis, setIsInitialAnalysis] = useState(false);
+
   const handleFile = useCallback((f: File | null) => {
     if (!f) return;
     if (!isAcceptedFile(f)) {
@@ -554,6 +580,7 @@ export default function AiEditorPage() {
     setChatStarted(false);
     setEssayText("");
     setCoachState(null);
+    setIsInitialAnalysis(false);
     setError(null);
   }
 
@@ -572,6 +599,7 @@ export default function AiEditorPage() {
     body.append("file", file);
     body.append("tier", tier);
 
+    setIsInitialAnalysis(true);
     setLoading(true);
     try {
       const res = await fetch("/api/test-analysis", { method: "POST", body });
@@ -598,6 +626,7 @@ export default function AiEditorPage() {
       return;
     }
 
+    setIsInitialAnalysis(true);
     setLoading(true);
     try {
       let text = "";
@@ -705,7 +734,9 @@ export default function AiEditorPage() {
   }
 
   const isPro = tier === "pro";
-  const progress = useAnalysisProgress(loading);
+  // Only show progress bar for initial analysis, not follow-ups
+  const showProgress = loading && isInitialAnalysis;
+  const progress = useAnalysisProgress(showProgress, () => setIsInitialAnalysis(false));
 
   return (
     <div className="mx-auto w-full max-w-3xl px-6 py-16">
@@ -843,8 +874,8 @@ export default function AiEditorPage() {
         )}
       </form>
 
-      {/* Progress bar */}
-      {loading && progress > 0 && (
+      {/* Progress bar (only for initial analysis, not follow-ups) */}
+      {isInitialAnalysis && progress > 0 && (
         <div className="mt-6">
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-xs font-medium text-zinc-600">
@@ -878,7 +909,16 @@ export default function AiEditorPage() {
       )}
 
       {/* Report view (Free / Plus) */}
-      {!isPro && reportResult && <AnalysisReport data={reportResult} />}
+      {!isPro && reportResult && (
+        <AnalysisReport
+          data={reportResult}
+          tier={tier}
+          onUpgrade={() => {
+            setTier("pro");
+            resetResults();
+          }}
+        />
+      )}
     </div>
   );
 }
