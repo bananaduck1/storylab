@@ -2,12 +2,14 @@ import { loadStoryLabData } from "./loadData";
 import { buildProChatPrompt } from "./buildAnalysisPrompt";
 import { getOpenAIClient, DEFAULT_ANALYSIS_MODEL } from "./openaiClient";
 import { truncateForLogs } from "./redact";
-import type { ProChatMessage, ProChatResponse } from "./types";
+import type { ProChatMessage, ProChatResponse, ProChatTurnType, ProChatState } from "./types";
 
 export async function proChatCoach(
   essayText: string,
   userMessage: string,
   conversationHistory: ProChatMessage[] = [],
+  turnType: ProChatTurnType = "initial_coaching",
+  coachState?: ProChatState,
 ): Promise<ProChatResponse> {
   const data = await loadStoryLabData();
 
@@ -16,6 +18,8 @@ export async function proChatCoach(
     data,
     conversationHistory,
     userMessage,
+    turnType,
+    coachState,
   );
 
   const client = await getOpenAIClient();
@@ -44,6 +48,16 @@ export async function proChatCoach(
   if (typeof parsed.coach_message_markdown !== "string" || !parsed.coach_message_markdown) {
     throw new Error("Pro chat response missing coach_message_markdown");
   }
+
+  // Extract coach_state for continuity
+  const rawState = parsed.coach_state as Record<string, unknown> | undefined;
+  const coachStateOut: ProChatState | undefined = rawState
+    ? {
+        last_question_asked: typeof rawState.last_question_asked === "string" ? rawState.last_question_asked : "",
+        last_user_answer: typeof rawState.last_user_answer === "string" ? rawState.last_user_answer : "",
+        current_focus: typeof rawState.current_focus === "string" ? rawState.current_focus : "",
+      }
+    : undefined;
 
   // Construct response with safe defaults
   const result: ProChatResponse = {
@@ -79,6 +93,7 @@ export async function proChatCoach(
       privacy_note: "Do not store essay text.",
       model_limits: "",
     },
+    coach_state: coachStateOut,
   };
 
   return result;

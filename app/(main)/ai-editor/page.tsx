@@ -82,12 +82,50 @@ type ChatMessage = {
   role: "user" | "assistant";
   content: string;
 };
+type CoachState = {
+  last_question_asked: string;
+  last_user_answer: string;
+  current_focus: string;
+};
 type ProChatResult = {
   mode: "chat";
   coach_message_markdown: string;
   questions: string[];
   suggested_next_actions: string[];
+  coach_state?: CoachState;
 };
+
+/* ── progress bar hook ── */
+function useAnalysisProgress(active: boolean) {
+  const [progress, setProgress] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined);
+
+  useEffect(() => {
+    if (active) {
+      setProgress(0);
+      let p = 0;
+      intervalRef.current = setInterval(() => {
+        // Fast to ~60%, slows down, asymptotically approaches 92%
+        if (p < 60) p += 3 + Math.random() * 2;
+        else if (p < 80) p += 0.8 + Math.random() * 0.5;
+        else if (p < 92) p += 0.2 + Math.random() * 0.2;
+        else p = Math.min(p + 0.05, 92);
+        setProgress(Math.min(p, 92));
+      }, 300);
+    } else {
+      // Jump to 100% and then reset
+      if (progress > 0) {
+        setProgress(100);
+        const t = setTimeout(() => setProgress(0), 600);
+        return () => clearTimeout(t);
+      }
+    }
+    return () => clearInterval(intervalRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
+
+  return progress;
+}
 
 /* ── score helpers ── */
 function scoreColor(s: number) {
@@ -479,6 +517,7 @@ export default function AiEditorPage() {
   const [chatSuggestedActions, setChatSuggestedActions] = useState<string[]>([]);
   const [chatStarted, setChatStarted] = useState(false);
   const [essayText, setEssayText] = useState(""); // cached for pro follow-ups
+  const [coachState, setCoachState] = useState<CoachState | null>(null);
 
   const handleFile = useCallback((f: File | null) => {
     if (!f) return;
@@ -514,6 +553,7 @@ export default function AiEditorPage() {
     setChatSuggestedActions([]);
     setChatStarted(false);
     setEssayText("");
+    setCoachState(null);
     setError(null);
   }
 
@@ -612,6 +652,7 @@ export default function AiEditorPage() {
         { role: "assistant", content: proResult.coach_message_markdown },
       ]);
       setChatSuggestedActions(proResult.suggested_next_actions ?? []);
+      if (proResult.coach_state) setCoachState(proResult.coach_state);
       setChatStarted(true);
     } catch {
       setError("Network error — could not reach server.");
@@ -639,6 +680,8 @@ export default function AiEditorPage() {
           essay_text: essayText,
           user_message: msg,
           conversation_history: history,
+          turn_type: "followup_response",
+          coach_state: coachState,
         }),
       });
 
@@ -652,6 +695,7 @@ export default function AiEditorPage() {
           { role: "assistant", content: proResult.coach_message_markdown },
         ]);
         setChatSuggestedActions(proResult.suggested_next_actions ?? []);
+        if (proResult.coach_state) setCoachState(proResult.coach_state);
       }
     } catch {
       setError("Network error — could not reach server.");
@@ -661,6 +705,7 @@ export default function AiEditorPage() {
   }
 
   const isPro = tier === "pro";
+  const progress = useAnalysisProgress(loading);
 
   return (
     <div className="mx-auto w-full max-w-3xl px-6 py-16">
@@ -797,6 +842,24 @@ export default function AiEditorPage() {
           </button>
         )}
       </form>
+
+      {/* Progress bar */}
+      {loading && progress > 0 && (
+        <div className="mt-6">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-medium text-zinc-600">
+              {progress < 30 ? "Reading your essay…" : progress < 65 ? "Coaching in progress…" : progress < 92 ? "Finalizing feedback…" : progress >= 100 ? "Done!" : "Almost there…"}
+            </span>
+            <span className="text-xs tabular-nums text-zinc-500">{Math.round(progress)}%</span>
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-zinc-100 overflow-hidden">
+            <div
+              className="h-1.5 rounded-full bg-zinc-900 transition-all duration-300 ease-out"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">

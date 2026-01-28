@@ -156,6 +156,14 @@ export type AnalysisOutput = {
 
 // ── Pro chat types ──
 
+export type ProChatTurnType = "initial_coaching" | "followup_response";
+
+export type ProChatState = {
+  last_question_asked: string;
+  last_user_answer: string;
+  current_focus: string;
+};
+
 export type ProChatMessage = {
   role: "user" | "assistant";
   content: string;
@@ -168,6 +176,7 @@ export type ProChatResponse = {
   suggested_next_actions: string[];
   internal_rubric: Analysis;
   meta: Meta;
+  coach_state?: ProChatState;
 };
 
 export type StoryLabData = {

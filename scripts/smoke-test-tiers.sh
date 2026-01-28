@@ -197,6 +197,98 @@ else
   fail "internal_rubric missing"
 fi
 
+# ── Test 4: Pro chat follow-up (conversational continuity) ──
+echo "Test 4: Pro chat follow-up turn"
+
+# Step 1: get initial coaching response
+INITIAL_RESPONSE=$(curl -s -X POST "$BASE/api/pro-chat" \
+  -H "Content-Type: application/json" \
+  -d "{\"essay_text\": $(python3 -c "import json; print(json.dumps(open('$FIXTURE').read()))"), \"user_message\": \"Please coach me on this essay.\"}")
+
+INITIAL_MSG=$(echo "$INITIAL_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('coach_message_markdown',''))" 2>/dev/null || echo "")
+INITIAL_STATE=$(echo "$INITIAL_RESPONSE" | python3 -c "import sys,json; print(json.dumps(json.load(sys.stdin).get('coach_state',{})))" 2>/dev/null || echo "{}")
+
+if [ -n "$INITIAL_MSG" ]; then
+  pass "Initial Pro response received"
+else
+  fail "No initial Pro response"
+fi
+
+# Step 2: send a follow-up answering the coach's question
+FOLLOWUP_RESPONSE=$(curl -s -X POST "$BASE/api/pro-chat" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"essay_text\": $(python3 -c "import json; print(json.dumps(open('$FIXTURE').read()))"),
+    \"user_message\": \"The realization came after I returned home, not during the walk itself.\",
+    \"turn_type\": \"followup_response\",
+    \"coach_state\": $INITIAL_STATE,
+    \"conversation_history\": [
+      {\"role\": \"user\", \"content\": \"Please coach me on this essay.\"},
+      {\"role\": \"assistant\", \"content\": $(echo "$INITIAL_MSG" | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))")},
+      {\"role\": \"user\", \"content\": \"The realization came after I returned home, not during the walk itself.\"}
+    ]
+  }")
+
+FOLLOWUP_MSG=$(echo "$FOLLOWUP_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('coach_message_markdown',''))" 2>/dev/null || echo "")
+
+if [ -n "$FOLLOWUP_MSG" ]; then
+  pass "Follow-up response received"
+else
+  fail "No follow-up response"
+fi
+
+# Follow-up must NOT repeat initial praise (check first 200 chars of initial vs followup)
+INITIAL_FIRST_80=$(echo "$INITIAL_MSG" | head -c 80)
+FOLLOWUP_FIRST_200=$(echo "$FOLLOWUP_MSG" | head -c 200)
+python3 -c "
+import sys
+initial_start = '''$INITIAL_FIRST_80'''[:40]
+followup = '''$FOLLOWUP_FIRST_200'''
+# Check follow-up doesn't start the same way as initial
+if initial_start and initial_start in followup[:80]:
+    print('FAIL_REPEAT')
+else:
+    print('PASS')
+" | while read -r result; do
+  if [ "$result" = "PASS" ]; then
+    pass "Follow-up does NOT repeat initial opening"
+  else
+    fail "Follow-up repeats initial opening text"
+  fi
+done
+
+# Follow-up should reference the user's answer
+python3 -c "
+import sys, json
+msg = '''$FOLLOWUP_MSG'''
+# Check for signs of acknowledging the user's answer about 'realization' or 'returned home'
+keywords = ['realization', 'returned', 'after', 'home', 'came back', 'that changes', 'helpful', 'got it', 'okay']
+found = any(k.lower() in msg.lower() for k in keywords)
+print('PASS' if found else 'FAIL')
+" | while read -r result; do
+  if [ "$result" = "PASS" ]; then
+    pass "Follow-up references user's answer"
+  else
+    fail "Follow-up does not reference user's answer"
+  fi
+done
+
+# Follow-up must not re-summarize essay (banned openings)
+python3 -c "
+import sys, json
+msg = '''$FOLLOWUP_MSG'''
+first_100 = msg[:100].lower()
+banned = ['your essay begins', 'overall, the essay', 'the essay opens', 'your essay starts']
+found = [b for b in banned if b in first_100]
+print('PASS' if not found else 'FAIL: ' + ', '.join(found))
+" | while read -r result; do
+  if echo "$result" | grep -q "^PASS"; then
+    pass "Follow-up avoids re-summarizing essay"
+  else
+    fail "Follow-up re-summarizes: $result"
+  fi
+done
+
 echo ""
 
 # ── Summary ──

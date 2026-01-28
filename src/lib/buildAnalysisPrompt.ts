@@ -1,4 +1,4 @@
-import type { StoryLabData, CoachingTier } from "./types";
+import type { StoryLabData, CoachingTier, ProChatTurnType, ProChatState } from "./types";
 
 /* ─────────────────────────────────────────────
    Shared coaching persona (all tiers)
@@ -365,12 +365,64 @@ Return ONLY valid JSON. Start with { and end with }.`;
 /* ─────────────────────────────────────────────
    Pro: buildProChatPrompt (chat mode)
    ───────────────────────────────────────────── */
+/* ─────────────────────────────────────────────
+   Follow-up turn rules (injected when turn_type = followup_response)
+   ───────────────────────────────────────────── */
+const FOLLOWUP_TURN_RULES = `TURN TYPE: followup_response
+You are in an ongoing coaching conversation.
+Each response should begin by acknowledging the student's last message and then move the thinking forward by one step.
+
+MANDATORY RULES FOR FOLLOW-UP TURNS:
+1. Treat the user's message as an ANSWER to your prior question (or a new topic they raised).
+2. Respond directly to what they just said. Acknowledge it explicitly.
+3. Advance the conversation by:
+   - Refining the diagnosis based on their answer, OR
+   - Asking a deeper follow-up question, OR
+   - Proposing a targeted next step
+4. Do NOT repeat your initial feedback. Assume it is already understood.
+5. Do NOT re-summarize the essay.
+6. Do NOT re-praise the opening again.
+7. Do NOT re-list strengths already stated.
+8. Do NOT re-ask questions that were already answered.
+9. Do NOT restart with a holistic read.
+10. If the student answered your question, you must not ask the same question again in different wording.
+
+GOOD follow-up openings:
+- "That's helpful — if the realization came after returning, then…"
+- "Okay, that changes how I read the Seoul section…"
+- "Got it. In that case, the turning point isn't the walk itself, but…"
+
+BANNED follow-up openings:
+- "The imagery of walking in Seoul is strong…"
+- "Your essay begins with…"
+- "Overall, the essay…"
+- "I trust you quickly here…" (already said in initial turn)
+- Any re-statement of initial praise or initial critique`;
+
 export function buildProChatPrompt(
   essayText: string,
   data: StoryLabData,
   conversationHistory: { role: "user" | "assistant"; content: string }[],
   userMessage: string,
+  turnType: ProChatTurnType = "initial_coaching",
+  coachState?: ProChatState,
 ): { system: string; messages: { role: "system" | "user" | "assistant"; content: string }[] } {
+
+  const isFollowUp = turnType === "followup_response";
+
+  const turnBlock = isFollowUp
+    ? FOLLOWUP_TURN_RULES
+    : `TURN TYPE: initial_coaching
+This is your FIRST response about this essay. Perform the full human-reader pass and provide initial coaching.`;
+
+  const stateBlock = isFollowUp && coachState
+    ? `\nCONVERSATION STATE (from your previous turn):
+- Last question you asked: "${coachState.last_question_asked}"
+- Student's answer: "${coachState.last_user_answer}"
+- Current coaching focus: "${coachState.current_focus}"
+
+Use this state to continue the conversation naturally. Do NOT repeat the question above.\n`
+    : "";
 
   const system = `You are StoryLab's AI Admissions Coach — Pro tier. You are having a real conversation with a student about their essay.
 
@@ -378,14 +430,16 @@ ${COACHING_PERSONA}
 
 ${GOLD_STANDARD_TONE}
 
+${turnBlock}
+${stateBlock}
 PRO COACHING MODE:
 You are NOT generating a report. You are talking to a student. Your response is a single coaching message in markdown.
 
-RULE D — QUESTION-BEFORE-PRESCRIPTION (MANDATORY FOR PRO):
+${isFollowUp ? "" : `RULE D — QUESTION-BEFORE-PRESCRIPTION (MANDATORY FOR PRO):
 On your FIRST response, you MUST ask at least 1 clarifying question BEFORE giving concrete revision instructions.
 Do NOT prescribe fixes until you've asked. It's okay to not have all the answers yet.
 The only exception: if the user explicitly says "just tell me what to fix" or similar.
-
+`}
 AVAILABLE TEACHING MODULES (use when relevant, not all at once):
 • STORY VS PLOT: A story has beginning/middle/end. A plot is stricter: one event forces the next. Push toward the moment of change, not global causality.
 • SYMPTOM VS ROOT CAUSE: "Sometimes what feels wrong isn't where the problem is. Like back pain — you feel it in your shoulder, but the issue is in your lower back."
@@ -394,7 +448,7 @@ AVAILABLE TEACHING MODULES (use when relevant, not all at once):
 • MOVIE FRAMEWORK: Ask what their favorite movie is. Map its arc to the essay. Track lessons across conversations.
 
 CONVERSATION RULES:
-- Open with a trust-first reader reaction. Name something specific you trust in the text.
+- ${isFollowUp ? "Acknowledge the student's last message, then advance by one step." : "Open with a trust-first reader reaction. Name something specific you trust in the text."}
 - Frame critique as contrast: "which makes the one place I drift more noticeable."
 - Use localized critique — point to specific paragraphs/sentences, not blanket statements.
 - If the essay is broadly effective, say so: "This isn't broken — we're sharpening."
@@ -405,42 +459,42 @@ CONVERSATION RULES:
 - At most one analogy per message, always explained.
 - End with 1-3 questions or a concrete suggestion — not both.
 
-${HUMAN_READER_PASS}
+${isFollowUp ? "" : `${HUMAN_READER_PASS}
 
 THREE-STEP ORDER FOR YOUR FIRST MESSAGE:
 1. Do the human-reader pass internally (include reader_reaction in JSON).
 2. Write coach_message_markdown driven by that reader pass. LEAD WITH TRUST.
 3. Score rubric internally (internal_rubric in JSON) — this does NOT appear in the coaching message.
-
-FOR FOLLOW-UP MESSAGES:
-- You already have context from prior turns. Don't re-read the essay from scratch.
-- Respond to the student's question/comment directly.
-- Build on previous coaching. Don't repeat yourself.
-- Still include internal_rubric if the essay has changed, otherwise omit it or repeat previous.
-
+`}
 JSON OUTPUT:
 Return valid JSON with these keys:
 {
   "mode": "chat",
-  "reader_reaction": { "holistic_thesis": "...", "where_i_trust": "...", "where_i_drift": "...", "the_turn": "..." },
-  "coach_message_markdown": "...(your coaching message in markdown)...",
+  ${isFollowUp ? "" : `"reader_reaction": { "holistic_thesis": "...", "where_i_trust": "...", "where_i_drift": "...", "the_turn": "..." },
+  `}"coach_message_markdown": "...(your coaching message in markdown)...",
   "questions": ["..."],
   "suggested_next_actions": ["..."],
-  "internal_rubric": {
+  "coach_state": {
+    "last_question_asked": "the main question you asked in this response (empty string if none)",
+    "last_user_answer": "${isFollowUp ? "the student's message you just responded to" : ""}",
+    "current_focus": "brief label for what the coaching is currently exploring, e.g. 'turning point timing' or 'specificity in paragraph 3'"
+  },
+  ${isFollowUp ? "" : `"internal_rubric": {
     "rubric_scores": [...],
     "weakest_dimensions": [...],
     "dominant_misconception": {...},
     "recommended_intervention": {...}
   },
-  "meta": { "safety_flags": [], "needs_human_escalation": false, "privacy_note": "Do not store essay text.", "model_limits": "" }
+  `}"meta": { "safety_flags": [], "needs_human_escalation": false, "privacy_note": "Do not store essay text.", "model_limits": "" }
 }
 
 coach_message_markdown: Your full coaching response in markdown. This is what the student sees. MUST NOT contain rubric names, IDs, or scoring language.
 questions: 1-3 questions for the student (these also appear in the message naturally but are extracted here for UI).
 suggested_next_actions: 0-2 optional concrete actions.
-internal_rubric: Full rubric analysis (hidden from student).
+coach_state: Lightweight state for conversational continuity. ALWAYS include this.${isFollowUp ? "" : `
+internal_rubric: Full rubric analysis (hidden from student).`}
 
-${INTERNAL_RUBRIC_RULES}
+${isFollowUp ? "" : INTERNAL_RUBRIC_RULES}
 
 RUBRIC/MISCONCEPTION/INTERVENTION DATA:
 ${JSON.stringify(data.rubric, null, 2)}
@@ -459,15 +513,17 @@ Return ONLY valid JSON. No markdown code blocks wrapping the JSON.`;
     { role: "system", content: system },
   ];
 
-  if (conversationHistory.length === 0) {
+  if (!isFollowUp) {
+    // Initial turn: include essay + user's first message
     messages.push({
       role: "user",
       content: `Here is my essay:\n\n---\n${essayText}\n---\n\n${userMessage || "Please coach me on this essay."}`,
     });
   } else {
+    // Follow-up: include essay as context, then replay conversation, then new message
     messages.push({
       role: "user",
-      content: `Here is my essay:\n\n---\n${essayText}\n---\n\nPlease coach me on this essay.`,
+      content: `[Essay for reference]\n\n---\n${essayText}\n---\n\nPlease coach me on this essay.`,
     });
 
     for (const msg of conversationHistory) {

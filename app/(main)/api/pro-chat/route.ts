@@ -17,6 +17,20 @@ export async function POST(req: NextRequest) {
       ? body.user_message
       : "Please coach me on this essay.";
 
+    // Turn type: initial_coaching or followup_response
+    const turnType = body.turn_type === "followup_response"
+      ? "followup_response" as const
+      : "initial_coaching" as const;
+
+    // Coach state for conversational continuity
+    const coachState = body.coach_state && typeof body.coach_state === "object"
+      ? {
+          last_question_asked: typeof body.coach_state.last_question_asked === "string" ? body.coach_state.last_question_asked : "",
+          last_user_answer: typeof body.coach_state.last_user_answer === "string" ? body.coach_state.last_user_answer : "",
+          current_focus: typeof body.coach_state.current_focus === "string" ? body.coach_state.current_focus : "",
+        }
+      : undefined;
+
     // Conversation history: last 10 turns max
     const rawHistory = Array.isArray(body.conversation_history)
       ? body.conversation_history
@@ -35,7 +49,7 @@ export async function POST(req: NextRequest) {
       )
       .slice(-10) as { role: "user" | "assistant"; content: string }[];
 
-    const result = await proChatCoach(essayText, userMessage, conversationHistory);
+    const result = await proChatCoach(essayText, userMessage, conversationHistory, turnType, coachState);
     return NextResponse.json(result);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
