@@ -558,50 +558,24 @@ export default function AiEditorPage() {
       return;
     }
 
-    // First extract the text via the report endpoint to get essay text,
-    // then use it for the Pro chat. We POST to test-analysis to extract but
-    // actually we need the raw text. Let's read the file client-side for txt,
-    // or use the pro-chat endpoint which accepts essay_text directly.
-    // For simplicity: read .txt client-side, for pdf/docx use a helper.
     setLoading(true);
     try {
       let text = "";
 
-      // For txt files, read directly
+      // For txt files, read directly; for pdf/docx use server-side extraction
       if (file.name.endsWith(".txt") || file.type === "text/plain") {
         text = await file.text();
       } else {
-        // For pdf/docx, extract via the report endpoint and capture the text
-        // Actually, let's add a lightweight extract endpoint. For now, use the
-        // report endpoint and extract from the result... but that's wasteful.
-        // Simpler: POST the file to test-analysis with tier=free, but we only
-        // need the essay text. Let's just extract client-side for txt and send
-        // the file to a new extract endpoint. For MVP, we'll read as text
-        // and if it's garbled, the user can use .txt.
-        //
-        // Best approach: send file to pro-chat as form data.
-        // Let's adjust the pro-chat route to accept file uploads too.
-        // For now, we'll do a two-step: extract via test-analysis, then chat.
         const extractBody = new FormData();
         extractBody.append("file", file);
-        extractBody.append("tier", "free");
-        const extractRes = await fetch("/api/test-analysis", { method: "POST", body: extractBody });
+        const extractRes = await fetch("/api/extract-text", { method: "POST", body: extractBody });
+        const extractJson = await extractRes.json();
         if (!extractRes.ok) {
-          const ej = await extractRes.json();
-          setError(ej.error ?? "Could not extract text from file.");
+          setError(extractJson.error ?? "Could not extract text from file.");
           setLoading(false);
           return;
         }
-        // We got a full analysis we don't need, but the essay text was processed.
-        // This is inefficient — better to have a dedicated extract endpoint.
-        // For MVP, let's make the pro-chat also accept FormData with a file.
-        // Actually, let's just read the file client-side. For PDF/DOCX this won't work
-        // perfectly, but we can note the limitation.
-        //
-        // Better: send file to report endpoint, ignore result, and for the chat
-        // just use the text. Actually the cleanest: have the user paste/upload text
-        // or send the file via pro-chat. Let me update pro-chat to handle FormData.
-        text = await file.text(); // Best effort for non-txt
+        text = extractJson.text;
       }
 
       text = text.trim();
@@ -690,13 +664,31 @@ export default function AiEditorPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-6 py-16">
-      <h1 className="text-3xl font-semibold tracking-tight text-zinc-950">
-        AI Essay Coach
-      </h1>
-      <p className="mt-3 text-sm leading-relaxed text-zinc-600">
-        Upload your essay and get coaching feedback. Free gives a diagnosis,
-        Plus gives a structured coaching report, and Pro opens a conversation with your coach.
-      </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight text-zinc-950">
+            AI Essay Coach
+          </h1>
+          <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+            Upload your essay and get coaching feedback.
+          </p>
+        </div>
+        {/* Tier dropdown */}
+        <select
+          value={tier}
+          onChange={(e) => {
+            setTier(e.target.value as Tier);
+            resetResults();
+          }}
+          className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 shadow-sm focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+        >
+          {TIER_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <form
         onSubmit={isPro ? handleProStart : handleReportSubmit}
@@ -770,37 +762,6 @@ export default function AiEditorPage() {
               Remove file
             </button>
           )}
-        </div>
-
-        {/* Tier selector */}
-        <div>
-          <label className="block text-sm font-medium text-zinc-900 mb-2">
-            Coaching level
-          </label>
-          <div className="flex gap-3">
-            {TIER_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => {
-                  setTier(opt.value);
-                  resetResults();
-                }}
-                className={`flex-1 rounded-xl border-2 px-4 py-3 text-left transition-colors ${
-                  tier === opt.value
-                    ? "border-zinc-900 bg-zinc-900 text-white"
-                    : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400"
-                }`}
-              >
-                <span className="block text-sm font-semibold">{opt.label}</span>
-                <span className={`block text-xs mt-0.5 ${
-                  tier === opt.value ? "text-zinc-300" : "text-zinc-500"
-                }`}>
-                  {opt.desc}
-                </span>
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Prompt / initial message */}
