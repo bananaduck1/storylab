@@ -4,6 +4,44 @@ import { getOpenAIClient, DEFAULT_ANALYSIS_MODEL } from "./openaiClient";
 import { truncateForLogs } from "./redact";
 import type { ProChatMessage, ProChatResponse, ProChatTurnType, ProChatState } from "./types";
 
+/**
+ * Detect if text starts with a trust-first opener pattern.
+ * Patterns: "I trust", "I believe", "I buy", or "I [verb] ... but" structure
+ */
+function detectsTrustFirstOpener(text: string): boolean {
+  const first200 = text.slice(0, 200).toLowerCase();
+
+  // Direct trust phrases
+  const trustPhrases = ["i trust", "i believe", "i buy"];
+  if (trustPhrases.some(p => first200.startsWith(p) || first200.includes(`. ${p}`) || first200.includes(`\n${p}`))) {
+    return true;
+  }
+
+  // Pattern: "I [verb] ... but" in first sentence
+  const firstSentence = text.split(/[.!?]/)[0] || "";
+  const iVerbButPattern = /^i\s+\w+.*\bbut\b/i;
+  if (iVerbButPattern.test(firstSentence.trim())) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Get style guardrail if previous response used trust-first opener
+ */
+function getStyleGuardrail(conversationHistory: ProChatMessage[]): string | null {
+  // Find last assistant message
+  const lastAssistant = [...conversationHistory].reverse().find(m => m.role === "assistant");
+  if (!lastAssistant) return null;
+
+  if (detectsTrustFirstOpener(lastAssistant.content)) {
+    return "\n\nSTYLE GUARDRAIL: Your previous reply used a trust-first opener (\"I trust/believe/buy\" or \"I [verb]... but\"). Choose a DIFFERENT opening approach this time — try a specific reader reaction moment, a thesis observation, or a direct question.\n";
+  }
+
+  return null;
+}
+
 export async function proChatCoach(
   essayText: string,
   userMessage: string,
@@ -21,6 +59,14 @@ export async function proChatCoach(
     turnType,
     coachState,
   );
+
+  // Inject style guardrail if previous response used trust-first opener
+  if (turnType === "followup_response") {
+    const guardrail = getStyleGuardrail(conversationHistory);
+    if (guardrail && messages.length > 0 && messages[0].role === "system") {
+      messages[0].content += guardrail;
+    }
+  }
 
   const client = await getOpenAIClient();
   const response = await client.chat.completions.create({

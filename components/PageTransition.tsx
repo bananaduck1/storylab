@@ -10,13 +10,15 @@ import {
 } from "react";
 
 /**
- * Crossfade + upward drift (6px) + scale settle (0.99→1.00), ~220ms ease-out.
- * Outgoing content stays until incoming mounts. Respects prefers-reduced-motion.
+ * Smooth page transition with soft landing effect.
+ * - Exit: gentle fade + slight upward drift + subtle blur
+ * - Enter: fade in from below with deceleration curve for "soft landing"
+ * - Respects prefers-reduced-motion
  */
 export function PageTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [displayChildren, setDisplayChildren] = useState(children);
-  const [state, setState] = useState<"idle" | "exit" | "enter-start" | "enter-active">("idle");
+  const [phase, setPhase] = useState<"idle" | "exit" | "enter-prep" | "enter">("idle");
   const prevPath = useRef(pathname);
   const reducedMotion = useReducedMotion();
   const exitTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -41,25 +43,25 @@ export function PageTransition({ children }: { children: ReactNode }) {
 
     cleanup();
 
-    // Exit: fade out current content
-    setState("exit");
+    // Phase 1: Exit - fade out with gentle upward motion
+    setPhase("exit");
 
     exitTimer.current = setTimeout(() => {
-      // Swap content and prepare enter
+      // Phase 2: Swap content, prepare entry position
       setDisplayChildren(children);
-      setState("enter-start"); // render at offset position for 1 frame
+      setPhase("enter-prep");
 
-      // Next frame: activate the transition
+      // Phase 3: Trigger enter animation (needs 2 frames for browser to paint prep state)
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          setState("enter-active");
+          setPhase("enter");
 
           enterTimer.current = setTimeout(() => {
-            setState("idle");
-          }, 230);
+            setPhase("idle");
+          }, 380); // Match enter duration
         });
       });
-    }, 130);
+    }, 180); // Exit duration
 
     return cleanup;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -67,30 +69,46 @@ export function PageTransition({ children }: { children: ReactNode }) {
 
   // Keep children fresh on same-route updates
   useEffect(() => {
-    if (pathname === prevPath.current && state === "idle") {
+    if (pathname === prevPath.current && phase === "idle") {
       setDisplayChildren(children);
     }
-  }, [children, pathname, state]);
+  }, [children, pathname, phase]);
 
-  const styles: Record<typeof state, React.CSSProperties> = {
-    idle: {},
-    exit: {
-      opacity: 0,
-      transform: "translateY(-2px) scale(0.998)",
-      transition: "opacity 130ms ease-in, transform 130ms ease-in",
-    },
-    "enter-start": {
-      opacity: 0,
-      transform: "translateY(6px) scale(0.99)",
-    },
-    "enter-active": {
+  // Cubic-bezier for soft landing: slow start, smooth deceleration
+  // cubic-bezier(0.22, 1, 0.36, 1) = easeOutQuint-like
+  const softLanding = "cubic-bezier(0.22, 1, 0.36, 1)";
+  const gentleExit = "cubic-bezier(0.4, 0, 1, 1)";
+
+  const styles: Record<typeof phase, React.CSSProperties> = {
+    idle: {
       opacity: 1,
       transform: "translateY(0) scale(1)",
-      transition: "opacity 220ms ease-out, transform 220ms ease-out",
+      filter: "blur(0)",
+    },
+    exit: {
+      opacity: 0,
+      transform: "translateY(-8px) scale(0.995)",
+      filter: "blur(2px)",
+      transition: `opacity 180ms ${gentleExit}, transform 180ms ${gentleExit}, filter 180ms ${gentleExit}`,
+    },
+    "enter-prep": {
+      opacity: 0,
+      transform: "translateY(16px) scale(0.98)",
+      filter: "blur(3px)",
+    },
+    enter: {
+      opacity: 1,
+      transform: "translateY(0) scale(1)",
+      filter: "blur(0)",
+      transition: `opacity 380ms ${softLanding}, transform 380ms ${softLanding}, filter 280ms ${softLanding}`,
     },
   };
 
-  return <div style={styles[state]}>{displayChildren}</div>;
+  return (
+    <div style={{ ...styles[phase], willChange: phase === "idle" ? "auto" : "opacity, transform, filter" }}>
+      {displayChildren}
+    </div>
+  );
 }
 
 function useReducedMotion(): boolean {

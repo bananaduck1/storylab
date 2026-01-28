@@ -134,20 +134,20 @@ else
   fail "coach_message_markdown empty"
 fi
 
-# Pro: first 200 chars must contain trust language
+# Pro: first 200 chars should contain some reader reaction (varied, not required to be trust)
 FIRST_200=$(echo "$MSG" | head -c 200)
-if echo "$FIRST_200" | grep -qiE "I trust|I believe|I buy|I'm with you|trust you|believe you|draws me in|feel sincere|feels sincere|feels honest|feel honest"; then
-  pass "Pro opens with trust language (first 200 chars)"
+if echo "$FIRST_200" | grep -qiE "I trust|I believe|I buy|I'm with you|trust you|draws me in|feel|struck|notice|lean|drift|see|image|moment|paragraph|section|essay|opening|question|curious"; then
+  pass "Pro opens with reader reaction (first 200 chars)"
 else
-  fail "Pro missing trust language in first 200 chars: $(echo "$FIRST_200" | head -c 80)…"
+  fail "Pro missing reader reaction in first 200 chars: $(echo "$FIRST_200" | head -c 80)…"
 fi
 
-# Pro: first 60 chars start with first person
-FIRST_60=$(echo "$MSG" | head -c 60)
-if echo "$FIRST_60" | grep -qE "^I "; then
-  pass "Pro opens with first person ('I …') in first 60 chars"
+# Pro: should not start with banned openings
+FIRST_80=$(echo "$MSG" | head -c 80)
+if echo "$FIRST_80" | grep -qiE "^Your essay needs|^This essay lacks|^The essay is missing"; then
+  fail "Pro starts with banned opening: $(echo "$FIRST_80" | head -c 40)…"
 else
-  fail "Pro does not open with 'I' in first 60 chars: $(echo "$FIRST_60" | head -c 40)…"
+  pass "Pro avoids banned openings"
 fi
 
 # Pro: contains at least one question
@@ -286,6 +286,38 @@ print('PASS' if not found else 'FAIL: ' + ', '.join(found))
     pass "Follow-up avoids re-summarizing essay"
   else
     fail "Follow-up re-summarizes: $result"
+  fi
+done
+
+# Opening variety: if initial used trust-first, follow-up must not
+python3 -c "
+import sys, json, re
+
+initial = '''$INITIAL_MSG'''
+followup = '''$FOLLOWUP_MSG'''
+
+def uses_trust_first(text):
+    first200 = text[:200].lower()
+    trust_phrases = ['i trust', 'i believe', 'i buy']
+    if any(first200.startswith(p) or ('. ' + p) in first200 for p in trust_phrases):
+        return True
+    first_sentence = text.split('.')[0] if text else ''
+    if re.match(r'^i\s+\w+.*\bbut\b', first_sentence.strip(), re.I):
+        return True
+    return False
+
+initial_trust = uses_trust_first(initial)
+followup_trust = uses_trust_first(followup)
+
+if initial_trust and followup_trust:
+    print('FAIL: both turns use trust-first opener')
+else:
+    print('PASS')
+" | while read -r result; do
+  if echo "$result" | grep -q "^PASS"; then
+    pass "Opening variety: follow-up differs from initial if trust-first was used"
+  else
+    fail "Opening variety: $result"
   fi
 done
 
