@@ -113,8 +113,7 @@ export function validateAnalysisOutput(
       }
     });
 
-    // Cross-rubric sanity check: if R003 >= 4 AND R004 >= 4 AND R005 >= 4, then R002 cannot be <= 2
-    // unless R002 notes explicitly cite a contradiction with evidence
+    // Cross-rubric sanity: R004 (specificity) >= 4 + R003 (insight) >= 4 → R001 (turning point) can't be <= 2 without evidence
     const scoreMap = new Map<string, { score: number; evidence_spans: unknown[]; notes: string }>();
     rubricScores.forEach((item) => {
       const s = item as Record<string, unknown>;
@@ -127,21 +126,19 @@ export function validateAnalysisOutput(
       }
     });
 
-    const r002 = scoreMap.get("R002");
+    const r001 = scoreMap.get("R001");
     const r003 = scoreMap.get("R003");
     const r004 = scoreMap.get("R004");
-    const r005 = scoreMap.get("R005");
     if (
-      r002 && r003 && r004 && r005 &&
-      r003.score >= 4 && r004.score >= 4 && r005.score >= 4 &&
-      r002.score <= 2
+      r001 && r003 && r004 &&
+      r004.score >= 4 && r003.score >= 4 &&
+      r001.score <= 2
     ) {
-      // R002 <= 2 is only valid if evidence_spans cite a specific contradiction
-      if (r002.evidence_spans.length === 0) {
+      if (r001.evidence_spans.length === 0) {
         errors.push(
-          "Cross-rubric sanity: R003 >= 4, R004 >= 4, R005 >= 4 but R002 <= 2 with no evidence_spans. " +
-          "An essay that is specific, insightful, and shows rather than tells must have some psychological depth. " +
-          "Either raise R002 or provide explicit evidence of a contradiction."
+          "Cross-rubric sanity: R004 (specificity) >= 4 and R003 (insight) >= 4 but R001 (turning point) <= 2 with no evidence_spans. " +
+          "An essay that is specific and insightful likely has some turning point. " +
+          "Either raise R001 or provide explicit evidence of a contradiction."
         );
       }
     }

@@ -16,14 +16,14 @@ function isAcceptedFile(f: File) {
 }
 
 const RUBRIC_LABELS: Record<string, string> = {
-  R001: "Causal structure",
-  R002: "Psychological depth",
-  R003: "Specificity & detail",
-  R004: "Insight over achievement",
-  R005: "Show vs. tell",
-  R006: "Voice & restraint",
-  R007: "Tonal balance",
-  R008: "Vulnerability & boundaries",
+  R001: "The turning point",
+  R002: "Stakes & risk",
+  R003: "Insight over achievement",
+  R004: "Specificity & detail",
+  R005: "Voice & restraint",
+  R006: "Narrative flow",
+  R007: "Vulnerability & boundaries",
+  R008: "Tone & control",
 };
 
 const TIER_OPTIONS = [
