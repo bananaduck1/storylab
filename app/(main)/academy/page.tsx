@@ -1,11 +1,7 @@
-import type { Metadata } from "next";
-import Image from "next/image";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Academy",
-  description:
-    "Elite humanities training and college applications support—reading, writing, and thinking skills taught by trained humanities graduates.",
-};
+import Image from "next/image";
+import { TransitionLink } from "@/components/PageTransition";
 
 export default function Home() {
   return (
@@ -26,12 +22,12 @@ export default function Home() {
                 future-proof, college and beyond. Taught by trained Ivy League humanities graduates.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <a
+                <TransitionLink
                   href="/contact"
                   className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white shadow-sm shadow-zinc-900/15 hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
                 >
                   Get started
-                </a>
+                </TransitionLink>
               </div>
             </div>
             <div className="flex justify-center lg:justify-end">
@@ -194,12 +190,12 @@ export default function Home() {
                 </p>
               </div>
               <div className="mt-8">
-                <a
+                <TransitionLink
                   href="/team"
                   className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white shadow-sm shadow-zinc-900/15 hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
                 >
                   Meet the team
-                </a>
+                </TransitionLink>
               </div>
             </div>
             <div className="flex justify-center lg:justify-end">
@@ -269,12 +265,12 @@ export default function Home() {
               </p>
             </div>
             <div className="flex-shrink-0">
-              <a
+              <TransitionLink
                 href="/results"
                 className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white shadow-sm shadow-zinc-900/15 hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
               >
                 Read more
-              </a>
+              </TransitionLink>
             </div>
           </div>
           <div className="mt-8 grid gap-4 md:grid-cols-3">
@@ -318,12 +314,12 @@ export default function Home() {
               and goals.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <a
+              <TransitionLink
                 href="/contact"
                 className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white shadow-sm shadow-zinc-900/15 hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
               >
                 Get started
-              </a>
+              </TransitionLink>
             </div>
           </div>
         </section>

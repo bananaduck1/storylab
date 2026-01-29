@@ -95,7 +95,7 @@ type ProChatResult = {
 };
 
 /* ── progress bar hook ── */
-function useAnalysisProgress(active: boolean, onComplete?: () => void) {
+function useAnalysisProgress(active: boolean) {
   const [progress, setProgress] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined);
   const wasActive = useRef(false);
@@ -120,12 +120,11 @@ function useAnalysisProgress(active: boolean, onComplete?: () => void) {
       const t = setTimeout(() => {
         setProgress(0);
         wasActive.current = false;
-        onComplete?.();
       }, 500);
       return () => clearTimeout(t);
     }
     return () => clearInterval(intervalRef.current);
-  }, [active, onComplete]);
+  }, [active]);
 
   return progress;
 }
@@ -540,6 +539,9 @@ export default function AiEditorPage() {
   // Handoff chat input (for Free → Pro transition)
   const [handoffChatInput, setHandoffChatInput] = useState("");
 
+  // Report collapsed state (for showing summary above chat)
+  const [reportCollapsed, setReportCollapsed] = useState(false);
+
   const handleFile = useCallback((f: File | null) => {
     if (!f) return;
     if (!isAcceptedFile(f)) {
@@ -576,6 +578,7 @@ export default function AiEditorPage() {
     setEssayText("");
     setCoachState(null);
     setIsInitialAnalysis(false);
+    setReportCollapsed(false);
     setError(null);
   }
 
@@ -608,6 +611,8 @@ export default function AiEditorPage() {
       setError("Network error — could not reach server.");
     } finally {
       setLoading(false);
+      // Reset after a brief delay to allow progress bar completion animation
+      setTimeout(() => setIsInitialAnalysis(false), 600);
     }
   }
 
@@ -682,6 +687,8 @@ export default function AiEditorPage() {
       setError("Network error — could not reach server.");
     } finally {
       setLoading(false);
+      // Reset after a brief delay to allow progress bar completion animation
+      setTimeout(() => setIsInitialAnalysis(false), 600);
     }
   }
 
@@ -729,10 +736,12 @@ export default function AiEditorPage() {
   }
 
   // ── Free → Pro handoff: start chat from gate question answer ──
+  // Note: This is a quick chat response, NOT the initial long analysis.
+  // Don't show the progress bar for handoff - only for initial analysis.
   async function handleHandoffToChat(userAnswer: string) {
     if (!file || !reportResult) return;
 
-    setIsInitialAnalysis(true);
+    // Don't set isInitialAnalysis - handoff is quick, not a long analysis
     setLoading(true);
     setError(null);
 
@@ -790,7 +799,7 @@ export default function AiEditorPage() {
       setChatSuggestedActions(proResult.suggested_next_actions ?? []);
       if (proResult.coach_state) setCoachState(proResult.coach_state);
       setChatStarted(true);
-      setReportResult(null); // Hide the report, show chat
+      setReportCollapsed(true); // Collapse the report, show chat
       setHandoffChatInput("");
     } catch {
       setError("Network error — could not reach server.");
@@ -800,9 +809,9 @@ export default function AiEditorPage() {
   }
 
   const isPro = tier === "pro";
-  // Only show progress bar for initial analysis, not follow-ups
+  // Only show progress bar for initial analysis, not follow-ups or handoffs
   const showProgress = loading && isInitialAnalysis;
-  const progress = useAnalysisProgress(showProgress, () => setIsInitialAnalysis(false));
+  const progress = useAnalysisProgress(showProgress);
 
   return (
     <div className="mx-auto w-full max-w-3xl px-6 py-16">
@@ -961,6 +970,57 @@ export default function AiEditorPage() {
       {error && (
         <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
           {error}
+        </div>
+      )}
+
+      {/* Collapsible report summary (shown above chat after Free→Pro handoff) */}
+      {chatStarted && reportResult && (
+        <div className="mt-8 rounded-2xl border border-zinc-200 bg-white overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setReportCollapsed(!reportCollapsed)}
+            className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-zinc-50 transition-colors"
+          >
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-zinc-500">
+                Initial analysis
+              </p>
+              <p className="mt-1 text-sm font-medium text-zinc-900 truncate">
+                {reportResult.student_output.headline}
+              </p>
+            </div>
+            <svg
+              className={`ml-3 h-5 w-5 text-zinc-400 shrink-0 transition-transform ${reportCollapsed ? "" : "rotate-180"}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {!reportCollapsed && (
+            <div className="px-5 pb-5 border-t border-zinc-100">
+              <div className="pt-4 space-y-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-zinc-500">
+                    What to fix first
+                  </p>
+                  <p className="mt-1 text-sm text-zinc-700">
+                    {reportResult.student_output.what_to_fix_first}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-zinc-500">
+                    Key concept
+                  </p>
+                  <p className="mt-1 text-sm text-zinc-700">
+                    {reportResult.student_output.concept_taught}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
