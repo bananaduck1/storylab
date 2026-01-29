@@ -476,6 +476,10 @@ function ProChatView({
     const text = input.trim();
     if (!text || loading) return;
     setInput("");
+    // Reset textarea height after sending
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto";
+    }
     onSend(text);
   }
 
@@ -488,6 +492,15 @@ function ProChatView({
 
   function handleStreamComplete() {
     setStreamingIndex(null);
+  }
+
+  // Auto-expand textarea as user types
+  function handleInputChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    setInput(e.target.value);
+    // Reset height to auto to get the correct scrollHeight
+    e.target.style.height = "auto";
+    // Set height to scrollHeight (capped at 150px)
+    e.target.style.height = Math.min(e.target.scrollHeight, 150) + "px";
   }
 
   return (
@@ -560,10 +573,11 @@ function ProChatView({
           ref={inputRef}
           rows={1}
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder="Ask a follow-up question…"
           className="flex-1 resize-none rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+          style={{ minHeight: "40px", maxHeight: "150px" }}
           disabled={loading}
         />
         <button
@@ -758,7 +772,7 @@ export default function AiEditorPage() {
     }
   }
 
-  // ── Pro: send follow-up ──
+  // ── Pro: send follow-up with retry logic ──
   async function handleProSend(msg: string) {
     const newMessages: ChatMessage[] = [...chatMessages, { role: "user", content: msg }];
     setChatMessages(newMessages);
@@ -766,39 +780,62 @@ export default function AiEditorPage() {
     setLoading(true);
     setError(null);
 
-    try {
-      // Only send last 10 turns as history (excluding the new message)
-      const history = chatMessages.slice(-10);
+    // Retry logic with exponential backoff
+    const maxRetries = 3;
+    let lastError: Error | null = null;
 
-      const res = await fetch("/api/pro-chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          essay_text: essayText,
-          user_message: msg,
-          conversation_history: history,
-          turn_type: "followup_response",
-          coach_state: coachState,
-        }),
-      });
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        // Only send last 10 turns as history (excluding the new message)
+        const history = chatMessages.slice(-10);
 
-      const json = await res.json();
-      if (!res.ok) {
-        setError(json.error ?? `Server error ${res.status}`);
-      } else {
-        const proResult = json as ProChatResult;
-        setChatMessages([
-          ...newMessages,
-          { role: "assistant", content: proResult.coach_message_markdown },
-        ]);
-        setChatSuggestedActions(proResult.suggested_next_actions ?? []);
-        if (proResult.coach_state) setCoachState(proResult.coach_state);
+        // Create AbortController for timeout (90 seconds)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 90000);
+
+        const res = await fetch("/api/pro-chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            essay_text: essayText,
+            user_message: msg,
+            conversation_history: history,
+            turn_type: "followup_response",
+            coach_state: coachState,
+          }),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        const json = await res.json();
+        if (!res.ok) {
+          setError(json.error ?? `Server error ${res.status}`);
+        } else {
+          const proResult = json as ProChatResult;
+          setChatMessages([
+            ...newMessages,
+            { role: "assistant", content: proResult.coach_message_markdown },
+          ]);
+          setChatSuggestedActions(proResult.suggested_next_actions ?? []);
+          if (proResult.coach_state) setCoachState(proResult.coach_state);
+        }
+        setLoading(false);
+        return; // Success, exit retry loop
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error("Unknown error");
+        // If not last attempt, wait before retrying (exponential backoff)
+        if (attempt < maxRetries - 1) {
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+        }
       }
-    } catch {
-      setError("Network error — could not reach server.");
-    } finally {
-      setLoading(false);
     }
+
+    // All retries failed
+    setError(lastError?.name === "AbortError"
+      ? "Request timed out. Please try again."
+      : "Network error — could not reach server. Please try again.");
+    setLoading(false);
   }
 
   // ── Free → Pro handoff: start chat from gate question answer ──

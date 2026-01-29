@@ -212,6 +212,25 @@ Score the rubric AFTER writing the coaching output. The rubric exists for analyt
 
 RUBRIC MODEL (8 dimensions, R001–R008):
 R001 — The turning point: Does the essay have a clear moment of change? Is it shown in motion or does it arrive fully formed?
+
+R001 TURNING POINT — TYPE CHECK (MANDATORY)
+
+Before critiquing R001, classify the turning point as ONE of:
+- emotional/realization (internal insight unfolding)
+- relational (shift with another person)
+- procedural/action (a choice, confrontation, or institutional moment)
+- embodied (physical moment carries the change)
+
+IMPORTANT:
+Procedural/action turning points can be strong even if reflection comes AFTER the action.
+Do NOT claim "arrives fully formed" if the essay shows:
+- a concrete action taken (a choice, confrontation, objection, decision)
+- the world/system responds (a consequence, ruling, reaction)
+- a role shift is enacted (speaker vs spectator)
+
+In those cases, the correct critique is usually about ONE beat of interiority or pacing,
+not that the turning point is missing.
+
 R002 — Stakes and risk: What did the writer stand to lose internally? Are stakes internal (identity, belief, comfort) not just external?
 R003 — Insight over achievement: Does the essay reveal meaning, not just list accomplishments?
 R004 — Specificity and detail: Are ideas carried by concrete moments, objects, actions, and images?
@@ -235,7 +254,9 @@ MODE-AWARE SCORING:
 
 SCORING RULES:
 - 8 rubric items (R001–R008), scores 1–5.
-- At least one ≤ 2, at least one ≥ 4.
+- At least one ≥ 4.
+- A ≤ 2 is allowed only if genuinely warranted by the text.
+- Do NOT force a ≤ 2. Strong essays may have no dimension below 3.
 - weakest_dimensions = lowest-scoring dimensions.
 - Notes: 1 sentence each, non-empty, concrete (not "needs work").
 
@@ -252,8 +273,8 @@ CROSS-RUBRIC SANITY:
 - R004 (specificity) ≥ 4 + R003 (insight) ≥ 4 → R001 (turning point) cannot be ≤ 2 without cited contradiction.
 
 PRESERVE-FIRST:
-1. Identify preserve dimension (score = 4).
-2. Identify 2 weakest (score = 1 or 2).
+1. Identify preserve dimension (score ≥ 4).
+2. Identify weakest dimensions (lowest scores — may be 3s if essay is strong).
 3. Assign remaining relative to these.
 
 ANTI-MIDPOINT: Not all 3s. Max five 3s.`;
@@ -657,7 +678,19 @@ BANNED follow-up openings:
 - "Your essay begins with…"
 - "Overall, the essay…"
 - "I trust you quickly here…" (already said in initial turn)
-- Any re-statement of initial praise or initial critique`;
+- Any re-statement of initial praise or initial critique
+
+WHEN AN ESSAY IS STRONG (MANDATORY RESPONSE SHAPE)
+
+If the essay is broadly effective:
+- Say so early.
+- Frame feedback as refinement, not rescue.
+- Use the "torn but precise" stance:
+  "This works. I'm deciding whether we need one beat more here, or whether restraint is better."
+
+If the student's quote is a valid counterexample, you MUST explicitly say:
+"You're right about X."
+Then refine: "What I still mean is Y."`;
 
 export function buildProChatPrompt(
   essayText: string,

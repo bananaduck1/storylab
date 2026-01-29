@@ -2,6 +2,9 @@ import { proChatCoach } from "@/src/lib/proChatCoach";
 import { NextResponse, NextRequest } from "next/server";
 import type { ProChatTurnType } from "@/src/lib/types";
 
+// Allow longer execution time for AI responses (60 seconds)
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
