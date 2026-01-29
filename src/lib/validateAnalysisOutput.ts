@@ -227,21 +227,18 @@ export function validateAnalysisOutput(
         errors.push(
           `analysis.recommended_intervention.intervention_id "${interventionId}" does not exist in interventions.json`
         );
-      } else {
-        // Validate output_format matches exactly
-        const outputFormat = ri.output_format;
-        if (typeof outputFormat !== "string") {
-          errors.push("analysis.recommended_intervention.output_format must be a string");
-        } else if (outputFormat !== intervention.output_format) {
-          errors.push(
-            `analysis.recommended_intervention.output_format does not match the intervention's output_format in interventions.json`
-          );
-        }
       }
+      // Note: We no longer validate that output_format matches exactly, since
+      // the AI may paraphrase. The intervention_id is sufficient for lookup.
     }
 
     if (typeof ri.rationale !== "string") {
       errors.push("analysis.recommended_intervention.rationale must be a string");
+    }
+
+    // output_format is optional but must be a string if present
+    if (ri.output_format !== undefined && typeof ri.output_format !== "string") {
+      errors.push("analysis.recommended_intervention.output_format must be a string");
     }
 
     const effortLevel = ri.effort_level;
