@@ -1,5 +1,6 @@
 import { proChatCoach } from "@/src/lib/proChatCoach";
 import { NextResponse, NextRequest } from "next/server";
+import type { ProChatTurnType } from "@/src/lib/types";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,10 +18,13 @@ export async function POST(req: NextRequest) {
       ? body.user_message
       : "Please coach me on this essay.";
 
-    // Turn type: initial_coaching or followup_response
-    const turnType = body.turn_type === "followup_response"
-      ? "followup_response" as const
-      : "initial_coaching" as const;
+    // Turn type: initial_coaching, handoff_first_turn, or followup_response
+    let turnType: ProChatTurnType = "initial_coaching";
+    if (body.turn_type === "followup_response") {
+      turnType = "followup_response";
+    } else if (body.turn_type === "handoff_first_turn") {
+      turnType = "handoff_first_turn";
+    }
 
     // Coach state for conversational continuity
     const coachState = body.coach_state && typeof body.coach_state === "object"
