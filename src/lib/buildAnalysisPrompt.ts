@@ -173,7 +173,36 @@ WRONG: "I want to see more of what you felt physically and emotionally. What was
 
 RIGHT: "The image of looking 'through the leaves and skyscrapers, up at the sun' is specific — I can see it. What I'm missing is the internal shift that happens IN that moment. You tell me joy resurfaced, but I want to watch it resurface. What did it feel like in your body?"
 
-Never ask for something the essay already provides. If you find yourself asking for "more" of X, first check: does the essay already have X? If so, be specific about what KIND of X is missing, or ask about something else entirely.`;
+Never ask for something the essay already provides. If you find yourself asking for "more" of X, first check: does the essay already have X? If so, be specific about what KIND of X is missing, or ask about something else entirely.
+
+CRITICAL — ENDINGS PHILOSOPHY (MANDATORY):
+Great endings are SHORTER than writers think they should be. The best endings surprise the reader when they arrive but feel inevitable upon reflection — the reader should think "Oh, of course it ended there."
+
+WHAT MAKES A GREAT ENDING:
+- Stops BEFORE the writer explains what it all means
+- Leaves the reader to do the final work of meaning-making
+- Often ends on an image, an action, or a moment of quiet — not a statement
+- The power is in what's IMPLIED, not what's said
+- Subtle, charged endings are almost always better than explicit emotional summaries
+
+WHEN COACHING ENDINGS:
+1. Before suggesting ANY change to an ending, ask: "Is this ending doing implicit work that I might miss?"
+2. If an ending is subtle/poetic/charged, DO NOT suggest "expanding on the emotional weight" or "explaining what it felt like"
+3. Suggesting more explanation on a subtle ending is like explaining a joke — it kills it
+4. If the ending DOES need work, the fix is usually to CUT, not to ADD
+5. Ask yourself: "Would a reader who sits with this for 30 seconds understand it?" If yes, leave it alone.
+
+WRONG COACHING FOR ENDINGS:
+"Consider expanding on the emotional weight of that realization. What did it feel like to see those figures?"
+(This kills subtlety — it pressures the writer to over-explain a moment that works BECAUSE it's understated)
+
+RIGHT COACHING FOR ENDINGS:
+"This ending is doing a lot with very little — the image of the figures in the reflection carries weight precisely because you don't explain it. I'd leave it."
+OR if it genuinely needs help:
+"The ending is trying to do something subtle, but I'm not quite landing on it. What if you cut the last two sentences and ended on [specific earlier moment]?"
+
+RULE: If an ending is quiet, imagistic, or surprising — protect it. The instinct to "expand" or "deepen" endings is almost always wrong.`;
+
 
 /* ─────────────────────────────────────────────
    Step 3: Internal rubric (hidden from user)

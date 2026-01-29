@@ -400,6 +400,43 @@ function SimpleMarkdown({ text }: { text: string }) {
 }
 
 /* ══════════════════════════════════════════
+   Streaming text component (typewriter effect)
+   ══════════════════════════════════════════ */
+function StreamingText({ text, onComplete }: { text: string; onComplete?: () => void }) {
+  const [displayedText, setDisplayedText] = useState("");
+  const [isComplete, setIsComplete] = useState(false);
+  const indexRef = useRef(0);
+
+  useEffect(() => {
+    indexRef.current = 0;
+    setDisplayedText("");
+    setIsComplete(false);
+
+    // Stream words with natural pacing
+    const words = text.split(/(\s+)/); // Keep whitespace
+    let currentIndex = 0;
+
+    const interval = setInterval(() => {
+      if (currentIndex < words.length) {
+        // Add 1-3 words at a time for natural flow
+        const wordsToAdd = Math.min(1 + Math.floor(Math.random() * 2), words.length - currentIndex);
+        const newWords = words.slice(currentIndex, currentIndex + wordsToAdd).join("");
+        setDisplayedText(prev => prev + newWords);
+        currentIndex += wordsToAdd;
+      } else {
+        clearInterval(interval);
+        setIsComplete(true);
+        onComplete?.();
+      }
+    }, 30 + Math.random() * 20); // 30-50ms per batch
+
+    return () => clearInterval(interval);
+  }, [text, onComplete]);
+
+  return <SimpleMarkdown text={isComplete ? text : displayedText} />;
+}
+
+/* ══════════════════════════════════════════
    Pro chat view
    ══════════════════════════════════════════ */
 function ProChatView({
@@ -416,10 +453,24 @@ function ProChatView({
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  // Track which message is currently streaming
+  const [streamingIndex, setStreamingIndex] = useState<number | null>(null);
+  const prevMessagesLength = useRef(messages.length);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+  }, [messages, loading, streamingIndex]);
+
+  // Detect when a new assistant message arrives and start streaming it
+  useEffect(() => {
+    if (messages.length > prevMessagesLength.current) {
+      const newMsg = messages[messages.length - 1];
+      if (newMsg.role === "assistant") {
+        setStreamingIndex(messages.length - 1);
+      }
+    }
+    prevMessagesLength.current = messages.length;
+  }, [messages]);
 
   function handleSend() {
     const text = input.trim();
@@ -435,12 +486,23 @@ function ProChatView({
     }
   }
 
+  function handleStreamComplete() {
+    setStreamingIndex(null);
+  }
+
   return (
-    <div className="mt-8 flex flex-col rounded-2xl border border-zinc-200 bg-zinc-50 overflow-hidden" style={{ minHeight: "420px" }}>
+    <div
+      className="mt-8 flex flex-col rounded-2xl border border-zinc-200 bg-zinc-50 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500"
+      style={{ minHeight: "420px" }}
+    >
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-5 space-y-5" style={{ maxHeight: "60vh" }}>
         {messages.map((msg, i) => (
-          <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+          <div
+            key={i}
+            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}
+            style={{ animationDelay: `${Math.min(i * 50, 200)}ms` }}
+          >
             <div
               className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                 msg.role === "user"
@@ -449,7 +511,11 @@ function ProChatView({
               }`}
             >
               {msg.role === "assistant" ? (
-                <SimpleMarkdown text={msg.content} />
+                streamingIndex === i ? (
+                  <StreamingText text={msg.content} onComplete={handleStreamComplete} />
+                ) : (
+                  <SimpleMarkdown text={msg.content} />
+                )
               ) : (
                 <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
               )}
@@ -458,12 +524,12 @@ function ProChatView({
         ))}
 
         {loading && (
-          <div className="flex justify-start">
+          <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="bg-white border border-zinc-200 rounded-2xl px-4 py-3">
               <div className="flex gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-zinc-300 animate-pulse" />
-                <span className="h-2 w-2 rounded-full bg-zinc-300 animate-pulse" style={{ animationDelay: "0.2s" }} />
-                <span className="h-2 w-2 rounded-full bg-zinc-300 animate-pulse" style={{ animationDelay: "0.4s" }} />
+                <span className="h-2 w-2 rounded-full bg-zinc-500 animate-pulse" />
+                <span className="h-2 w-2 rounded-full bg-zinc-500 animate-pulse" style={{ animationDelay: "0.2s" }} />
+                <span className="h-2 w-2 rounded-full bg-zinc-500 animate-pulse" style={{ animationDelay: "0.4s" }} />
               </div>
             </div>
           </div>
@@ -473,8 +539,8 @@ function ProChatView({
       </div>
 
       {/* Suggested actions */}
-      {suggestedActions.length > 0 && !loading && (
-        <div className="px-5 pb-2 flex flex-wrap gap-2">
+      {suggestedActions.length > 0 && !loading && streamingIndex === null && (
+        <div className="px-5 pb-2 flex flex-wrap gap-2 animate-in fade-in duration-300">
           {suggestedActions.map((action, i) => (
             <button
               key={i}
@@ -1017,6 +1083,30 @@ export default function AiEditorPage() {
                   <p className="mt-1 text-sm text-zinc-700">
                     {reportResult.student_output.concept_taught}
                   </p>
+                </div>
+                {/* Rubric scores */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-3">
+                    Rubric scores
+                  </p>
+                  <div className="space-y-2">
+                    {reportResult.analysis.rubric_scores.map((rs) => (
+                      <div key={rs.rubric_id} className="flex items-center gap-3">
+                        <span className="text-xs text-zinc-700 w-36 shrink-0">
+                          {RUBRIC_LABELS[rs.rubric_id] ?? rs.rubric_id}
+                        </span>
+                        <div className="flex-1 h-1.5 rounded-full bg-zinc-100">
+                          <div
+                            className={`h-1.5 rounded-full transition-all ${scoreColor(rs.score)}`}
+                            style={{ width: `${(rs.score / 5) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-xs tabular-nums text-zinc-500 w-6 text-right">
+                          {rs.score}/5
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
