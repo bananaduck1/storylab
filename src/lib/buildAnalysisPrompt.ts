@@ -360,7 +360,8 @@ STUDENT OUTPUT KEYS (FREE TIER):
   }
 
 ANALYSIS KEYS (internal):
-- rubric_scores: 8 items, R001-R008, each with rubric_id, score, evidence_spans, notes
+- rubric_scores: 8 items, R001-R008, each with rubric_id, score, anchor_quote, evidence_spans, notes
+  - anchor_quote: ONE verbatim excerpt from the essay (≤25 words) most relevant to this rubric criterion. If no line is clearly relevant, use "" and explain in notes.
 - weakest_dimensions: 1-3 rubric IDs
 - dominant_misconception: { misconception_id, confidence, evidence_spans, why_this_matters }
 - recommended_intervention: { intervention_id, rationale, effort_level, output_format (verbatim from interventions.json) }
@@ -389,7 +390,7 @@ Return EXACTLY ONE JSON object:
   },
   "analysis": {
     "rubric_scores": [
-      { "rubric_id": "R001", "score": 3, "evidence_spans": [], "notes": "" }
+      { "rubric_id": "R001", "score": 3, "anchor_quote": "", "evidence_spans": [], "notes": "" }
     ],
     "weakest_dimensions": ["R001"],
     "dominant_misconception": { "misconception_id": "M001", "confidence": 0.5, "evidence_spans": [], "why_this_matters": "" },

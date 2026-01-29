@@ -89,6 +89,7 @@ export type EvidenceSpan = {
 export type RubricScore = {
   rubric_id: string;
   score: number;
+  anchor_quote: string;
   evidence_spans: EvidenceSpan[];
   notes: string;
 };
