@@ -91,6 +91,7 @@ export type RubricScore = {
   score: number;
   evidence_spans: EvidenceSpan[];
   notes: string;
+  anchor_quote: string;
 };
 
 export type DominantMisconception = {

@@ -10,7 +10,7 @@ CRITICAL RULES:
 1. Output ONLY valid JSON matching the required_structure schema. No markdown, no commentary, no explanations outside the JSON.
 2. Do NOT rewrite the full essay. At most provide micro-snippets (≤2 sentences) only if necessary for evidence_spans.
 3. Always cite exact evidence from the essay in evidence_spans.quote. Use verbatim quotes.
-4. rubric_scores must include exactly 8 items, one for each R001–R008. Each must have rubric_id, score (1-5), evidence_spans array, and notes.
+4. rubric_scores must include exactly 8 items, one for each R001–R008. Each must have rubric_id, score (1-5), evidence_spans array, notes, and anchor_quote.
 5. Choose exactly ONE dominant_misconception (from misconceptions.json) and exactly ONE recommended_intervention (from interventions.json).
 6. recommended_intervention.output_format must be copied verbatim from the chosen intervention's output_format field in interventions.json.
 7. If content suggests unresolved crisis, trauma-dumping, or safety concerns, set meta.needs_human_escalation=true and add appropriate safety_flags, but still output valid JSON matching the schema.
@@ -24,7 +24,7 @@ CRITICAL OUTPUT RULES:
 - Do NOT add any keys that are not explicitly defined in analysis_schema.json
 - Do NOT include ghostwriting disclaimers, policy notes, or explanatory keys unless explicitly required by the schema
 - If a field is optional, include it as an empty string or empty array rather than inventing a new key
-- rubric_scores must include exactly 8 items, one for each rubric_id R001–R008
+- rubric_scores must include exactly 8 items, one for each rubric_id R001–R008, each with anchor_quote
 - Choose exactly ONE dominant_misconception and exactly ONE recommended_intervention
 - recommended_intervention.output_format must be copied verbatim from interventions.json
 - Do not include student_output.no_ghostwriting_note (this key is forbidden).
@@ -43,6 +43,14 @@ RUBRIC NOTES RULE:
 - rubric_scores.notes must be non-empty.
 - Notes should be 1 short sentence explaining the score in plain language.
 - Do NOT leave notes as empty strings.
+
+ANCHOR QUOTE RULE:
+- Each rubric_scores item MUST include an anchor_quote field.
+- anchor_quote is a single verbatim excerpt from the essay (≤ 25 words) that is most relevant to that rubric criterion.
+- The quote should be the line that best demonstrates the student's strength or weakness on that dimension.
+- Copy the quote EXACTLY as it appears in the essay—do not paraphrase or modify.
+- If no line is clearly relevant to a rubric criterion, set anchor_quote to an empty string and explain briefly in notes why no quote applies.
+- Include exactly ONE quote per rubric item—never multiple quotes.
 
 EVIDENCE REQUIREMENTS:
 - Every evidence_spans item MUST include BOTH:
@@ -164,14 +172,14 @@ You must return EXACTLY ONE JSON object in this exact shape:
   "schema_version": "1.0.0",
   "analysis": {
     "rubric_scores": [
-      { "rubric_id": "R001", "score": 3, "evidence_spans": [], "notes": "" },
-      { "rubric_id": "R002", "score": 3, "evidence_spans": [], "notes": "" },
-      { "rubric_id": "R003", "score": 3, "evidence_spans": [], "notes": "" },
-      { "rubric_id": "R004", "score": 3, "evidence_spans": [], "notes": "" },
-      { "rubric_id": "R005", "score": 3, "evidence_spans": [], "notes": "" },
-      { "rubric_id": "R006", "score": 3, "evidence_spans": [], "notes": "" },
-      { "rubric_id": "R007", "score": 3, "evidence_spans": [], "notes": "" },
-      { "rubric_id": "R008", "score": 3, "evidence_spans": [], "notes": "" }
+      { "rubric_id": "R001", "score": 3, "evidence_spans": [], "notes": "", "anchor_quote": "" },
+      { "rubric_id": "R002", "score": 3, "evidence_spans": [], "notes": "", "anchor_quote": "" },
+      { "rubric_id": "R003", "score": 3, "evidence_spans": [], "notes": "", "anchor_quote": "" },
+      { "rubric_id": "R004", "score": 3, "evidence_spans": [], "notes": "", "anchor_quote": "" },
+      { "rubric_id": "R005", "score": 3, "evidence_spans": [], "notes": "", "anchor_quote": "" },
+      { "rubric_id": "R006", "score": 3, "evidence_spans": [], "notes": "", "anchor_quote": "" },
+      { "rubric_id": "R007", "score": 3, "evidence_spans": [], "notes": "", "anchor_quote": "" },
+      { "rubric_id": "R008", "score": 3, "evidence_spans": [], "notes": "", "anchor_quote": "" }
     ],
     "weakest_dimensions": ["R001"],
     "dominant_misconception": {
