@@ -60,10 +60,7 @@ export async function analyzeEssay(essayText: string, tier: CoachingTier = "free
         "what_to_fix_first",
         "brief_explanation",
         "concept_taught",
-        "one_assignment",
-        "optional_next_step",
-        "revision_paths",
-        "questions_for_student",
+        "what_happens_next",
       ];
       const studentOutputObj = studentOutput as Record<string, unknown>;
       const unknownKeys = Object.keys(studentOutputObj).filter(

@@ -260,10 +260,7 @@ export function validateAnalysisOutput(
     "what_to_fix_first",
     "brief_explanation",
     "concept_taught",
-    "one_assignment",
-    "optional_next_step",
-    "revision_paths",
-    "questions_for_student",
+    "what_happens_next",
   ];
   requiredStudentFields.forEach((field) => {
     if (!(field in studentOutput)) {
@@ -271,17 +268,19 @@ export function validateAnalysisOutput(
     }
   });
 
-  if (studentOutput.one_assignment) {
-    const assignment = studentOutput.one_assignment as Record<string, unknown>;
-    const requiredAssignmentFields = ["title", "instructions", "time_estimate_minutes", "success_check"];
-    requiredAssignmentFields.forEach((field) => {
-      if (!(field in assignment)) {
-        errors.push(`student_output.one_assignment.${field} is required`);
+  // Validate what_happens_next
+  if (studentOutput.what_happens_next) {
+    const whatNext = studentOutput.what_happens_next as Record<string, unknown>;
+    const requiredWhatNextFields = ["direction_a", "direction_b", "why_dialogue_needed", "gate_question"];
+    requiredWhatNextFields.forEach((field) => {
+      if (!(field in whatNext)) {
+        errors.push(`student_output.what_happens_next.${field} is required`);
+      } else if (typeof whatNext[field] !== "string") {
+        errors.push(`student_output.what_happens_next.${field} must be a string`);
+      } else if ((whatNext[field] as string).trim().length === 0) {
+        errors.push(`student_output.what_happens_next.${field} must not be empty`);
       }
     });
-    if (typeof assignment.time_estimate_minutes !== "number") {
-      errors.push("student_output.one_assignment.time_estimate_minutes must be a number");
-    }
   }
 
   // Validate meta

@@ -121,23 +121,21 @@ export type OneAssignment = {
   success_check: string;
 };
 
-export type CoachingTier = "free" | "plus" | "pro";
+export type CoachingTier = "free" | "pro";
 
-export type RevisionPath = {
-  label: string;
-  description: string;
+export type WhatHappensNext = {
+  direction_a: string;
+  direction_b: string;
+  why_dialogue_needed: string;
+  gate_question: string;
 };
 
 export type StudentOutput = {
   headline: string;
   what_to_fix_first: string;
   brief_explanation: string;
-  no_ghostwriting_note: string;
-  one_assignment: OneAssignment;
-  optional_next_step: string;
   concept_taught: string;
-  revision_paths: RevisionPath[];
-  questions_for_student: string[];
+  what_happens_next: WhatHappensNext;
 };
 
 export type Meta = {
@@ -156,7 +154,7 @@ export type AnalysisOutput = {
 
 // ── Pro chat types ──
 
-export type ProChatTurnType = "initial_coaching" | "followup_response";
+export type ProChatTurnType = "initial_coaching" | "handoff_first_turn" | "followup_response";
 
 export type ProChatState = {
   last_question_asked: string;

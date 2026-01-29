@@ -35,7 +35,7 @@ HARD BOUNDARIES:
 - Never over-explain endings`;
 
 /* ─────────────────────────────────────────────
-   Gold-standard tone rules (Plus + Pro)
+   Gold-standard tone rules (Pro)
    ───────────────────────────────────────────── */
 const GOLD_STANDARD_TONE = `TONE TARGET (GOLD STANDARD — follow the spirit, not the exact words):
 Your coaching should sound like a smart, calm human who just read the essay carefully and is thinking out loud.
@@ -68,8 +68,8 @@ Examples of VARIED good openings:
 
 TRUST LANGUAGE RATE-LIMITING:
 "I trust / I believe / I buy" is allowed but OPTIONAL — not a required structure.
-- Do NOT use "I trust/I believe/I buy" in back-to-back Pro turns.
-- Do NOT use "I trust/I believe/I buy" more than once per Plus report unless the essay genuinely warrants it.
+- Do NOT use "I trust/I believe/I buy" in back-to-back turns.
+- Do NOT use "I trust/I believe/I buy" more than once per report unless the essay genuinely warrants it.
 - Whenever used, it MUST be anchored to a concrete textual detail (not generic praise).
 
 BALANCE WITHOUT FORCING PRAISE:
@@ -217,52 +217,38 @@ PRESERVE-FIRST:
 ANTI-MIDPOINT: Not all 3s. Max five 3s.`;
 
 /* ─────────────────────────────────────────────
-   Tier-specific rules for Free/Plus report mode
+   Tier-specific rules for Free report mode
+   (Pro uses chat mode via buildProChatPrompt)
    ───────────────────────────────────────────── */
 function getTierRules(tier: CoachingTier): string {
   if (tier === "free") {
-    return `TIER: FREE — DIAGNOSIS ONLY
-- brief_explanation: 2-4 sentences, first-person reader voice, driven by holistic thesis. Open with an honest, varied reader reaction.
-- what_to_fix_first: 1-2 sentences, specific and localized.
-- concept_taught: 2-3 sentences, one concept from first principles.
-- questions_for_student: empty array [].
-- revision_paths: empty array [].
-- headline: 1 sentence, starts with a specific reader reaction or observation (NOT "Your essay needs").
-- Tone: professional, evaluative, concise. No follow-up questions. No analogies.`;
-  }
-
-  if (tier === "plus") {
-    return `TIER: PLUS — SINGLE-ESSAY COACHING (REPORT FORMAT)
+    return `TIER: FREE — DIAGNOSIS WITH "WHAT HAPPENS NEXT" TEASER
 
 ${GOLD_STANDARD_TONE}
 
-- Be conversational and explanatory in tone. You are a teacher, not a grader.
-- headline: 1 sentence, varied honest reader reaction (see RULE A for options).
-- brief_explanation: 3-5 sentences. Ground in holistic thesis. Open naturally based on what strikes you. Teach, don't grade.
-- concept_taught: 3-5 sentences, first-principles explanation. Choose the most relevant concept:
-  • STORY VS PLOT: A story has beginning/middle/end. A plot is stricter: one event forces the next. "Without A, B would never have happened." Push toward the moment of change, not global causality.
-  • SYMPTOM VS ROOT CAUSE: "Sometimes what feels wrong isn't where the problem is. Like back pain — you feel it in your shoulder, but the issue is in your lower back."
-  • SHOW DON'T TELL: Don't tell an idea — give a thing that carries it. A baseball shows a father's love better than "my dad loved me." Names, sensory detail, small moments.
-  • ADMISSIONS OFFICER PSYCHOLOGY: Real people, thousands of essays, tired, skimming. "What are you doing to make them not stop reading?"
-  • MOVIE FRAMEWORK: "What's your favorite movie?" Map its arc to the essay's arc.
-- questions_for_student: 1-2 questions (plain strings). Genuinely curious, not rhetorical. Asking questions before prescribing is encouraged.
+OUTPUT STRUCTURE:
+- headline: 1 sentence, varied honest reader reaction (see RULE A).
+- brief_explanation: 3-5 sentences, first-person reader voice, driven by holistic thesis. Open with an honest, varied reader reaction.
+- what_to_fix_first: 1-2 sentences, specific and localized. Name the single most important thing.
+- concept_taught: 2-3 sentences, one concept from first principles. Explain it simply but don't fully develop it.
 
-CRITICAL — REVISION PATHS (MANDATORY, NEVER EMPTY):
-revision_paths MUST contain exactly 2 non-empty objects. This section must NEVER be blank.
-- Path A: label "Path A (safer)" — a structural or clarifying revision. 2-3 sentences describing what to change and what it helps the reader understand differently.
-- Path B: label "Path B (riskier)" — a more personal, reframing, or structural overhaul approach. 2-3 sentences describing what to change and what it helps the reader understand differently.
-If you cannot generate two distinct paths, re-analyze until you can. Two empty or near-identical paths is invalid output.
+CRITICAL — "WHAT HAPPENS NEXT" SECTION (MANDATORY):
+The Free report MUST end with a "what_happens_next" object that teases the coaching conversation WITHOUT answering the gate question.
 
-ASSIGNMENT TONE (MANDATORY):
-Micro-assignments must be framed as experiments, not school assignments:
-- Use phrasing like: "Let's try something…", "As an experiment…", "I'm curious what happens if…"
-- Do NOT use: "Your assignment:", "Your task:", "Complete the following:"
-- The tone should be invitational, not directive.
+what_happens_next contains:
+- direction_a: 2-3 sentences describing ONE possible revision direction the essay could take. Be specific to THIS essay. Example: "One direction: lean into the fabric store as your central image — let it carry the whole essay, cutting the list of other experiences."
+- direction_b: 2-3 sentences describing a DIFFERENT possible revision direction, ideally contrasting in approach. Example: "Another direction: the real essay might be about permission to want something for yourself. That would mean restructuring around the moment you gave yourself permission, not the activity itself."
+- why_dialogue_needed: 1-2 sentences explaining why a conversation is needed to choose. Example: "Which direction is right depends on what happened next — and I don't know that yet."
+- gate_question: ONE specific, open-ended question that would unlock the revision path. This question is ASKED but NOT ANSWERED. It should feel like the natural start of a coaching conversation. Example: "Can you tell me what happened right after that moment in the fabric store?"
 
-- one_assignment: One concrete micro-assignment framed as an experiment.
-- Do NOT reference other essays or make cross-essay claims.`;
+TONE FOR FREE TIER:
+- Professional but warm — you're showing them what real coaching sounds like
+- The "what_happens_next" section should feel like an invitation, not a hard sell
+- Make the gate_question genuinely curious, not rhetorical
+- The student should feel: "I want to answer that question"`;
   }
 
+  // Pro tier uses chat mode (buildProChatPrompt), not report mode
   return "";
 }
 
@@ -298,15 +284,17 @@ Return exactly ONE JSON object with these top-level keys: schema_version, reader
 - student_output: object (coaching — see tier rules)
 - meta: { safety_flags: [], needs_human_escalation: boolean, privacy_note: string, model_limits: string }
 
-STUDENT OUTPUT KEYS:
+STUDENT OUTPUT KEYS (FREE TIER):
 - headline (string, 1 sentence, varied honest reader reaction)
 - what_to_fix_first (string, 1-2 sentences, localized)
-- brief_explanation (string, 2-5 sentences, coaching voice, varied opening)
-- concept_taught (string, 2-5 sentences, first-principles)
-- one_assignment: { title: string, instructions: string (bullet format "• ...\\n• ..."), time_estimate_minutes: number, success_check: string }
-- optional_next_step (string, can be empty)
-- revision_paths (array, empty for free, exactly 2 non-empty objects for plus)
-- questions_for_student (array, empty for free, 1-2 strings for plus)
+- brief_explanation (string, 3-5 sentences, coaching voice, varied opening)
+- concept_taught (string, 2-3 sentences, first-principles)
+- what_happens_next: {
+    direction_a: string (2-3 sentences, specific revision direction),
+    direction_b: string (2-3 sentences, contrasting revision direction),
+    why_dialogue_needed: string (1-2 sentences, why conversation is needed),
+    gate_question: string (ONE specific question that unlocks the path — asked but NOT answered)
+  }
 
 ANALYSIS KEYS (internal):
 - rubric_scores: 8 items, R001-R008, each with rubric_id, score, evidence_spans, notes
@@ -349,10 +337,12 @@ Return EXACTLY ONE JSON object:
     "what_to_fix_first": "",
     "brief_explanation": "",
     "concept_taught": "",
-    "one_assignment": { "title": "", "instructions": "", "time_estimate_minutes": 20, "success_check": "" },
-    "optional_next_step": "",
-    "revision_paths": [],
-    "questions_for_student": []
+    "what_happens_next": {
+      "direction_a": "",
+      "direction_b": "",
+      "why_dialogue_needed": "",
+      "gate_question": ""
+    }
   },
   "meta": { "safety_flags": [], "needs_human_escalation": false, "privacy_note": "Do not store essay text.", "model_limits": "" }
 }
@@ -429,13 +419,40 @@ export function buildProChatPrompt(
 ): { system: string; messages: { role: "system" | "user" | "assistant"; content: string }[] } {
 
   const isFollowUp = turnType === "followup_response";
+  const isHandoff = turnType === "handoff_first_turn";
 
-  const turnBlock = isFollowUp
-    ? FOLLOWUP_TURN_RULES
-    : `TURN TYPE: initial_coaching
+  let turnBlock: string;
+  if (isFollowUp) {
+    turnBlock = FOLLOWUP_TURN_RULES;
+  } else if (isHandoff) {
+    turnBlock = `TURN TYPE: handoff_first_turn
+The student just received their Free tier analysis and answered the gate question to start a coaching conversation.
+
+CRITICAL CONTEXT:
+- The student has ALREADY seen a brief analysis of their essay (headline, what to fix, concept taught)
+- They saw TWO possible revision directions and a gate question
+- They are now ANSWERING that question to continue
+- Their message contains context like: "The coach asked: [question]" followed by their answer
+
+YOUR RESPONSE MUST:
+1. Acknowledge their answer naturally — show you heard them
+2. Use their answer to inform which revision direction makes more sense
+3. Provide your first real coaching insight based on what they shared
+4. Ask a follow-up question OR suggest a concrete next step
+5. NOT re-summarize the essay from scratch
+6. NOT repeat the gate question they just answered
+7. NOT give generic "thanks for sharing" responses — be specific
+
+TONE:
+- This is the start of a real conversation, not a report
+- Be warm but substantive — they answered your question, now move the thinking forward
+- Make them feel like the conversation was worth starting`;
+  } else {
+    turnBlock = `TURN TYPE: initial_coaching
 This is your FIRST response about this essay. Perform the full human-reader pass and provide initial coaching.`;
+  }
 
-  const stateBlock = isFollowUp && coachState
+  const stateBlock = (isFollowUp && coachState)
     ? `\nCONVERSATION STATE (from your previous turn):
 - Last question you asked: "${coachState.last_question_asked}"
 - Student's answer: "${coachState.last_user_answer}"
@@ -455,7 +472,7 @@ ${stateBlock}
 PRO COACHING MODE:
 You are NOT generating a report. You are talking to a student. Your response is a single coaching message in markdown.
 
-${isFollowUp ? "" : `RULE D — QUESTION-BEFORE-PRESCRIPTION (MANDATORY FOR PRO):
+${(isFollowUp || isHandoff) ? "" : `RULE D — QUESTION-BEFORE-PRESCRIPTION (MANDATORY FOR PRO):
 On your FIRST response, you MUST ask at least 1 clarifying question BEFORE giving concrete revision instructions.
 Do NOT prescribe fixes until you've asked. It's okay to not have all the answers yet.
 The only exception: if the user explicitly says "just tell me what to fix" or similar.
@@ -468,7 +485,7 @@ AVAILABLE TEACHING MODULES (use when relevant, not all at once):
 • MOVIE FRAMEWORK: Ask what their favorite movie is. Map its arc to the essay. Track lessons across conversations.
 
 CONVERSATION RULES:
-- ${isFollowUp ? "Acknowledge the student's last message, then advance by one step." : "Open with a varied, honest reader reaction (see RULE A). Choose naturally based on what strikes you first."}
+- ${isFollowUp ? "Acknowledge the student's last message, then advance by one step." : isHandoff ? "Acknowledge their answer to the gate question, then use it to guide your coaching." : "Open with a varied, honest reader reaction (see RULE A). Choose naturally based on what strikes you first."}
 - Frame critique as contrast: "which makes the one place I drift more noticeable."
 - Use localized critique — point to specific paragraphs/sentences, not blanket statements.
 - If the essay is broadly effective, say so: "This isn't broken — we're sharpening."
@@ -483,7 +500,7 @@ ${isFollowUp ? "" : `${HUMAN_READER_PASS}
 
 THREE-STEP ORDER FOR YOUR FIRST MESSAGE:
 1. Do the human-reader pass internally (include reader_reaction in JSON).
-2. Write coach_message_markdown driven by that reader pass. Open with varied, honest calibration.
+2. Write coach_message_markdown driven by that reader pass.${isHandoff ? " Acknowledge the student's answer first." : " Open with varied, honest calibration."}
 3. Score rubric internally (internal_rubric in JSON) — this does NOT appear in the coaching message.
 `}
 JSON OUTPUT:
@@ -496,7 +513,7 @@ Return valid JSON with these keys:
   "suggested_next_actions": ["..."],
   "coach_state": {
     "last_question_asked": "the main question you asked in this response (empty string if none)",
-    "last_user_answer": "${isFollowUp ? "the student's message you just responded to" : ""}",
+    "last_user_answer": "${isFollowUp ? "the student's message you just responded to" : isHandoff ? "the student's answer to the gate question" : ""}",
     "current_focus": "brief label for what the coaching is currently exploring, e.g. 'turning point timing' or 'specificity in paragraph 3'"
   },
   ${isFollowUp ? "" : `"internal_rubric": {
@@ -533,11 +550,17 @@ Return ONLY valid JSON. No markdown code blocks wrapping the JSON.`;
     { role: "system", content: system },
   ];
 
-  if (!isFollowUp) {
+  if (!isFollowUp && !isHandoff) {
     // Initial turn: include essay + user's first message
     messages.push({
       role: "user",
       content: `Here is my essay:\n\n---\n${essayText}\n---\n\n${userMessage || "Please coach me on this essay."}`,
+    });
+  } else if (isHandoff) {
+    // Handoff from Free tier: essay + student's answer to gate question
+    messages.push({
+      role: "user",
+      content: `Here is my essay:\n\n---\n${essayText}\n---\n\n${userMessage}`,
     });
   } else {
     // Follow-up: include essay as context, then replay conversation, then new message

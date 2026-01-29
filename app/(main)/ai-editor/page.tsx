@@ -27,14 +27,16 @@ const RUBRIC_LABELS: Record<string, string> = {
 };
 
 const TIER_OPTIONS = [
-  { value: "free", label: "Free", desc: "Diagnosis only" },
-  { value: "plus", label: "Plus", desc: "Coaching + revision paths" },
+  { value: "free", label: "Free", desc: "Diagnosis + next steps" },
   { value: "pro", label: "Pro", desc: "Conversational coaching" },
 ] as const;
 
-type Tier = "free" | "plus" | "pro";
+type Tier = "free" | "pro";
 
-/* ── report types (Free/Plus) ── */
+const FREE_USAGE_KEY = "storylab_free_uses";
+const FREE_USAGE_LIMIT = 3;
+
+/* ── report types (Free) ── */
 type EvidenceSpan = { quote: string; why_it_matters: string };
 type RubricScore = {
   rubric_id: string;
@@ -42,7 +44,12 @@ type RubricScore = {
   evidence_spans: EvidenceSpan[];
   notes: string;
 };
-type RevisionPath = { label: string; description: string };
+type WhatHappensNext = {
+  direction_a: string;
+  direction_b: string;
+  why_dialogue_needed: string;
+  gate_question: string;
+};
 type ReportResult = {
   analysis: {
     rubric_scores: RubricScore[];
@@ -65,15 +72,7 @@ type ReportResult = {
     what_to_fix_first: string;
     brief_explanation: string;
     concept_taught: string;
-    one_assignment: {
-      title: string;
-      instructions: string;
-      time_estimate_minutes: number;
-      success_check: string;
-    };
-    optional_next_step: string;
-    revision_paths: RevisionPath[];
-    questions_for_student: string[];
+    what_happens_next: WhatHappensNext;
   };
 };
 
@@ -145,10 +144,30 @@ function scoreLabel(s: number) {
 }
 
 /* ══════════════════════════════════════════
-   Report view (Free / Plus)
+   Report view (Free tier)
    ══════════════════════════════════════════ */
-function AnalysisReport({ data, tier, onUpgrade }: { data: ReportResult; tier: Tier; onUpgrade: () => void }) {
+function AnalysisReport({
+  data,
+  onStartChat,
+  chatInput,
+  setChatInput,
+  loading,
+}: {
+  data: ReportResult;
+  onStartChat: (msg: string) => void;
+  chatInput: string;
+  setChatInput: (v: string) => void;
+  loading: boolean;
+}) {
   const { analysis, student_output: so } = data;
+  const whn = so.what_happens_next;
+
+  function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (chatInput.trim()) onStartChat(chatInput.trim());
+    }
+  }
 
   return (
     <div className="mt-10 space-y-10">
@@ -183,34 +202,6 @@ function AnalysisReport({ data, tier, onUpgrade }: { data: ReportResult; tier: T
           {so.what_to_fix_first}
         </p>
       </section>
-
-      {/* Revision paths (Plus only) */}
-      {so.revision_paths && so.revision_paths.length > 0 && (
-        <section>
-          <h3 className="text-lg font-semibold tracking-tight text-zinc-950">
-            Two ways to revise
-          </h3>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            {so.revision_paths.map((path, i) => (
-              <div
-                key={i}
-                className={`rounded-2xl border p-5 ${
-                  i === 0
-                    ? "border-zinc-200 bg-white"
-                    : "border-amber-200 bg-amber-50/50"
-                }`}
-              >
-                <h4 className="text-sm font-semibold text-zinc-900">
-                  {path.label}
-                </h4>
-                <p className="mt-2 text-sm leading-relaxed text-zinc-700">
-                  {path.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* Rubric scores */}
       <section>
@@ -257,54 +248,6 @@ function AnalysisReport({ data, tier, onUpgrade }: { data: ReportResult; tier: T
         </div>
       </section>
 
-      {/* Assignment */}
-      <section className="rounded-2xl border border-zinc-200 bg-zinc-50 p-6">
-        <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
-          Your assignment
-        </h3>
-        <p className="mt-2 text-base font-semibold text-zinc-950">
-          {so.one_assignment.title}
-        </p>
-        <div className="mt-3 space-y-2 text-sm leading-relaxed text-zinc-700">
-          {so.one_assignment.instructions.split("\n").map((line, i) => (
-            <p key={i}>{line}</p>
-          ))}
-        </div>
-        <div className="mt-4 flex flex-wrap gap-4 text-xs text-zinc-500">
-          <span>~{so.one_assignment.time_estimate_minutes} min</span>
-          <span className="text-zinc-300">|</span>
-          <span>{so.one_assignment.success_check}</span>
-        </div>
-      </section>
-
-      {/* Questions for student (Plus only) */}
-      {so.questions_for_student && so.questions_for_student.length > 0 && (
-        <section className="rounded-2xl border border-zinc-200 bg-white p-6">
-          <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
-            Questions to think about
-          </h3>
-          <ul className="mt-3 space-y-2">
-            {so.questions_for_student.map((q, i) => (
-              <li key={i} className="text-sm leading-relaxed text-zinc-800">
-                {q}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {/* Optional next step */}
-      {so.optional_next_step && (
-        <section>
-          <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
-            Optional next step
-          </h3>
-          <p className="mt-2 text-sm leading-relaxed text-zinc-700">
-            {so.optional_next_step}
-          </p>
-        </section>
-      )}
-
       {/* Key insight */}
       <section className="rounded-2xl border border-zinc-200 bg-white p-6">
         <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
@@ -328,24 +271,73 @@ function AnalysisReport({ data, tier, onUpgrade }: { data: ReportResult; tier: T
         )}
       </section>
 
-      {/* Free tier upgrade CTA */}
-      {tier === "free" && (
-        <section className="rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50/50 p-8 text-center">
-          <h3 className="text-lg font-semibold text-zinc-900">
-            Want more personalized coaching?
-          </h3>
-          <p className="mt-2 text-sm text-zinc-600 max-w-md mx-auto">
-            Upgrade to Pro for interactive conversations with your coach and specific suggestions on exactly where to improve your essay.
+      {/* ═══ WHAT HAPPENS NEXT — THE WALL ═══ */}
+      <section className="rounded-2xl border-2 border-zinc-900 bg-zinc-900 p-8 text-white">
+        <h3 className="text-lg font-semibold tracking-tight">
+          What happens next
+        </h3>
+
+        {/* Two directions */}
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-xl bg-white/10 p-4">
+            <h4 className="text-xs font-semibold uppercase tracking-[0.15em] text-zinc-400">
+              One direction
+            </h4>
+            <p className="mt-2 text-sm leading-relaxed text-zinc-100">
+              {whn.direction_a}
+            </p>
+          </div>
+          <div className="rounded-xl bg-white/10 p-4">
+            <h4 className="text-xs font-semibold uppercase tracking-[0.15em] text-zinc-400">
+              Another direction
+            </h4>
+            <p className="mt-2 text-sm leading-relaxed text-zinc-100">
+              {whn.direction_b}
+            </p>
+          </div>
+        </div>
+
+        {/* Why dialogue needed */}
+        <p className="mt-6 text-sm leading-relaxed text-zinc-300">
+          {whn.why_dialogue_needed}
+        </p>
+
+        {/* Gate question */}
+        <div className="mt-6 rounded-xl bg-white/5 border border-white/10 p-5">
+          <p className="text-base font-medium text-white leading-relaxed">
+            &ldquo;{whn.gate_question}&rdquo;
           </p>
-          <button
-            type="button"
-            onClick={onUpgrade}
-            className="mt-5 inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white shadow-sm hover:bg-zinc-800 transition-colors"
-          >
-            Upgrade to Pro
-          </button>
-        </section>
-      )}
+        </div>
+
+        {/* In-place chat input */}
+        <div className="mt-6">
+          <label className="block text-xs font-medium text-zinc-400 mb-2">
+            Answer the question to continue
+          </label>
+          <div className="flex gap-2 items-end">
+            <textarea
+              rows={2}
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Type your answer here…"
+              className="flex-1 resize-none rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-white/40 focus:outline-none focus:ring-1 focus:ring-white/40"
+              disabled={loading}
+            />
+            <button
+              type="button"
+              onClick={() => chatInput.trim() && onStartChat(chatInput.trim())}
+              disabled={loading || !chatInput.trim()}
+              className="shrink-0 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-zinc-900 hover:bg-zinc-100 disabled:opacity-50 transition-colors"
+            >
+              {loading ? "Starting…" : "Start coaching"}
+            </button>
+          </div>
+          <p className="mt-3 text-xs text-zinc-500">
+            Pro tier unlocked — your first coaching session is free
+          </p>
+        </div>
+      </section>
     </div>
   );
 }
@@ -545,6 +537,9 @@ export default function AiEditorPage() {
   // Track if we're doing initial analysis (for progress bar)
   const [isInitialAnalysis, setIsInitialAnalysis] = useState(false);
 
+  // Handoff chat input (for Free → Pro transition)
+  const [handoffChatInput, setHandoffChatInput] = useState("");
+
   const handleFile = useCallback((f: File | null) => {
     if (!f) return;
     if (!isAcceptedFile(f)) {
@@ -733,6 +728,77 @@ export default function AiEditorPage() {
     }
   }
 
+  // ── Free → Pro handoff: start chat from gate question answer ──
+  async function handleHandoffToChat(userAnswer: string) {
+    if (!file || !reportResult) return;
+
+    setIsInitialAnalysis(true);
+    setLoading(true);
+    setError(null);
+
+    try {
+      let text = essayText;
+
+      // Extract text if not already cached
+      if (!text) {
+        if (file.name.endsWith(".txt") || file.type === "text/plain") {
+          text = await file.text();
+        } else {
+          const extractBody = new FormData();
+          extractBody.append("file", file);
+          const extractRes = await fetch("/api/extract-text", { method: "POST", body: extractBody });
+          const extractJson = await extractRes.json();
+          if (!extractRes.ok) {
+            setError(extractJson.error ?? "Could not extract text from file.");
+            setLoading(false);
+            return;
+          }
+          text = extractJson.text;
+        }
+        text = text.trim();
+        setEssayText(text);
+      }
+
+      // Build context-aware first message
+      const gateQuestion = reportResult.student_output.what_happens_next.gate_question;
+      const contextMsg = `The coach asked: "${gateQuestion}"\n\nMy answer: ${userAnswer}`;
+
+      // Send initial chat with handoff context
+      const chatRes = await fetch("/api/pro-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          essay_text: text,
+          user_message: contextMsg,
+          conversation_history: [],
+          turn_type: "handoff_first_turn",
+        }),
+      });
+
+      const chatJson = await chatRes.json();
+      if (!chatRes.ok) {
+        setError(chatJson.error ?? `Server error ${chatRes.status}`);
+        setLoading(false);
+        return;
+      }
+
+      const proResult = chatJson as ProChatResult;
+      setChatMessages([
+        { role: "user", content: userAnswer },
+        { role: "assistant", content: proResult.coach_message_markdown },
+      ]);
+      setChatSuggestedActions(proResult.suggested_next_actions ?? []);
+      if (proResult.coach_state) setCoachState(proResult.coach_state);
+      setChatStarted(true);
+      setReportResult(null); // Hide the report, show chat
+      setHandoffChatInput("");
+    } catch {
+      setError("Network error — could not reach server.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const isPro = tier === "pro";
   // Only show progress bar for initial analysis, not follow-ups
   const showProgress = loading && isInitialAnalysis;
@@ -898,8 +964,8 @@ export default function AiEditorPage() {
         </div>
       )}
 
-      {/* Pro chat view */}
-      {isPro && chatStarted && (
+      {/* Pro chat view (shown for Pro tier OR after Free→Pro handoff) */}
+      {chatStarted && (
         <ProChatView
           messages={chatMessages}
           loading={loading}
@@ -908,15 +974,14 @@ export default function AiEditorPage() {
         />
       )}
 
-      {/* Report view (Free / Plus) */}
-      {!isPro && reportResult && (
+      {/* Report view (Free tier) with in-place Pro handoff */}
+      {!chatStarted && reportResult && (
         <AnalysisReport
           data={reportResult}
-          tier={tier}
-          onUpgrade={() => {
-            setTier("pro");
-            resetResults();
-          }}
+          onStartChat={handleHandoffToChat}
+          chatInput={handoffChatInput}
+          setChatInput={setHandoffChatInput}
+          loading={loading}
         />
       )}
     </div>

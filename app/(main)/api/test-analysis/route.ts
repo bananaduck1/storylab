@@ -41,8 +41,8 @@ export async function POST(req: NextRequest) {
     const prompt = formData.get("prompt");
     const file = formData.get("file");
     const tierParam = formData.get("tier");
-    const tier = (typeof tierParam === "string" && ["free", "plus", "pro"].includes(tierParam))
-      ? tierParam as "free" | "plus" | "pro"
+    const tier = (typeof tierParam === "string" && ["free", "pro"].includes(tierParam))
+      ? tierParam as "free" | "pro"
       : "free";
 
     if (!file || !(file instanceof File)) {
