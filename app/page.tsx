@@ -101,51 +101,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Philosophy - Why start early */}
-        <section className="border-t border-zinc-200/70 py-14 sm:py-16">
-          <div className="grid gap-10 md:grid-cols-12 md:gap-8">
-            <div className="md:col-span-5">
-              <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
-                Why start early
-              </h2>
-              <p className="mt-4 text-sm leading-relaxed text-zinc-600">
-                Reading, writing, and thinking are skills that compound. The best college essays
-                aren't written in a month—they're built over years of practice.
-              </p>
-              <p className="mt-4 text-sm leading-relaxed text-zinc-600">
-                Students who start early develop intellectual voice naturally. By 12th grade, they
-                have something real to say, not just achievements to list.
-              </p>
-            </div>
-            <div className="md:col-span-7">
-              <dl className="grid gap-4 sm:grid-cols-3">
-                {[
-                  {
-                    k: "Compounding skills",
-                    v: "Reading and writing improve through consistent practice, not last-minute cramming.",
-                  },
-                  {
-                    k: "Intellectual voice",
-                    v: "Students learn to think and write with clarity and originality over time.",
-                  },
-                  {
-                    k: "Authentic essays",
-                    v: "Strong applications come from students who've developed their voice, not manufactured it.",
-                  },
-                ].map((item) => (
-                  <div
-                    key={item.k}
-                    className="rounded-2xl border border-zinc-200 bg-white p-5"
-                  >
-                    <dt className="text-sm font-semibold text-zinc-950">{item.k}</dt>
-                    <dd className="mt-2 text-sm leading-relaxed text-zinc-600">{item.v}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-          </div>
-        </section>
-
         {/* Why humanities */}
         <section className="border-t border-zinc-200/70 py-14 sm:py-16">
           <div className="grid gap-8 lg:grid-cols-[auto_1fr] lg:gap-12 lg:items-start">

@@ -70,20 +70,46 @@ export default function HumanitiesPage() {
         </section>
 
         <section className="mt-14">
-          <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
-            Why start early
-          </h2>
-          <div className="mt-6 max-w-3xl space-y-4 text-sm leading-relaxed text-zinc-600">
-            <p>
-              Reading and writing are skills that compound. Students who start in middle school
-              develop intellectual habits that become second nature by the time they write
-              college essays.
-            </p>
-            <p>
-              The goal isn't to prepare for a specific test or application. It's to build the
-              foundation that makes everything else easier: school assignments, standardized
-              tests, and eventually college applications.
-            </p>
+          <div className="grid gap-10 md:grid-cols-12 md:gap-8">
+            <div className="md:col-span-5">
+              <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
+                Why start early
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-zinc-600">
+                Reading, writing, and thinking are skills that compound. The best college essays
+                aren't written in a month—they're built over years of practice.
+              </p>
+              <p className="mt-4 text-base leading-relaxed text-zinc-600">
+                Students who start early develop intellectual voice naturally. By 12th grade, they
+                have something real to say, not just achievements to list.
+              </p>
+            </div>
+            <div className="md:col-span-7">
+              <dl className="grid gap-4 sm:grid-cols-3">
+                {[
+                  {
+                    k: "Compounding skills",
+                    v: "Reading and writing improve through consistent practice, not last-minute cramming.",
+                  },
+                  {
+                    k: "Intellectual voice",
+                    v: "Students learn to think and write with clarity and originality over time.",
+                  },
+                  {
+                    k: "Authentic essays",
+                    v: "Strong applications come from students who've developed their voice, not manufactured it.",
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.k}
+                    className="rounded-2xl border border-zinc-200 bg-white p-5"
+                  >
+                    <dt className="text-base font-semibold text-zinc-950">{item.k}</dt>
+                    <dd className="mt-2 text-base leading-relaxed text-zinc-600">{item.v}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
           </div>
         </section>
 
