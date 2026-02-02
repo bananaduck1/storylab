@@ -22,7 +22,7 @@ export default function Home() {
         />
         <div className="mt-12 flex flex-col gap-4 sm:flex-row sm:gap-6">
           <Link
-            href="/editor"
+            href="/ai-editor"
             className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-8 py-3 text-sm font-medium text-white shadow-sm shadow-zinc-900/15 hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
           >
             AI Editor
