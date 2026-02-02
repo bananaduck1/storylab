@@ -16,8 +16,13 @@ CRITICAL RULES:
 7. If content suggests unresolved crisis, trauma-dumping, or safety concerns, set meta.needs_human_escalation=true and add appropriate safety_flags, but still output valid JSON matching the schema.
 
 CRITICAL OUTPUT RULES:
-- Output must be a single JSON object with EXACTLY these top-level keys:
-  schema_version, analysis, student_output, meta
+- Output must be a single JSON object with EXACTLY these 4 top-level keys (no more, no less):
+  1. schema_version
+  2. analysis
+  3. student_output
+  4. meta
+- FORBIDDEN top-level keys: Do NOT include "reader_reaction", "feedback", "summary", or any other key not listed above.
+- IMPORTANT: "meta" is a TOP-LEVEL key. Do NOT nest meta inside student_output.
 - Return exactly ONE JSON object. Do not output two objects.
 - schema_version must be the string "1.0.0"
 - analysis must be an object and must NOT be omitted
@@ -239,7 +244,15 @@ ${JSON.stringify(data.rubricToMisconceptions, null, 2)}
 ALLOWED VALUES:
 ${JSON.stringify(data.analysisSchema.allowed_values, null, 2)}
 
-Return ONLY valid JSON matching the required_structure. No markdown code blocks, no explanations. Start with { and end with }.`;
+Return ONLY valid JSON matching the required_structure. No markdown code blocks, no explanations. Start with { and end with }.
+
+FINAL REMINDER - Your JSON must have EXACTLY these 4 top-level keys:
+- "schema_version" (string)
+- "analysis" (object with rubric_scores, weakest_dimensions, dominant_misconception, recommended_intervention)
+- "student_output" (object with headline, what_to_fix_first, brief_explanation, one_assignment, optional_next_step)
+- "meta" (object with safety_flags, needs_human_escalation, privacy_note, model_limits)
+
+Do NOT include "reader_reaction" or any other top-level key. "meta" goes at the TOP LEVEL, not inside student_output.`;
 
   return { system, user };
 }
