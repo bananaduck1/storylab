@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Home",
@@ -47,21 +48,24 @@ export default function Home() {
           </div>
         </section>
 
-        {/* What We Do - Two paths */}
+        {/* What We Do - Three paths */}
         <section className="border-t border-zinc-200/70 py-14 sm:py-16">
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
-                Two paths. One foundation.
+                Three paths. One foundation.
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">
-                Humanities foundations build the skills. College applications put them to use.
+                Humanities foundations build the skills. College and transfer applications put them to use.
               </p>
             </div>
           </div>
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6">
-              <h3 className="text-lg font-semibold tracking-tight text-zinc-950">
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            <Link
+              href="/academy/humanities"
+              className="group rounded-2xl border border-zinc-200 bg-white p-6 transition-colors hover:border-zinc-300 hover:bg-zinc-50"
+            >
+              <h3 className="text-lg font-semibold tracking-tight text-zinc-950 group-hover:text-zinc-700">
                 Humanities Foundations (7th-11th grade)
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-zinc-600">
@@ -69,16 +73,31 @@ export default function Home() {
                 intellectual voice. The skills that compound over years and make strong college
                 essays possible.
               </p>
-            </div>
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6">
-              <h3 className="text-lg font-semibold tracking-tight text-zinc-950">
-                College Applications (12th grade)
+            </Link>
+            <Link
+              href="/academy/applications"
+              className="group rounded-2xl border border-zinc-200 bg-white p-6 transition-colors hover:border-zinc-300 hover:bg-zinc-50"
+            >
+              <h3 className="text-lg font-semibold tracking-tight text-zinc-950 group-hover:text-zinc-700">
+                College Applications (11th-12th grade)
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-zinc-600">
-                11th and 12th grade. Personal statements, supplements, positioning. We help students
-                apply the foundation they've built to tell their story clearly and authentically.
+                Personal statements, supplements, positioning. We help students apply the foundation
+                they've built to tell their story clearly and authentically.
               </p>
-            </div>
+            </Link>
+            <Link
+              href="/academy/transfer"
+              className="group rounded-2xl border border-zinc-200 bg-white p-6 transition-colors hover:border-zinc-300 hover:bg-zinc-50"
+            >
+              <h3 className="text-lg font-semibold tracking-tight text-zinc-950 group-hover:text-zinc-700">
+                Transfer Applications (11th-12th grade)
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+                For students transferring from another university to a more selective one. We help
+                craft a compelling narrative around your academic journey and growth.
+              </p>
+            </Link>
           </div>
         </section>
 
