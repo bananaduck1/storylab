@@ -76,15 +76,29 @@ li {
 
 /* Scroll snap sections */
 .scroll-snap-container {
-  scroll-snap-type: y mandatory;
+  /* proximity = snaps when near a snap point, avoids fighting fast swipes */
+  scroll-snap-type: y proximity;
   overflow-y: auto;
   height: 100svh;
   scroll-behavior: smooth;
+  /* Prevent scroll chaining to parent / rubber-band at edges */
+  overscroll-behavior-y: contain;
+  /* Account for sticky navbar (~80px + buffer) */
+  scroll-padding-top: 0;
 }
 
 .scroll-snap-section {
   scroll-snap-align: start;
+  /* Prevent momentum from skipping past this section */
+  scroll-snap-stop: always;
   min-height: 100svh;
+}
+
+/* Lock html/body to prevent competing scroll contexts */
+html:has(.scroll-snap-container),
+html:has(.scroll-snap-container) body {
+  overflow: hidden;
+  height: 100%;
 }
 
 @media (prefers-reduced-motion: reduce) {

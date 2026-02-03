@@ -100,7 +100,6 @@ export default function AcademyPage() {
       <div
         ref={containerRef}
         className="scroll-snap-container"
-        style={{ height: "100svh", overflowY: "auto" }}
       >
         {/* HERO */}
         <section
