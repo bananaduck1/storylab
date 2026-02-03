@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { TutorGrid, type Tutor } from "@/components/TutorCard";
+import { TutorStickySection, type Tutor } from "@/components/TutorCard";
 
 const testimonials = [
   {
@@ -267,33 +267,18 @@ export default function AcademyPage() {
           </div>
         </section>
 
-        {/* OUR TUTORS - Premium cards with parallax */}
+        {/* OUR TUTORS - Two-column sticky layout with scrollable cards */}
         <section
           ref={(el) => { sectionRefs.current[3] = el; }}
           id="tutors"
-          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center bg-white/50"
+          className="scroll-snap-section section-reveal min-h-[100svh] bg-white/50 py-16"
         >
-          <div className="mx-auto w-full max-w-6xl px-6 py-16">
-            <div className="max-w-3xl">
-              <h2 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-                Not just Ivy graduates, but Ivy admissions insiders.
-              </h2>
-              <p className="mt-6 text-lg leading-relaxed text-zinc-600">
-                Nationally awarded, published writers trained at Harvard and Yale, with firsthand
-                experience in Ivy admissions offices and multiple offers from schools including
-                Harvard, Yale, Princeton, and Stanford.
-              </p>
-            </div>
-            <TutorGrid tutors={tutors} />
-            <div className="mt-10">
-              <Link
-                href="/team"
-                className="inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
-              >
-                Meet the full team
-              </Link>
-            </div>
-          </div>
+          <TutorStickySection
+            tutors={tutors}
+            title="Not just Ivy graduates, but Ivy admissions insiders. Nationally awarded, published writers trained at Harvard and Yale, with firsthand experience in Ivy admissions offices and multiple offers from schools including Harvard, Yale, Princeton, and Stanford."
+            ctaHref="/team"
+            ctaLabel="Meet the full team"
+          />
         </section>
 
         {/* WHY THIS MATTERS - Now with photo-2 */}

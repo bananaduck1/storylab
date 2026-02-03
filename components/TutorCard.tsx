@@ -268,7 +268,8 @@ export function TutorGrid({ tutors }: { tutors: Tutor[] }) {
     };
 
     // Listen to the scroll container (parent with overflow-y: auto)
-    const scrollContainer = gridRef.current?.closest(".scroll-snap-container");
+    const scrollContainer = gridRef.current?.closest(".scroll-snap-container") ||
+                           gridRef.current?.closest(".tutor-scroll-container");
     const target = scrollContainer || window;
 
     target.addEventListener("scroll", handleScroll, { passive: true });
@@ -290,6 +291,172 @@ export function TutorGrid({ tutors }: { tutors: Tutor[] }) {
           <TutorCard tutor={tutor} scrollProgress={scrollProgresses[i]} />
         </div>
       ))}
+    </div>
+  );
+}
+
+/**
+ * Two-column sticky layout:
+ * - Left: sticky heading that stays fixed while scrolling
+ * - Right: scrollable list of tutor cards
+ * - Mobile: collapses to single column
+ */
+export function TutorStickySection({
+  tutors,
+  title,
+  ctaHref = "/team",
+  ctaLabel = "Meet the full team",
+}: {
+  tutors: Tutor[];
+  title: string;
+  ctaHref?: string;
+  ctaLabel?: string;
+}) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [scrollProgresses, setScrollProgresses] = useState<number[]>(
+    tutors.map(() => 0.5)
+  );
+  const rafRef = useRef<number>(0);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setPrefersReducedMotion(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  // Track scroll progress for parallax inside the right column
+  useEffect(() => {
+    if (prefersReducedMotion || !scrollContainerRef.current) return;
+
+    const container = scrollContainerRef.current;
+
+    const updateScrollProgress = () => {
+      const cards = container.querySelectorAll("[data-tutor-card]");
+      const containerHeight = container.clientHeight;
+
+      const progresses = Array.from(cards).map((card) => {
+        const rect = card.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        // Position relative to the scroll container
+        const relativeTop = rect.top - containerRect.top;
+        const cardCenter = relativeTop + rect.height / 2;
+        // 0 = card center at top of container, 1 = at bottom
+        const progress = cardCenter / containerHeight;
+        return Math.max(0, Math.min(1, progress));
+      });
+
+      setScrollProgresses(progresses);
+    };
+
+    const handleScroll = () => {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(updateScrollProgress);
+    };
+
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    updateScrollProgress();
+
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, [prefersReducedMotion]);
+
+  return (
+    <div className="mx-auto w-full max-w-6xl px-6">
+      {/* Two-column layout: sticky left, scrollable right (desktop) */}
+      {/* Single column on mobile */}
+      <div className="grid gap-8 md:grid-cols-[1fr_1.5fr] lg:grid-cols-[1fr_2fr]">
+        {/* Left column: sticky text */}
+        <div
+          className="md:sticky md:self-start"
+          style={{
+            // Sticky positioning: stays fixed while right column scrolls
+            // top = navbar height (~80px) + some padding
+            top: "calc(80px + 2rem)",
+          }}
+        >
+          <h2 className="text-2xl font-semibold leading-snug tracking-tight text-zinc-950 sm:text-3xl lg:text-4xl">
+            {title}
+          </h2>
+          <div className="mt-8 hidden md:block">
+            <a
+              href={ctaHref}
+              className="inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+            >
+              {ctaLabel}
+            </a>
+          </div>
+        </div>
+
+        {/* Right column: scrollable card list (desktop) / normal list (mobile) */}
+        {/* Desktop: fixed height scroll container */}
+        {/* Mobile: no scroll container, cards flow normally */}
+        <div className="relative">
+          {/* Desktop scroll container */}
+          <div
+            ref={scrollContainerRef}
+            className="
+              tutor-scroll-container
+              hidden md:block
+              overflow-y-auto
+              overscroll-contain
+            "
+            style={{
+              // Fixed height = viewport - navbar - section padding
+              height: "calc(100svh - 80px - 4rem)",
+              // Smooth scrolling (respects reduced motion via CSS)
+              scrollBehavior: prefersReducedMotion ? "auto" : "smooth",
+              // Subtle scroll snapping inside the container
+              scrollSnapType: "y proximity",
+            }}
+          >
+            <div className="space-y-6 pb-8">
+              {tutors.map((tutor, i) => (
+                <div
+                  key={tutor.id}
+                  data-tutor-card
+                  style={{
+                    // Snap each card to start
+                    scrollSnapAlign: "start",
+                    scrollSnapStop: "always",
+                  }}
+                >
+                  <TutorCard tutor={tutor} scrollProgress={scrollProgresses[i]} />
+                </div>
+              ))}
+            </div>
+
+            {/* Gradient fade at bottom to imply more content */}
+            <div
+              className="pointer-events-none sticky bottom-0 h-16 bg-gradient-to-t from-white/90 to-transparent"
+              aria-hidden="true"
+            />
+          </div>
+
+          {/* Mobile: normal list (no scroll container) */}
+          <div className="space-y-6 md:hidden">
+            {tutors.map((tutor) => (
+              <div key={tutor.id} data-tutor-card>
+                <TutorCard tutor={tutor} scrollProgress={0.5} />
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile CTA */}
+          <div className="mt-8 md:hidden">
+            <a
+              href={ctaHref}
+              className="inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+            >
+              {ctaLabel}
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
