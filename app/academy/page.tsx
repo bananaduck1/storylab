@@ -9,16 +9,16 @@ export const metadata: Metadata = {
 
 const testimonials = [
   {
-    quote: "StoryLab helped my daughter find her authentic voice. The essay she submitted was genuinely hers.",
-    school: "Harvard '29",
+    quote: "What stood out most was the genuine sense of care. Our meetings were effective and motivating, and having a real game plan made the entire process far less stressful—for both me and my mom.",
+    school: "Vanderbilt '29",
   },
   {
-    quote: "Working with StoryLab was transformative. They don't write for you—they teach you to write better.",
-    school: "Yale '28",
+    quote: "My tutor told me honestly when a draft felt cheesy and pushed me to rewrite it into something more sincere. They taught me to write logically and authentically, without over-flexing.",
+    school: "Northwestern '28",
   },
   {
-    quote: "The coaching went beyond college apps. My son learned skills he'll use for the rest of his life.",
-    school: "Princeton '29",
+    quote: "I worked with another company that has plenty of clients and experience, but it was only when I started working with StoryLab that my essays finally felt like mine.",
+    school: "UChicago '30",
   },
 ];
 
