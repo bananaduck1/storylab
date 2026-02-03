@@ -28,13 +28,12 @@ const RUBRIC_LABELS: Record<string, string> = {
 
 const TIER_OPTIONS = [
   { value: "free", label: "Free", desc: "Diagnosis only" },
-  { value: "plus", label: "Plus", desc: "Coaching + revision paths" },
   { value: "pro", label: "Pro", desc: "Conversational coaching" },
 ] as const;
 
-type Tier = "free" | "plus" | "pro";
+type Tier = "free" | "pro";
 
-/* ── report types (Free/Plus) ── */
+/* ── report types (Free) ── */
 type EvidenceSpan = { quote: string; why_it_matters: string };
 type RubricScore = {
   rubric_id: string;
@@ -146,7 +145,7 @@ function scoreLabel(s: number) {
 }
 
 /* ══════════════════════════════════════════
-   Report view (Free / Plus)
+   Report view (Free)
    ══════════════════════════════════════════ */
 function AnalysisReport({ data, tier, onUpgrade }: { data: ReportResult; tier: Tier; onUpgrade: () => void }) {
   const { analysis, student_output: so } = data;
@@ -185,7 +184,7 @@ function AnalysisReport({ data, tier, onUpgrade }: { data: ReportResult; tier: T
         </p>
       </section>
 
-      {/* Revision paths (Plus only) */}
+      {/* Revision paths (if provided) */}
       {so.revision_paths && so.revision_paths.length > 0 && (
         <section>
           <h3 className="text-lg font-semibold tracking-tight text-zinc-950">
@@ -283,7 +282,7 @@ function AnalysisReport({ data, tier, onUpgrade }: { data: ReportResult; tier: T
         </div>
       </section>
 
-      {/* Questions for student (Plus only) */}
+      {/* Questions for student (if provided) */}
       {so.questions_for_student && so.questions_for_student.length > 0 && (
         <section className="rounded-2xl border border-zinc-200 bg-white p-6">
           <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
