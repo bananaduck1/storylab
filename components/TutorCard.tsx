@@ -296,27 +296,95 @@ export function TutorGrid({ tutors }: { tutors: Tutor[] }) {
 }
 
 /**
+ * Compact tutor tile for the grid layout.
+ * Smaller, square aspect ratio with tight spacing.
+ */
+function CompactTutorTile({ tutor }: { tutor: Tutor }) {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [headshotError, setHeadshotError] = useState(false);
+
+  const showExpanded = isHovered || isFocused;
+
+  return (
+    <div
+      className="group relative overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md focus-within:shadow-md"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
+    >
+      {/* Square aspect ratio headshot */}
+      <div className="relative aspect-square overflow-hidden bg-zinc-100">
+        {headshotError ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-zinc-200">
+            <span className="text-3xl font-semibold text-zinc-400">
+              {tutor.name.split(" ").map((n) => n[0]).join("")}
+            </span>
+          </div>
+        ) : (
+          <Image
+            src={tutor.headshotSrc}
+            alt={`${tutor.name} headshot`}
+            fill
+            className={`object-cover transition-all duration-500 ${
+              showExpanded ? "scale-105 grayscale-0" : "grayscale"
+            }`}
+            onError={() => setHeadshotError(true)}
+          />
+        )}
+
+        {/* Bio overlay on hover */}
+        <div
+          className={`absolute inset-0 flex items-end bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 transition-opacity duration-300 ${
+            showExpanded ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <p className="text-xs leading-relaxed text-white/90 line-clamp-3">
+            {tutor.shortBio}
+          </p>
+        </div>
+      </div>
+
+      {/* Compact name/title */}
+      <div className="p-3">
+        <h3 className="text-sm font-semibold tracking-tight text-zinc-950">
+          {tutor.name}
+        </h3>
+        <p className="mt-0.5 text-xs text-zinc-500">{tutor.title}</p>
+      </div>
+
+      {/* Focusable overlay for keyboard users */}
+      <a
+        href="/team"
+        className="absolute inset-0 z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-zinc-400"
+        aria-label={`View ${tutor.name}'s profile`}
+        tabIndex={0}
+      />
+    </div>
+  );
+}
+
+/**
  * Two-column sticky layout:
- * - Left: sticky heading that stays fixed while scrolling
- * - Right: scrollable list of tutor cards
- * - Mobile: collapses to single column
+ * - Left: sticky headline/body that stays fixed while scrolling
+ * - Right: scrollable grid of compact tutor tiles (2 columns)
+ * - Mobile: collapses to single column, no internal scroll
  */
 export function TutorStickySection({
   tutors,
-  title,
+  headline,
+  body,
   ctaHref = "/team",
   ctaLabel = "Meet the full team",
 }: {
   tutors: Tutor[];
-  title: string;
+  headline: string;
+  body: string;
   ctaHref?: string;
   ctaLabel?: string;
 }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [scrollProgresses, setScrollProgresses] = useState<number[]>(
-    tutors.map(() => 0.5)
-  );
-  const rafRef = useRef<number>(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
@@ -327,121 +395,72 @@ export function TutorStickySection({
     return () => mq.removeEventListener("change", handler);
   }, []);
 
-  // Track scroll progress for parallax inside the right column
-  useEffect(() => {
-    if (prefersReducedMotion || !scrollContainerRef.current) return;
-
-    const container = scrollContainerRef.current;
-
-    const updateScrollProgress = () => {
-      const cards = container.querySelectorAll("[data-tutor-card]");
-      const containerHeight = container.clientHeight;
-
-      const progresses = Array.from(cards).map((card) => {
-        const rect = card.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-        // Position relative to the scroll container
-        const relativeTop = rect.top - containerRect.top;
-        const cardCenter = relativeTop + rect.height / 2;
-        // 0 = card center at top of container, 1 = at bottom
-        const progress = cardCenter / containerHeight;
-        return Math.max(0, Math.min(1, progress));
-      });
-
-      setScrollProgresses(progresses);
-    };
-
-    const handleScroll = () => {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = requestAnimationFrame(updateScrollProgress);
-    };
-
-    container.addEventListener("scroll", handleScroll, { passive: true });
-    updateScrollProgress();
-
-    return () => {
-      container.removeEventListener("scroll", handleScroll);
-      cancelAnimationFrame(rafRef.current);
-    };
-  }, [prefersReducedMotion]);
-
   return (
     <div className="mx-auto w-full max-w-6xl px-6">
       {/* Two-column layout: sticky left, scrollable right (desktop) */}
       {/* Single column on mobile */}
-      <div className="grid gap-8 md:grid-cols-[1fr_1.5fr] lg:grid-cols-[1fr_2fr]">
-        {/* Left column: sticky text */}
+      <div className="grid gap-10 md:grid-cols-[1fr_1.2fr] lg:gap-16">
+        {/* Left column: sticky text with calmer typography */}
         <div
-          className="md:sticky md:self-start"
+          className="max-w-[45ch] md:sticky md:self-start"
           style={{
             // Sticky positioning: stays fixed while right column scrolls
-            // top = navbar height (~80px) + some padding
+            // top = navbar height (~80px) + padding
             top: "calc(80px + 2rem)",
           }}
         >
-          <h2 className="text-2xl font-semibold leading-snug tracking-tight text-zinc-950 sm:text-3xl lg:text-4xl">
-            {title}
+          <h2 className="text-4xl font-semibold leading-[1.1] tracking-tight text-zinc-950 md:text-5xl lg:text-6xl">
+            {headline}
           </h2>
+          <p className="mt-6 max-w-[40ch] text-base leading-relaxed text-zinc-600 md:text-lg">
+            {body}
+          </p>
           <div className="mt-8 hidden md:block">
             <a
               href={ctaHref}
-              className="inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+              className="inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
             >
               {ctaLabel}
             </a>
           </div>
         </div>
 
-        {/* Right column: scrollable card list (desktop) / normal list (mobile) */}
-        {/* Desktop: fixed height scroll container */}
-        {/* Mobile: no scroll container, cards flow normally */}
+        {/* Right column: scrollable grid of compact tiles (desktop) */}
+        {/* Mobile: normal list, no scroll container */}
         <div className="relative">
-          {/* Desktop scroll container */}
+          {/* Desktop scroll container with contained scroll */}
           <div
             ref={scrollContainerRef}
-            className="
-              tutor-scroll-container
-              hidden md:block
-              overflow-y-auto
-              overscroll-contain
-            "
+            className="tutor-scroll-container hidden max-w-[680px] overflow-y-auto overscroll-y-contain md:block"
             style={{
               // Fixed height = viewport - navbar - section padding
               height: "calc(100svh - 80px - 4rem)",
-              // Smooth scrolling (respects reduced motion via CSS)
+              // Smooth iOS momentum scrolling
+              WebkitOverflowScrolling: "touch",
               scrollBehavior: prefersReducedMotion ? "auto" : "smooth",
-              // Subtle scroll snapping inside the container
-              scrollSnapType: "y proximity",
             }}
           >
-            <div className="space-y-6 pb-8">
-              {tutors.map((tutor, i) => (
-                <div
-                  key={tutor.id}
-                  data-tutor-card
-                  style={{
-                    // Snap each card to start
-                    scrollSnapAlign: "start",
-                    scrollSnapStop: "always",
-                  }}
-                >
-                  <TutorCard tutor={tutor} scrollProgress={scrollProgresses[i]} />
+            {/* 2-column grid of compact tiles */}
+            <div className="grid grid-cols-2 gap-4 pb-8">
+              {tutors.map((tutor) => (
+                <div key={tutor.id} data-tutor-card>
+                  <CompactTutorTile tutor={tutor} />
                 </div>
               ))}
             </div>
 
-            {/* Gradient fade at bottom to imply more content */}
+            {/* Gradient fade at bottom to hint more content */}
             <div
-              className="pointer-events-none sticky bottom-0 h-16 bg-gradient-to-t from-white/90 to-transparent"
+              className="pointer-events-none sticky bottom-0 h-12 bg-gradient-to-t from-white/90 to-transparent"
               aria-hidden="true"
             />
           </div>
 
-          {/* Mobile: normal list (no scroll container) */}
-          <div className="space-y-6 md:hidden">
+          {/* Mobile: single column, normal page scroll */}
+          <div className="grid grid-cols-1 gap-4 md:hidden">
             {tutors.map((tutor) => (
               <div key={tutor.id} data-tutor-card>
-                <TutorCard tutor={tutor} scrollProgress={0.5} />
+                <CompactTutorTile tutor={tutor} />
               </div>
             ))}
           </div>
@@ -450,7 +469,7 @@ export function TutorStickySection({
           <div className="mt-8 md:hidden">
             <a
               href={ctaHref}
-              className="inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+              className="inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
             >
               {ctaLabel}
             </a>

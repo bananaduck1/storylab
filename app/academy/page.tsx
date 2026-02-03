@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { TutorStickySection, type Tutor } from "@/components/TutorCard";
+import { useSectionScrollJacking } from "@/hooks/useSectionScrollJacking";
 
 const testimonials = [
   {
@@ -85,29 +86,35 @@ function ProgressDots({ activeIndex, onDotClick }: { activeIndex: number; onDotC
 export default function AcademyPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<(HTMLElement | null)[]>([]);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
+  // Use scroll-jacking hook for controlled section navigation
+  const {
+    activeIndex,
+    setActiveIndex: scrollToSection,
+    setContainerRef,
+    prefersReducedMotion,
+  } = useSectionScrollJacking({
+    sectionRefs,
+    duration: 450,
+    cooldown: 550,
+  });
+
+  // Set container ref for scroll-jacking boundary detection
   useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setPrefersReducedMotion(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
+    setContainerRef(containerRef.current);
+  }, [setContainerRef]);
 
+  // Add 'visible' class for CSS animations when sections come into view
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("visible");
-            const idx = sectionRefs.current.findIndex((ref) => ref === entry.target);
-            if (idx !== -1) setActiveIndex(idx);
           }
         });
       },
-      { threshold: 0.4, rootMargin: "-10% 0px -10% 0px" }
+      { threshold: 0.2, rootMargin: "-5% 0px -5% 0px" }
     );
 
     sectionRefs.current.forEach((section) => {
@@ -117,26 +124,19 @@ export default function AcademyPage() {
     return () => observer.disconnect();
   }, []);
 
-  const scrollToSection = (idx: number) => {
-    const section = sectionRefs.current[idx];
-    if (section) {
-      section.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
-    }
-  };
-
   return (
     <>
       <ProgressDots activeIndex={activeIndex} onDotClick={scrollToSection} />
 
       <div
         ref={containerRef}
-        className="scroll-snap-container"
+        className="academy-scroll-container"
       >
         {/* HERO */}
         <section
           ref={(el) => { sectionRefs.current[0] = el; }}
           id="hero"
-          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center"
+          className="academy-section section-reveal flex min-h-[100svh] items-center"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
             <div className="grid items-center gap-12 md:grid-cols-2">
@@ -179,7 +179,7 @@ export default function AcademyPage() {
         <section
           ref={(el) => { sectionRefs.current[1] = el; }}
           id="problem"
-          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center bg-white/50"
+          className="academy-section section-reveal flex min-h-[100svh] items-center bg-white/50"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
             <div className="grid items-center gap-12 md:grid-cols-2">
@@ -214,7 +214,7 @@ export default function AcademyPage() {
         <section
           ref={(el) => { sectionRefs.current[2] = el; }}
           id="paths"
-          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center"
+          className="academy-section section-reveal flex min-h-[100svh] items-center"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
             <h2 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
@@ -271,11 +271,12 @@ export default function AcademyPage() {
         <section
           ref={(el) => { sectionRefs.current[3] = el; }}
           id="tutors"
-          className="scroll-snap-section section-reveal min-h-[100svh] bg-white/50 py-16"
+          className="academy-section section-reveal min-h-[100svh] bg-white/50 py-16"
         >
           <TutorStickySection
             tutors={tutors}
-            title="Not just Ivy graduates, but Ivy admissions insiders. Nationally awarded, published writers trained at Harvard and Yale, with firsthand experience in Ivy admissions offices and multiple offers from schools including Harvard, Yale, Princeton, and Stanford."
+            headline="Not just Ivy graduates, but Ivy admissions insiders."
+            body="Nationally awarded, published writers trained at Harvard and Yale, with multiple offers from top schools and experience in Ivy admissions offices."
             ctaHref="/team"
             ctaLabel="Meet the full team"
           />
@@ -285,7 +286,7 @@ export default function AcademyPage() {
         <section
           ref={(el) => { sectionRefs.current[4] = el; }}
           id="why"
-          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center"
+          className="academy-section section-reveal flex min-h-[100svh] items-center"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
             <div className="grid items-center gap-12 md:grid-cols-2">
@@ -315,7 +316,7 @@ export default function AcademyPage() {
         <section
           ref={(el) => { sectionRefs.current[5] = el; }}
           id="testimonials"
-          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center bg-white/50"
+          className="academy-section section-reveal flex min-h-[100svh] items-center bg-white/50"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
             <h2 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
@@ -346,7 +347,7 @@ export default function AcademyPage() {
         <section
           ref={(el) => { sectionRefs.current[6] = el; }}
           id="cta"
-          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center"
+          className="academy-section section-reveal flex min-h-[100svh] items-center"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
             <div className="mx-auto max-w-3xl rounded-3xl border border-zinc-200 bg-white p-10 text-center sm:p-14">
