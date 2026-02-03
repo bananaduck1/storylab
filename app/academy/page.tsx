@@ -92,11 +92,9 @@ export default function AcademyPage() {
     activeIndex,
     setActiveIndex: scrollToSection,
     setContainerRef,
-    prefersReducedMotion,
   } = useSectionScrollJacking({
     sectionRefs,
-    duration: 450,
-    cooldown: 550,
+    duration: 400,
   });
 
   // Set container ref for scroll-jacking boundary detection

@@ -9,65 +9,45 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * for full-viewport sections. One wheel/trackpad gesture moves exactly one section.
  *
  * Key features:
- * - Lock/debounce prevents momentum "skipping" multiple sections
+ * - Debounce wheel events to prevent momentum skipping
  * - Smooth animated transitions with easing
  * - Nested scrollable areas scroll naturally until at boundary
  * - Respects prefers-reduced-motion
- * - Keyboard navigation support (Arrow keys, Page keys, Space)
+ * - Keyboard navigation support
  * - Disabled on touch devices (uses native scroll)
  */
 
 type UseSectionScrollJackingOptions = {
-  /** Array of section element refs */
   sectionRefs: React.MutableRefObject<(HTMLElement | null)[]>;
-  /** Callback when active section changes */
   onSectionChange?: (index: number) => void;
-  /** Animation duration in ms (default: 400) */
   duration?: number;
-  /** Cooldown between navigations in ms (default: 600) */
-  cooldown?: number;
-  /** Enable on touch devices (default: false) */
   enableOnTouch?: boolean;
 };
 
-// Ease-out cubic for smooth deceleration
 function easeOutCubic(t: number): number {
   return 1 - Math.pow(1 - t, 3);
 }
 
-/**
- * Check if an element can scroll in a given direction.
- * Returns true if the element has more content to scroll in that direction.
- */
 function canScrollInDirection(
   element: HTMLElement,
   direction: "up" | "down"
 ): boolean {
   const { scrollTop, scrollHeight, clientHeight } = element;
-
-  // Element must be scrollable (has overflow)
   const style = window.getComputedStyle(element);
   const isScrollable =
     style.overflowY === "auto" ||
     style.overflowY === "scroll" ||
-    // Handle Firefox's overflow-y: hidden with scrollHeight > clientHeight
     (scrollHeight > clientHeight && style.overflowY !== "visible");
 
   if (!isScrollable) return false;
 
   if (direction === "up") {
-    // Can scroll up if not at the top
-    return scrollTop > 0;
+    return scrollTop > 1;
   } else {
-    // Can scroll down if not at the bottom (with 1px tolerance)
     return scrollTop + clientHeight < scrollHeight - 1;
   }
 }
 
-/**
- * Find the nearest scrollable ancestor that can scroll in the given direction.
- * Starts from the event target and walks up the DOM tree.
- */
 function findScrollableAncestor(
   target: HTMLElement,
   direction: "up" | "down",
@@ -89,7 +69,6 @@ export function useSectionScrollJacking({
   sectionRefs,
   onSectionChange,
   duration = 400,
-  cooldown = 600,
   enableOnTouch = false,
 }: UseSectionScrollJackingOptions) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -97,16 +76,18 @@ export function useSectionScrollJacking({
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
-  // Use ref for activeIndex to avoid stale closure issues in event handlers
+  // Use ref for activeIndex to avoid stale closure
   const activeIndexRef = useRef(0);
 
-  // Navigation lock to prevent rapid inputs
-  const isLocked = useRef(false);
-  const lockTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Debounce state - tracks if we're currently in a scroll transition
+  const isAnimating = useRef(false);
   const animationRef = useRef<number | null>(null);
   const containerRef = useRef<HTMLElement | null>(null);
 
-  // Check for reduced motion preference
+  // Wheel delta accumulator for debouncing trackpad momentum
+  const wheelDeltaAccum = useRef(0);
+  const wheelTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     setPrefersReducedMotion(mq.matches);
@@ -115,7 +96,6 @@ export function useSectionScrollJacking({
     return () => mq.removeEventListener("change", handler);
   }, []);
 
-  // Detect touch device
   useEffect(() => {
     const isTouchCapable =
       "ontouchstart" in window ||
@@ -123,34 +103,29 @@ export function useSectionScrollJacking({
       // @ts-expect-error - msMaxTouchPoints is a legacy IE property
       navigator.msMaxTouchPoints > 0;
     setIsTouchDevice(isTouchCapable);
-    // Mark as ready after detecting touch capability
     setIsReady(true);
   }, []);
 
-  /**
-   * Animate scroll to a specific section using requestAnimationFrame.
-   * Uses easing for smooth motion. Respects reduced-motion preference.
-   */
   const scrollToSection = useCallback(
     (index: number, instant = false) => {
       const section = sectionRefs.current[index];
       if (!section) return false;
 
-      // Update both state and ref
       setActiveIndex(index);
       activeIndexRef.current = index;
       onSectionChange?.(index);
 
-      // Use instant scroll if reduced motion or requested
       if (prefersReducedMotion || instant) {
         section.scrollIntoView({ behavior: "auto", block: "start" });
+        isAnimating.current = false;
         return true;
       }
 
-      // Cancel any ongoing animation
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
+
+      isAnimating.current = true;
 
       const startY = window.scrollY;
       const targetY = section.getBoundingClientRect().top + window.scrollY;
@@ -166,6 +141,8 @@ export function useSectionScrollJacking({
 
         if (progress < 1) {
           animationRef.current = requestAnimationFrame(animate);
+        } else {
+          isAnimating.current = false;
         }
       };
 
@@ -175,17 +152,11 @@ export function useSectionScrollJacking({
     [sectionRefs, duration, prefersReducedMotion, onSectionChange]
   );
 
-  /**
-   * Navigate to the next or previous section.
-   * Includes lock mechanism to prevent rapid navigation.
-   * Returns true if navigation was triggered, false otherwise.
-   */
   const navigate = useCallback(
     (direction: "up" | "down"): boolean => {
-      // Check if navigation is locked (prevents rapid inputs)
-      if (isLocked.current) return false;
+      // Block if currently animating
+      if (isAnimating.current) return false;
 
-      // Use ref to get current index (avoids stale closure)
       const currentIndex = activeIndexRef.current;
       const sectionsCount = sectionRefs.current.filter(Boolean).length;
 
@@ -196,76 +167,68 @@ export function useSectionScrollJacking({
           ? Math.min(currentIndex + 1, sectionsCount - 1)
           : Math.max(currentIndex - 1, 0);
 
-      // Don't navigate if already at boundary
       if (newIndex === currentIndex) return false;
-
-      // Check if target section exists
       if (!sectionRefs.current[newIndex]) return false;
-
-      // Lock navigation during transition
-      isLocked.current = true;
-
-      // Clear any existing timeout
-      if (lockTimeoutRef.current) {
-        clearTimeout(lockTimeoutRef.current);
-      }
-
-      // Unlock after cooldown period
-      lockTimeoutRef.current = setTimeout(() => {
-        isLocked.current = false;
-      }, cooldown);
 
       scrollToSection(newIndex);
       return true;
     },
-    [sectionRefs, cooldown, scrollToSection]
+    [sectionRefs, scrollToSection]
   );
 
-  // Set up event listeners
   useEffect(() => {
-    // Wait until we've determined touch capability
     if (!isReady) return;
-
-    // Skip scroll-jacking on touch devices unless explicitly enabled
     if (isTouchDevice && !enableOnTouch) return;
 
     /**
-     * Handle wheel events with boundary detection for nested scrollables.
-     * Only triggers section navigation when:
-     * 1. No nested scrollable can scroll in the wheel direction
-     * 2. Navigation is not locked
+     * Wheel handler with debouncing.
+     * Accumulates wheel delta and only triggers navigation once per "gesture".
+     * This prevents trackpad momentum from skipping multiple sections.
      */
     const handleWheel = (e: WheelEvent) => {
       const target = e.target as HTMLElement;
       const rootElement = containerRef.current;
 
-      // Determine scroll direction from wheel delta
-      // Positive deltaY = scroll down, negative = scroll up
       const direction: "up" | "down" = e.deltaY > 0 ? "down" : "up";
 
-      // Check if there's a scrollable element under the pointer that can scroll
+      // Check for nested scrollable elements
       const scrollableAncestor = findScrollableAncestor(
         target,
         direction,
         rootElement
       );
 
-      // If a nested scrollable can handle this scroll, let it (don't prevent)
       if (scrollableAncestor) {
-        return;
+        return; // Let nested element scroll naturally
       }
 
-      // Try to navigate - only prevent default if navigation actually happens
-      const didNavigate = navigate(direction);
-      if (didNavigate) {
-        e.preventDefault();
+      // Prevent default to stop native scroll
+      e.preventDefault();
+
+      // If animating, ignore all wheel events
+      if (isAnimating.current) return;
+
+      // Accumulate delta for debouncing
+      wheelDeltaAccum.current += e.deltaY;
+
+      // Clear existing timeout
+      if (wheelTimeoutRef.current) {
+        clearTimeout(wheelTimeoutRef.current);
       }
+
+      // Set a short timeout to process accumulated delta
+      // This groups rapid wheel events into a single navigation
+      wheelTimeoutRef.current = setTimeout(() => {
+        const accum = wheelDeltaAccum.current;
+        wheelDeltaAccum.current = 0;
+
+        // Only navigate if delta is significant (prevents tiny trackpad movements)
+        if (Math.abs(accum) > 30) {
+          navigate(accum > 0 ? "down" : "up");
+        }
+      }, 50); // 50ms debounce window
     };
 
-    /**
-     * Handle keyboard navigation.
-     * Supports: ArrowUp/Down, PageUp/Down, Space/Shift+Space, Home/End
-     */
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       const isInputElement =
@@ -286,7 +249,7 @@ export function useSectionScrollJacking({
         case "PageUp":
           direction = "up";
           break;
-        case " ": // Space
+        case " ":
           direction = e.shiftKey ? "up" : "down";
           break;
         case "Home":
@@ -303,17 +266,11 @@ export function useSectionScrollJacking({
       }
 
       if (direction) {
-        const didNavigate = navigate(direction);
-        if (didNavigate) {
-          e.preventDefault();
-        }
+        e.preventDefault();
+        navigate(direction);
       }
     };
 
-    /**
-     * Handle hash changes (e.g., clicking anchor links or browser find).
-     * Updates active section based on the hash target.
-     */
     const handleHashChange = () => {
       const hash = window.location.hash.slice(1);
       if (!hash) return;
@@ -330,12 +287,10 @@ export function useSectionScrollJacking({
       }
     };
 
-    // Wheel event with passive: false to allow preventDefault
     window.addEventListener("wheel", handleWheel, { passive: false });
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("hashchange", handleHashChange);
 
-    // Check initial hash
     handleHashChange();
 
     return () => {
@@ -343,38 +298,26 @@ export function useSectionScrollJacking({
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("hashchange", handleHashChange);
 
-      // Cleanup animation and timeout on unmount
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
-      if (lockTimeoutRef.current) {
-        clearTimeout(lockTimeoutRef.current);
+      if (wheelTimeoutRef.current) {
+        clearTimeout(wheelTimeoutRef.current);
       }
     };
   }, [isReady, isTouchDevice, enableOnTouch, navigate, scrollToSection, sectionRefs]);
 
-  /**
-   * Set up the container element reference.
-   * This should be called with the root scrolling container element.
-   */
   const setContainerRef = useCallback((element: HTMLElement | null) => {
     containerRef.current = element;
   }, []);
 
   return {
-    /** Current active section index */
     activeIndex,
-    /** Set the active section index and scroll to it */
     setActiveIndex: scrollToSection,
-    /** Navigate to previous/next section */
     navigate,
-    /** Set the container element ref for boundary detection */
     setContainerRef,
-    /** Whether reduced motion is preferred */
     prefersReducedMotion,
-    /** Whether the device is touch-capable */
     isTouchDevice,
-    /** Whether scroll-jacking is currently active */
     isActive: isReady && (!isTouchDevice || enableOnTouch),
   };
 }
