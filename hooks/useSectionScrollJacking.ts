@@ -71,7 +71,7 @@ function canScrollInDirection(
 function findScrollableAncestor(
   target: HTMLElement,
   direction: "up" | "down",
-  rootElement: HTMLElement
+  rootElement: HTMLElement | null
 ): HTMLElement | null {
   let current: HTMLElement | null = target;
 
@@ -95,6 +95,10 @@ export function useSectionScrollJacking({
   const [activeIndex, setActiveIndex] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+
+  // Use ref for activeIndex to avoid stale closure issues in event handlers
+  const activeIndexRef = useRef(0);
 
   // Navigation lock to prevent rapid inputs
   const isLocked = useRef(false);
@@ -119,6 +123,8 @@ export function useSectionScrollJacking({
       // @ts-expect-error - msMaxTouchPoints is a legacy IE property
       navigator.msMaxTouchPoints > 0;
     setIsTouchDevice(isTouchCapable);
+    // Mark as ready after detecting touch capability
+    setIsReady(true);
   }, []);
 
   /**
@@ -128,16 +134,17 @@ export function useSectionScrollJacking({
   const scrollToSection = useCallback(
     (index: number, instant = false) => {
       const section = sectionRefs.current[index];
-      if (!section) return;
+      if (!section) return false;
 
-      // Update active index immediately for responsive UI
+      // Update both state and ref
       setActiveIndex(index);
+      activeIndexRef.current = index;
       onSectionChange?.(index);
 
       // Use instant scroll if reduced motion or requested
       if (prefersReducedMotion || instant) {
         section.scrollIntoView({ behavior: "auto", block: "start" });
-        return;
+        return true;
       }
 
       // Cancel any ongoing animation
@@ -163,6 +170,7 @@ export function useSectionScrollJacking({
       };
 
       animationRef.current = requestAnimationFrame(animate);
+      return true;
     },
     [sectionRefs, duration, prefersReducedMotion, onSectionChange]
   );
@@ -170,19 +178,29 @@ export function useSectionScrollJacking({
   /**
    * Navigate to the next or previous section.
    * Includes lock mechanism to prevent rapid navigation.
+   * Returns true if navigation was triggered, false otherwise.
    */
   const navigate = useCallback(
-    (direction: "up" | "down") => {
+    (direction: "up" | "down"): boolean => {
       // Check if navigation is locked (prevents rapid inputs)
-      if (isLocked.current) return;
+      if (isLocked.current) return false;
+
+      // Use ref to get current index (avoids stale closure)
+      const currentIndex = activeIndexRef.current;
+      const sectionsCount = sectionRefs.current.filter(Boolean).length;
+
+      if (sectionsCount === 0) return false;
 
       const newIndex =
         direction === "down"
-          ? Math.min(activeIndex + 1, sectionRefs.current.length - 1)
-          : Math.max(activeIndex - 1, 0);
+          ? Math.min(currentIndex + 1, sectionsCount - 1)
+          : Math.max(currentIndex - 1, 0);
 
       // Don't navigate if already at boundary
-      if (newIndex === activeIndex) return;
+      if (newIndex === currentIndex) return false;
+
+      // Check if target section exists
+      if (!sectionRefs.current[newIndex]) return false;
 
       // Lock navigation during transition
       isLocked.current = true;
@@ -198,24 +216,28 @@ export function useSectionScrollJacking({
       }, cooldown);
 
       scrollToSection(newIndex);
+      return true;
     },
-    [activeIndex, sectionRefs, cooldown, scrollToSection]
+    [sectionRefs, cooldown, scrollToSection]
   );
 
-  /**
-   * Handle wheel events with boundary detection for nested scrollables.
-   * Only triggers section navigation when:
-   * 1. No nested scrollable can scroll in the wheel direction
-   * 2. Navigation is not locked
-   */
-  const handleWheel = useCallback(
-    (e: WheelEvent) => {
-      // Skip if touch device and not explicitly enabled
-      if (isTouchDevice && !enableOnTouch) return;
+  // Set up event listeners
+  useEffect(() => {
+    // Wait until we've determined touch capability
+    if (!isReady) return;
 
+    // Skip scroll-jacking on touch devices unless explicitly enabled
+    if (isTouchDevice && !enableOnTouch) return;
+
+    /**
+     * Handle wheel events with boundary detection for nested scrollables.
+     * Only triggers section navigation when:
+     * 1. No nested scrollable can scroll in the wheel direction
+     * 2. Navigation is not locked
+     */
+    const handleWheel = (e: WheelEvent) => {
       const target = e.target as HTMLElement;
       const rootElement = containerRef.current;
-      if (!rootElement) return;
 
       // Determine scroll direction from wheel delta
       // Positive deltaY = scroll down, negative = scroll up
@@ -233,22 +255,18 @@ export function useSectionScrollJacking({
         return;
       }
 
-      // Prevent default scroll behavior and trigger section navigation
-      e.preventDefault();
-      navigate(direction);
-    },
-    [isTouchDevice, enableOnTouch, navigate]
-  );
+      // Try to navigate - only prevent default if navigation actually happens
+      const didNavigate = navigate(direction);
+      if (didNavigate) {
+        e.preventDefault();
+      }
+    };
 
-  /**
-   * Handle keyboard navigation.
-   * Supports: ArrowUp/Down, PageUp/Down, Space/Shift+Space, Home/End
-   */
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      // Skip if touch device and not enabled, or if user is in an input
-      if (isTouchDevice && !enableOnTouch) return;
-
+    /**
+     * Handle keyboard navigation.
+     * Supports: ArrowUp/Down, PageUp/Down, Space/Shift+Space, Home/End
+     */
+    const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       const isInputElement =
         target.tagName === "INPUT" ||
@@ -277,59 +295,48 @@ export function useSectionScrollJacking({
           return;
         case "End":
           e.preventDefault();
-          scrollToSection(sectionRefs.current.length - 1);
+          const sectionsCount = sectionRefs.current.filter(Boolean).length;
+          scrollToSection(sectionsCount - 1);
           return;
         default:
           return;
       }
 
       if (direction) {
-        e.preventDefault();
-        navigate(direction);
+        const didNavigate = navigate(direction);
+        if (didNavigate) {
+          e.preventDefault();
+        }
       }
-    },
-    [isTouchDevice, enableOnTouch, navigate, scrollToSection, sectionRefs]
-  );
+    };
 
-  /**
-   * Handle hash changes (e.g., clicking anchor links or browser find).
-   * Updates active section based on the hash target.
-   */
-  const handleHashChange = useCallback(() => {
-    const hash = window.location.hash.slice(1);
-    if (!hash) return;
+    /**
+     * Handle hash changes (e.g., clicking anchor links or browser find).
+     * Updates active section based on the hash target.
+     */
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      if (!hash) return;
 
-    const targetSection = document.getElementById(hash);
-    if (!targetSection) return;
+      const targetSection = document.getElementById(hash);
+      if (!targetSection) return;
 
-    const sectionIndex = sectionRefs.current.findIndex(
-      (ref) => ref === targetSection
-    );
+      const sectionIndex = sectionRefs.current.findIndex(
+        (ref) => ref === targetSection
+      );
 
-    if (sectionIndex !== -1 && sectionIndex !== activeIndex) {
-      scrollToSection(sectionIndex, true);
-    }
-  }, [sectionRefs, activeIndex, scrollToSection]);
-
-  /**
-   * Set up the container element reference.
-   * This should be called with the root scrolling container element.
-   */
-  const setContainerRef = useCallback((element: HTMLElement | null) => {
-    containerRef.current = element;
-  }, []);
-
-  // Set up event listeners
-  useEffect(() => {
-    // Skip scroll-jacking on touch devices unless explicitly enabled
-    if (isTouchDevice && !enableOnTouch) return;
-
-    const container = containerRef.current || window;
+      if (sectionIndex !== -1 && sectionIndex !== activeIndexRef.current) {
+        scrollToSection(sectionIndex, true);
+      }
+    };
 
     // Wheel event with passive: false to allow preventDefault
     window.addEventListener("wheel", handleWheel, { passive: false });
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("hashchange", handleHashChange);
+
+    // Check initial hash
+    handleHashChange();
 
     return () => {
       window.removeEventListener("wheel", handleWheel);
@@ -344,18 +351,15 @@ export function useSectionScrollJacking({
         clearTimeout(lockTimeoutRef.current);
       }
     };
-  }, [
-    isTouchDevice,
-    enableOnTouch,
-    handleWheel,
-    handleKeyDown,
-    handleHashChange,
-  ]);
+  }, [isReady, isTouchDevice, enableOnTouch, navigate, scrollToSection, sectionRefs]);
 
-  // Handle initial hash on mount
-  useEffect(() => {
-    handleHashChange();
-  }, [handleHashChange]);
+  /**
+   * Set up the container element reference.
+   * This should be called with the root scrolling container element.
+   */
+  const setContainerRef = useCallback((element: HTMLElement | null) => {
+    containerRef.current = element;
+  }, []);
 
   return {
     /** Current active section index */
@@ -371,6 +375,6 @@ export function useSectionScrollJacking({
     /** Whether the device is touch-capable */
     isTouchDevice,
     /** Whether scroll-jacking is currently active */
-    isActive: !isTouchDevice || enableOnTouch,
+    isActive: isReady && (!isTouchDevice || enableOnTouch),
   };
 }
