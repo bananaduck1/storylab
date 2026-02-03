@@ -16,12 +16,12 @@ export function LayoutWrapper({ children }: { children: ReactNode }) {
     return <PageTransition>{children}</PageTransition>;
   }
 
-  // Academy overview: navbar only, page manages its own scroll (scroll-snap)
+  // Academy overview: navbar only, page uses scroll-jacking via window.scrollTo
   if (isAcademyOverview) {
     return (
-      <div className="flex h-dvh flex-col overflow-hidden">
+      <div className="flex min-h-dvh flex-col">
         <Navbar />
-        <main id="content" className="flex-1 overflow-hidden">
+        <main id="content" className="flex-1">
           {children}
         </main>
       </div>

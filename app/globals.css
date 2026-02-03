@@ -74,31 +74,36 @@ li {
   animation: fade-in-up 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Scroll snap sections */
+/* Scroll snap sections (legacy - kept for other pages if needed) */
 .scroll-snap-container {
-  /* proximity = snaps when near a snap point, avoids fighting fast swipes */
   scroll-snap-type: y proximity;
   overflow-y: auto;
   height: 100svh;
   scroll-behavior: smooth;
-  /* Prevent scroll chaining to parent / rubber-band at edges */
   overscroll-behavior-y: contain;
-  /* Account for sticky navbar (~80px + buffer) */
   scroll-padding-top: 0;
 }
 
 .scroll-snap-section {
   scroll-snap-align: start;
-  /* Prevent momentum from skipping past this section */
   scroll-snap-stop: always;
   min-height: 100svh;
 }
 
-/* Lock html/body to prevent competing scroll contexts */
 html:has(.scroll-snap-container),
 html:has(.scroll-snap-container) body {
   overflow: hidden;
   height: 100%;
+}
+
+/* Academy scroll-jacking sections */
+/* Uses window.scrollTo for navigation, no scroll-snap */
+.academy-scroll-container {
+  /* Normal document flow - sections stack and window scrolls */
+}
+
+.academy-section {
+  min-height: 100svh;
 }
 
 @media (prefers-reduced-motion: reduce) {
