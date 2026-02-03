@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { TutorGrid, type Tutor } from "@/components/TutorCard";
 
 const testimonials = [
   {
@@ -16,6 +17,36 @@ const testimonials = [
   {
     quote: "I worked with another company that has plenty of clients and experience, but it was only when I started working with StoryLab that my essays finally felt like mine.",
     school: "UChicago '30",
+  },
+];
+
+const tutors: Tutor[] = [
+  {
+    id: "sam",
+    name: "Sam Ahn",
+    title: "Founder & Lead Coach",
+    headshotSrc: "/tutor-sam-headshot.jpg",
+    actionSrc: "/tutor-sam-action.jpg",
+    shortBio: "Harvard '19, Yale MFA. Former Ivy admissions reader.",
+    longBio: "Sam studied creative writing at Harvard and Yale, where he won national awards for his fiction. He worked in Yale's admissions office before founding StoryLab to bring elite humanities training to students worldwide.",
+  },
+  {
+    id: "olivia",
+    name: "Olivia O'Connor",
+    title: "Senior Writing Coach",
+    headshotSrc: "/tutor-olivia-headshot.jpg",
+    actionSrc: "/tutor-olivia-action.jpg",
+    shortBio: "Princeton '21. Published essayist and editor.",
+    longBio: "Olivia graduated summa cum laude from Princeton's creative writing program. Her essays have appeared in national publications, and she brings her editorial eye to help students find their authentic voice.",
+  },
+  {
+    id: "maren",
+    name: "Maren Wong",
+    title: "Applications Strategist",
+    headshotSrc: "/tutor-maren-headshot.jpg",
+    actionSrc: "/tutor-maren-action.jpg",
+    shortBio: "Stanford '20, Harvard MBA. Former admissions consultant.",
+    longBio: "Maren was admitted to Harvard, Yale, Princeton, and Stanford as an undergrad. She combines her humanities background with strategic insight to help students position themselves authentically for top schools.",
   },
 ];
 
@@ -236,73 +267,61 @@ export default function AcademyPage() {
           </div>
         </section>
 
-        {/* OUR TUTORS */}
+        {/* OUR TUTORS - Premium cards with parallax */}
         <section
           ref={(el) => { sectionRefs.current[3] = el; }}
           id="tutors"
           className="scroll-snap-section section-reveal flex min-h-[100svh] items-center bg-white/50"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
-            <div className="grid items-center gap-12 md:grid-cols-2">
-              <div className="max-w-xl">
-                <h2 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-                  Not just Ivy graduates. Ivy admissions insiders.
-                </h2>
-                <ul className="mt-8 space-y-4 text-base leading-relaxed text-zinc-600">
-                  <li className="flex gap-3">
-                    <span className="text-zinc-400">•</span>
-                    <span>Studied creative writing at Harvard and Yale</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="text-zinc-400">•</span>
-                    <span>National writing awards and published work</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="text-zinc-400">•</span>
-                    <span>Worked inside Ivy admissions offices</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="text-zinc-400">•</span>
-                    <span>Most admitted to multiple of Harvard, Yale, Princeton, Stanford</span>
-                  </li>
-                </ul>
-                <div className="mt-8">
-                  <Link
-                    href="/team"
-                    className="inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
-                  >
-                    Meet the team
-                  </Link>
-                </div>
-              </div>
-              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
-                <Image
-                  src="/photo-2.png"
-                  alt="Our expert tutors"
-                  fill
-                  className="object-cover"
-                />
-              </div>
+            <div className="max-w-3xl">
+              <h2 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+                Not just Ivy graduates, but Ivy admissions insiders.
+              </h2>
+              <p className="mt-6 text-lg leading-relaxed text-zinc-600">
+                Nationally awarded, published writers trained at Harvard and Yale, with firsthand
+                experience in Ivy admissions offices and multiple offers from schools including
+                Harvard, Yale, Princeton, and Stanford.
+              </p>
+            </div>
+            <TutorGrid tutors={tutors} />
+            <div className="mt-10">
+              <Link
+                href="/team"
+                className="inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+              >
+                Meet the full team
+              </Link>
             </div>
           </div>
         </section>
 
-        {/* WHY THIS MATTERS */}
+        {/* WHY THIS MATTERS - Now with photo-2 */}
         <section
           ref={(el) => { sectionRefs.current[4] = el; }}
           id="why"
           className="scroll-snap-section section-reveal flex min-h-[100svh] items-center"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
-            <div className="mx-auto max-w-3xl text-center">
-              <h2 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-                Why this matters beyond college
-              </h2>
-              <p className="mt-8 text-lg leading-relaxed text-zinc-600">
-                Admissions is the first test. The job market is the next. In an era where AI can perform
-                most technical skills, the people who succeed are the ones who can think clearly, write
-                persuasively, and make meaning. We train that.
-              </p>
+            <div className="grid items-center gap-12 md:grid-cols-2">
+              <div className="max-w-xl">
+                <h2 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+                  Why this matters beyond college
+                </h2>
+                <p className="mt-8 text-lg leading-relaxed text-zinc-600">
+                  Admissions is the first test. The job market is the next. In an era where AI can perform
+                  most technical skills, the people who succeed are the ones who can think clearly, write
+                  persuasively, and make meaning. We train that.
+                </p>
+              </div>
+              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
+                <Image
+                  src="/photo-2.png"
+                  alt="Skills that matter beyond college"
+                  fill
+                  className="object-cover"
+                />
+              </div>
             </div>
           </div>
         </section>
