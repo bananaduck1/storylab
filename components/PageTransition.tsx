@@ -39,8 +39,8 @@ export function PageTransition({ children }: { children: ReactNode }) {
       key={animationKey}
       className="animate-fade-in-up"
       style={{
-        animationDuration: "400ms",
-        animationTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
+        animationDuration: "600ms",
+        animationTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
         animationFillMode: "both",
       }}
     >

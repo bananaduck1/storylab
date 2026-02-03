@@ -1,12 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
 
-const academyLinks: Array<{ href: string; label: string }> = [
-  { href: "/academy", label: "Overview" },
+const programLinks: Array<{ href: string; label: string }> = [
   { href: "/academy/humanities", label: "Humanities Foundations" },
   { href: "/academy/applications", label: "College Applications" },
   { href: "/academy/transfer", label: "Transfer Applications" },
-  { href: "/about", label: "Our Approach" },
+];
+
+const academyLinks: Array<{ href: string; label: string }> = [
+  { href: "/academy", label: "Programs" },
   { href: "/team", label: "Our Tutors" },
   { href: "/results", label: "Results" },
   { href: "/faq", label: "FAQ" },
@@ -46,8 +48,22 @@ export function Navbar() {
                 Academy
               </Link>
               <div className="pointer-events-none absolute right-0 top-full pt-2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
-                <div className="min-w-[200px] rounded-lg border border-zinc-200 bg-white py-1 shadow-lg">
-                  {academyLinks.map((l) => (
+                <div className="min-w-[220px] rounded-lg border border-zinc-200 bg-white py-1 shadow-lg">
+                  {/* Programs section with nested items */}
+                  <div className="px-4 py-2">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Programs</p>
+                  </div>
+                  {programLinks.map((l) => (
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      className="block px-4 py-2 pl-6 text-sm text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950"
+                    >
+                      {l.label}
+                    </Link>
+                  ))}
+                  <div className="my-1 border-t border-zinc-100" />
+                  {academyLinks.slice(1).map((l) => (
                     <Link
                       key={l.href}
                       href={l.href}
@@ -83,7 +99,7 @@ export function Navbar() {
           >
             Academy
           </Link>
-          {academyLinks.slice(1).map((l) => (
+          {programLinks.map((l) => (
             <Link
               key={l.href}
               href={l.href}

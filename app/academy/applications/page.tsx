@@ -71,6 +71,28 @@ export default function ApplicationsPage() {
 
         <section className="mt-14">
           <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
+            Our philosophy
+          </h2>
+          <div className="mt-6 max-w-3xl space-y-4 text-sm leading-relaxed text-zinc-600">
+            <p>
+              Reading, writing, and thinking are skills that compound. The best college essays
+              aren't written in a month—they're built over years of practice. Students who start
+              early develop intellectual voice naturally.
+            </p>
+            <p>
+              In an AI-saturated era, the only real moat is human voice and original thinking.
+              We keep writing unmistakably human—original thought, specific images, and calm
+              structure over tech tricks or fear.
+            </p>
+            <p>
+              Strategy = empathy for the reader + ruthless specificity. No invented stats. No
+              pressure tactics. Just clear thinking and careful teaching.
+            </p>
+          </div>
+        </section>
+
+        <section className="mt-14">
+          <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">
             Our approach
           </h2>
           <div className="mt-6 max-w-3xl space-y-4 text-sm leading-relaxed text-zinc-600">
@@ -105,10 +127,10 @@ export default function ApplicationsPage() {
               Get started
             </Link>
             <Link
-              href="/"
+              href="/academy"
               className="inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
             >
-              Back to home
+              Back to Academy
             </Link>
           </div>
         </section>
