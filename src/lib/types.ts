@@ -152,3 +152,13 @@ export type StoryLabData = {
   rubricToMisconceptions: RubricToMisconceptions;
   analysisSchema: AnalysisSchema;
 };
+
+export type CoachingTier = "free" | "pro";
+
+export type ProChatTurnType = "initial_coaching" | "followup_response" | "handoff_first_turn";
+
+export type ProChatState = {
+  last_question_asked: string;
+  last_user_answer: string;
+  current_focus: string;
+};
