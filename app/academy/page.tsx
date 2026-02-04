@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { TutorStickySection, type Tutor } from "@/components/TutorCard";
-import { useSectionScrollJacking } from "@/hooks/useSectionScrollJacking";
 
 const testimonials = [
   {
@@ -86,33 +85,21 @@ function ProgressDots({ activeIndex, onDotClick }: { activeIndex: number; onDotC
 export default function AcademyPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<(HTMLElement | null)[]>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  // Use scroll-jacking hook for controlled section navigation
-  const {
-    activeIndex,
-    setActiveIndex: scrollToSection,
-    setContainerRef,
-  } = useSectionScrollJacking({
-    sectionRefs,
-    duration: 400,
-  });
-
-  // Set container ref for scroll-jacking boundary detection
-  useEffect(() => {
-    setContainerRef(containerRef.current);
-  }, [setContainerRef]);
-
-  // Add 'visible' class for CSS animations when sections come into view
+  // Track active section via IntersectionObserver
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("visible");
+            const idx = sectionRefs.current.findIndex((ref) => ref === entry.target);
+            if (idx !== -1) setActiveIndex(idx);
           }
         });
       },
-      { threshold: 0.2, rootMargin: "-5% 0px -5% 0px" }
+      { threshold: 0.5, rootMargin: "-10% 0px -10% 0px" }
     );
 
     sectionRefs.current.forEach((section) => {
@@ -122,19 +109,26 @@ export default function AcademyPage() {
     return () => observer.disconnect();
   }, []);
 
+  const scrollToSection = (idx: number) => {
+    const section = sectionRefs.current[idx];
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <>
       <ProgressDots activeIndex={activeIndex} onDotClick={scrollToSection} />
 
       <div
         ref={containerRef}
-        className="academy-scroll-container"
+        className="scroll-snap-container"
       >
         {/* HERO */}
         <section
           ref={(el) => { sectionRefs.current[0] = el; }}
           id="hero"
-          className="academy-section section-reveal flex min-h-[100svh] items-center"
+          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
             <div className="grid items-center gap-12 md:grid-cols-2">
@@ -177,7 +171,7 @@ export default function AcademyPage() {
         <section
           ref={(el) => { sectionRefs.current[1] = el; }}
           id="problem"
-          className="academy-section section-reveal flex min-h-[100svh] items-center bg-white/50"
+          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center bg-white/50"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
             <div className="grid items-center gap-12 md:grid-cols-2">
@@ -212,7 +206,7 @@ export default function AcademyPage() {
         <section
           ref={(el) => { sectionRefs.current[2] = el; }}
           id="paths"
-          className="academy-section section-reveal flex min-h-[100svh] items-center"
+          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
             <h2 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
@@ -269,7 +263,7 @@ export default function AcademyPage() {
         <section
           ref={(el) => { sectionRefs.current[3] = el; }}
           id="tutors"
-          className="academy-section section-reveal min-h-[100svh] bg-white/50 py-16"
+          className="scroll-snap-section section-reveal min-h-[100svh] bg-white/50 py-16"
         >
           <TutorStickySection
             tutors={tutors}
@@ -284,7 +278,7 @@ export default function AcademyPage() {
         <section
           ref={(el) => { sectionRefs.current[4] = el; }}
           id="why"
-          className="academy-section section-reveal flex min-h-[100svh] items-center"
+          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
             <div className="grid items-center gap-12 md:grid-cols-2">
@@ -314,7 +308,7 @@ export default function AcademyPage() {
         <section
           ref={(el) => { sectionRefs.current[5] = el; }}
           id="testimonials"
-          className="academy-section section-reveal flex min-h-[100svh] items-center bg-white/50"
+          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center bg-white/50"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
             <h2 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
@@ -345,7 +339,7 @@ export default function AcademyPage() {
         <section
           ref={(el) => { sectionRefs.current[6] = el; }}
           id="cta"
-          className="academy-section section-reveal flex min-h-[100svh] items-center"
+          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
             <div className="mx-auto max-w-3xl rounded-3xl border border-zinc-200 bg-white p-10 text-center sm:p-14">
