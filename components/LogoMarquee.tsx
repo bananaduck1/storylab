@@ -14,7 +14,7 @@ const logos: Logo[] = [
   { src: "/logos/stanford.png", alt: "Stanford" },
   { src: "/logos/northwestern.png", alt: "Northwestern" },
   { src: "/logos/uchicago.png", alt: "UChicago" },
-  { src: "/logos/vanderbilt.webp", alt: "Vanderbilt" },
+  { src: "/logos/vanderbilt.png", alt: "Vanderbilt" },
   { src: "/logos/jhu.png", alt: "Johns Hopkins" },
   { src: "/logos/northeastern.png", alt: "Northeastern" },
 ];
