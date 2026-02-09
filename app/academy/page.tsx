@@ -124,7 +124,6 @@ export default function AcademyPage() {
 
       <div
         ref={containerRef}
-        className="scroll-snap-container"
       >
         {/* HERO */}
         <section

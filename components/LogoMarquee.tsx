@@ -25,13 +25,13 @@ function LogoSet() {
       {logos.map((logo) => (
         <div
           key={logo.alt}
-          className="flex h-20 w-48 shrink-0 items-center justify-center sm:h-28 sm:w-64 md:h-32 md:w-72"
+          className="flex shrink-0 items-center justify-center"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={logo.src}
             alt={logo.alt}
-            className="max-h-full max-w-full object-contain opacity-60 transition-opacity duration-300 hover:opacity-100"
+            className="h-12 w-auto object-contain opacity-60 transition-opacity duration-300 hover:opacity-100 sm:h-16 md:h-20"
             loading="lazy"
           />
         </div>
