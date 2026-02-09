@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Literata } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "../components/Navbar";
-import { Footer } from "../components/Footer";
+import { LayoutWrapper } from "../components/LayoutWrapper";
 
 const literata = Literata({
   variable: "--font-literata",
@@ -52,13 +51,7 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <div className="flex min-h-dvh flex-col">
-          <Navbar />
-          <main id="content" className="flex-1">
-            {children}
-          </main>
-          <Footer />
-        </div>
+        <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>
   );

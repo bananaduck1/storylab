@@ -1,11 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
 
-const EMAIL_SAM = "mailto:storylab.ivy@gmail.com";
+const programLinks: Array<{ href: string; label: string }> = [
+  { href: "/academy/humanities", label: "Humanities Foundations" },
+  { href: "/academy/applications", label: "College Applications" },
+  { href: "/academy/transfer", label: "Transfer Applications" },
+];
 
-const navLinks: Array<{ href: string; label: string }> = [
-  { href: "/services", label: "Programs" },
-  { href: "/about", label: "Our Approach" },
+const academyLinks: Array<{ href: string; label: string }> = [
+  { href: "/academy", label: "Programs" },
   { href: "/team", label: "Our Tutors" },
   { href: "/results", label: "Results" },
   { href: "/faq", label: "FAQ" },
@@ -28,31 +31,75 @@ export function Navbar() {
           <span className="sr-only">Home</span>
         </Link>
 
-        <nav aria-label="Primary" className="hidden items-center gap-6 md:flex">
-          {navLinks.map((l) => (
+        <div className="hidden items-center gap-6 md:flex">
+          <nav aria-label="Primary" className="flex items-center gap-6">
             <Link
-              key={l.href}
-              href={l.href}
-              className="text-sm text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
+              href="/ai-editor"
+              className="text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
             >
-              {l.label}
+              AI Editor
             </Link>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-2">
-          <a
+            {/* Academy dropdown */}
+            <div className="group relative">
+              <Link
+                href="/academy"
+                className="text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
+              >
+                Academy
+              </Link>
+              <div className="pointer-events-none absolute right-0 top-full pt-2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
+                <div className="min-w-[220px] rounded-lg border border-zinc-200 bg-white py-1 shadow-lg">
+                  {/* Programs section with nested items */}
+                  <div className="px-4 py-2">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Programs</p>
+                  </div>
+                  {programLinks.map((l) => (
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      className="block px-4 py-2 pl-6 text-sm text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950"
+                    >
+                      {l.label}
+                    </Link>
+                  ))}
+                  <div className="my-1 border-t border-zinc-100" />
+                  {academyLinks.slice(1).map((l) => (
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      className="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950"
+                    >
+                      {l.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </nav>
+          <Link
             href="/contact"
             className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-zinc-900/15 hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
           >
             Get started
-          </a>
+          </Link>
         </div>
       </div>
 
       <nav aria-label="Primary (mobile)" className="border-t border-zinc-200/70 md:hidden">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-5 gap-y-2 px-6 py-3">
-          {navLinks.map((l) => (
+          <Link
+            href="/ai-editor"
+            className="text-sm font-medium text-zinc-900 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
+          >
+            AI Editor
+          </Link>
+          <Link
+            href="/academy"
+            className="text-sm font-medium text-zinc-900 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
+          >
+            Academy
+          </Link>
+          {programLinks.map((l) => (
             <Link
               key={l.href}
               href={l.href}
@@ -66,4 +113,3 @@ export function Navbar() {
     </header>
   );
 }
-

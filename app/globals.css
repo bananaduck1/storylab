@@ -36,6 +36,7 @@ body {
   background-attachment: fixed, fixed, fixed, scroll;
   color: var(--foreground);
   font-family: var(--font-body), ui-serif, serif;
+  font-size: 1.0625rem; /* 17px base - slightly larger than default 16px */
   line-height: 1.7;
   text-rendering: optimizeLegibility;
 }
@@ -55,4 +56,88 @@ h3 {
 p,
 li {
   line-height: 1.7;
+}
+
+/* Page transition animation */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Scroll snap sections (legacy - kept for other pages if needed) */
+.scroll-snap-container {
+  scroll-snap-type: y proximity;
+  overflow-y: auto;
+  height: 100svh;
+  scroll-behavior: smooth;
+  overscroll-behavior-y: contain;
+  scroll-padding-top: 0;
+}
+
+.scroll-snap-section {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  min-height: 100svh;
+}
+
+html:has(.scroll-snap-container),
+html:has(.scroll-snap-container) body {
+  overflow: hidden;
+  height: 100%;
+}
+
+/* Academy scroll-jacking sections */
+/* Uses window.scrollTo for navigation, no scroll-snap */
+.academy-scroll-container {
+  /* Normal document flow - sections stack and window scrolls */
+}
+
+.academy-section {
+  min-height: 100svh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-snap-container {
+    scroll-behavior: auto;
+  }
+  .animate-fade-in-up {
+    animation: none;
+  }
+  .section-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Section reveal animation */
+@keyframes section-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section-reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.section-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
 }

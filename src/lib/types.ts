@@ -91,6 +91,7 @@ export type RubricScore = {
   score: number;
   evidence_spans: EvidenceSpan[];
   notes: string;
+  anchor_quote: string;
 };
 
 export type DominantMisconception = {
@@ -150,4 +151,14 @@ export type StoryLabData = {
   interventions: InterventionsFile;
   rubricToMisconceptions: RubricToMisconceptions;
   analysisSchema: AnalysisSchema;
+};
+
+export type CoachingTier = "free" | "pro";
+
+export type ProChatTurnType = "initial_coaching" | "followup_response" | "handoff_first_turn";
+
+export type ProChatState = {
+  last_question_asked: string;
+  last_user_answer: string;
+  current_focus: string;
 };

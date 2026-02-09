@@ -103,6 +103,10 @@ export function validateAnalysisOutput(
       if (typeof s.notes !== "string") {
         errors.push(`analysis.rubric_scores[${index}].notes must be a string`);
       }
+
+      if (typeof s.anchor_quote !== "string") {
+        errors.push(`analysis.rubric_scores[${index}].anchor_quote must be a string`);
+      }
     });
 
     // Check all expected IDs are present

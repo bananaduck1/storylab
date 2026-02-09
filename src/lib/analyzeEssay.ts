@@ -58,6 +58,19 @@ export async function analyzeEssay(essayText: string): Promise<AnalysisOutput> {
     );
   }
   
+  // Check for forbidden top-level keys
+  if (parsed && typeof parsed === "object") {
+    const parsedObj = parsed as Record<string, unknown>;
+    const allowedTopLevelKeys = ["schema_version", "analysis", "student_output", "meta"];
+    const topLevelKeys = Object.keys(parsedObj);
+    const forbiddenKeys = topLevelKeys.filter((key) => !allowedTopLevelKeys.includes(key));
+    if (forbiddenKeys.length > 0) {
+      throw new Error(
+        `Forbidden top-level keys: ${forbiddenKeys.join(", ")}. Only allowed: ${allowedTopLevelKeys.join(", ")}.\n\nResponse (truncated):\n${truncateForLogs(content)}`
+      );
+    }
+  }
+
   // Check for unknown keys in student_output
   if (parsed && typeof parsed === "object" && "student_output" in parsed) {
     const studentOutput = (parsed as Record<string, unknown>).student_output;
