@@ -303,8 +303,10 @@ function CompactTutorTile({ tutor }: { tutor: Tutor }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [headshotError, setHeadshotError] = useState(false);
+  const [actionError, setActionError] = useState(false);
 
   const showExpanded = isHovered || isFocused;
+  const hasActionShot = tutor.actionSrc !== tutor.headshotSrc;
 
   return (
     <div
@@ -322,6 +324,46 @@ function CompactTutorTile({ tutor }: { tutor: Tutor }) {
               {tutor.name.split(" ").map((n) => n[0]).join("")}
             </span>
           </div>
+        ) : hasActionShot ? (
+          <>
+            {/* Headshot - visible by default */}
+            <div
+              className={`absolute inset-0 transition-opacity duration-500 ${
+                showExpanded ? "opacity-0" : "opacity-100"
+              }`}
+            >
+              <Image
+                src={tutor.headshotSrc}
+                alt={`${tutor.name} headshot`}
+                fill
+                className="object-cover"
+                onError={() => setHeadshotError(true)}
+              />
+            </div>
+            {/* Action shot - visible on hover */}
+            <div
+              className={`absolute inset-0 transition-opacity duration-500 ${
+                showExpanded ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              {actionError ? (
+                <Image
+                  src={tutor.headshotSrc}
+                  alt={`${tutor.name}`}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <Image
+                  src={tutor.actionSrc}
+                  alt={`${tutor.name} in action`}
+                  fill
+                  className="object-cover"
+                  onError={() => setActionError(true)}
+                />
+              )}
+            </div>
+          </>
         ) : (
           <Image
             src={tutor.headshotSrc}

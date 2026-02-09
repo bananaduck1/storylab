@@ -60,14 +60,15 @@ export function LogoMarquee() {
             {logos.map((logo) => (
               <div
                 key={logo.alt}
-                className="flex h-10 w-20 shrink-0 items-center justify-center sm:h-12 sm:w-28"
+                className="flex h-14 w-32 shrink-0 items-center justify-center sm:h-16 sm:w-40"
               >
                 <Image
                   src={logo.src}
                   alt={logo.alt}
-                  width={112}
-                  height={48}
-                  className="h-full w-full object-contain opacity-70 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
+                  width={160}
+                  height={64}
+                  unoptimized
+                  className="h-full w-full object-contain opacity-70 transition-opacity duration-300 hover:opacity-100"
                 />
               </div>
             ))}

@@ -293,22 +293,6 @@ export default function AcademyPage() {
                   most technical skills, the people who succeed are the ones who can think clearly, write
                   persuasively, and make meaning. We train that.
                 </p>
-                <div className="mt-8 flex items-center gap-8">
-                  <Image
-                    src="/why%20humanities/anthropic.png"
-                    alt="Anthropic"
-                    width={140}
-                    height={40}
-                    className="h-8 w-auto object-contain opacity-60 sm:h-10"
-                  />
-                  <Image
-                    src="/why%20humanities/jp%20morgan.png"
-                    alt="JP Morgan"
-                    width={140}
-                    height={40}
-                    className="h-8 w-auto object-contain opacity-60 sm:h-10"
-                  />
-                </div>
               </div>
               <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
                 <Image
@@ -316,6 +300,26 @@ export default function AcademyPage() {
                   alt="Skills that matter beyond college"
                   fill
                   className="object-cover"
+                />
+              </div>
+            </div>
+            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div className="overflow-hidden rounded-2xl border border-zinc-200 shadow-sm">
+                <Image
+                  src="/why%20humanities/anthropic.png"
+                  alt="Anthropic article screenshot"
+                  width={600}
+                  height={400}
+                  className="h-auto w-full object-contain"
+                />
+              </div>
+              <div className="overflow-hidden rounded-2xl border border-zinc-200 shadow-sm">
+                <Image
+                  src="/why%20humanities/jp%20morgan.png"
+                  alt="JP Morgan article screenshot"
+                  width={600}
+                  height={400}
+                  className="h-auto w-full object-contain"
                 />
               </div>
             </div>
