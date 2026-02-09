@@ -153,7 +153,9 @@ html:has(.scroll-snap-container) body {
 }
 
 .marquee-track {
-  animation: marquee-scroll 40s linear infinite;
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 45s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
