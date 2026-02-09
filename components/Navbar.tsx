@@ -33,12 +33,13 @@ export function Navbar() {
 
         <div className="hidden items-center gap-6 md:flex">
           <nav aria-label="Primary" className="flex items-center gap-6">
-            <Link
+            {/* AI Editor — hidden while in development */}
+            {/* <Link
               href="/ai-editor"
               className="text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
             >
               AI Editor
-            </Link>
+            </Link> */}
             {/* Academy dropdown */}
             <div className="group relative">
               <Link
@@ -75,29 +76,36 @@ export function Navbar() {
                 </div>
               </div>
             </div>
+            <Link
+              href="/lab"
+              className="text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
+            >
+              Lab
+            </Link>
           </nav>
-          <Link
-            href="/contact"
-            className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-zinc-900/15 hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
-          >
-            Get started
-          </Link>
         </div>
       </div>
 
       <nav aria-label="Primary (mobile)" className="border-t border-zinc-200/70 md:hidden">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-5 gap-y-2 px-6 py-3">
-          <Link
+          {/* AI Editor — hidden while in development */}
+          {/* <Link
             href="/ai-editor"
             className="text-sm font-medium text-zinc-900 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
           >
             AI Editor
-          </Link>
+          </Link> */}
           <Link
             href="/academy"
             className="text-sm font-medium text-zinc-900 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
           >
             Academy
+          </Link>
+          <Link
+            href="/lab"
+            className="text-sm font-medium text-zinc-900 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
+          >
+            Lab
           </Link>
           {programLinks.map((l) => (
             <Link
