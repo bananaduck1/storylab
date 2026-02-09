@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { TutorStickySection, type Tutor } from "@/components/TutorCard";
+import { LogoMarquee } from "@/components/LogoMarquee";
 
 const testimonials = [
   {
@@ -25,28 +26,28 @@ const tutors: Tutor[] = [
     id: "sam",
     name: "Sam Ahn",
     title: "Founder & Lead Coach",
-    headshotSrc: "/tutor-sam-headshot.jpg",
-    actionSrc: "/tutor-sam-action.jpg",
-    shortBio: "Harvard '19, Yale MFA. Former Ivy admissions reader.",
-    longBio: "Sam studied creative writing at Harvard and Yale, where he won national awards for his fiction. He worked in Yale's admissions office before founding StoryLab to bring elite humanities training to students worldwide.",
+    headshotSrc: "/tutor%20photos/sam/sam_headshot.jpg",
+    actionSrc: "/tutor%20photos/sam/sam_action.jpg.jpg",
+    shortBio: "Yale '25. Acceptances: Yale, Harvard, Princeton, Stanford. Interviewer at Yale Admissions Office. Wallace Prize recipient.",
+    longBio: "Yale '25. Acceptances: Yale, Harvard, Princeton, Stanford. Interviewer at Yale Admissions Office. Wallace Prize recipient.",
   },
   {
     id: "olivia",
     name: "Olivia O'Connor",
     title: "Senior Writing Coach",
-    headshotSrc: "/tutor-olivia-headshot.jpg",
-    actionSrc: "/tutor-olivia-action.jpg",
-    shortBio: "Princeton '21. Published essayist and editor.",
-    longBio: "Olivia graduated summa cum laude from Princeton's creative writing program. Her essays have appeared in national publications, and she brings her editorial eye to help students find their authentic voice.",
+    headshotSrc: "/tutor%20photos/olivia/olivia_headshot.JPG",
+    actionSrc: "/tutor%20photos/olivia/olivia_headshot.JPG",
+    shortBio: "Yale '24. Acceptances: Yale, Harvard, Columbia, Brown. Recruitment Coordinator at Yale Admissions Office. John Hubbard Curtis Prize recipient.",
+    longBio: "Yale '24. Acceptances: Yale, Harvard, Columbia, Brown. Recruitment Coordinator at Yale Admissions Office. John Hubbard Curtis Prize recipient.",
   },
   {
     id: "maren",
     name: "Maren Wong",
     title: "Applications Strategist",
-    headshotSrc: "/tutor-maren-headshot.jpg",
-    actionSrc: "/tutor-maren-action.jpg",
-    shortBio: "Stanford '20, Harvard MBA. Former admissions consultant.",
-    longBio: "Maren was admitted to Harvard, Yale, Princeton, and Stanford as an undergrad. She combines her humanities background with strategic insight to help students position themselves authentically for top schools.",
+    headshotSrc: "/tutor%20photos/maren/maren_headshot.jpeg",
+    actionSrc: "/tutor%20photos/maren/maren_headshot.jpeg",
+    shortBio: "Harvard '26, Cambridge '27. Acceptances: Harvard, Yale. President of the Harvard Advocate. Bowdoin Prize recipient and John Harvard Scholar.",
+    longBio: "Harvard '26, Cambridge '27. Acceptances: Harvard, Yale. President of the Harvard Advocate. Bowdoin Prize recipient and John Harvard Scholar.",
   },
 ];
 
@@ -56,6 +57,7 @@ const sections = [
   { id: "paths", label: "Programs" },
   { id: "tutors", label: "Our Team" },
   { id: "why", label: "Why It Matters" },
+  { id: "acceptances", label: "Acceptances" },
   { id: "testimonials", label: "Results" },
   { id: "cta", label: "Get Started" },
 ];
@@ -291,6 +293,22 @@ export default function AcademyPage() {
                   most technical skills, the people who succeed are the ones who can think clearly, write
                   persuasively, and make meaning. We train that.
                 </p>
+                <div className="mt-8 flex items-center gap-8">
+                  <Image
+                    src="/why%20humanities/anthropic.png"
+                    alt="Anthropic"
+                    width={140}
+                    height={40}
+                    className="h-8 w-auto object-contain opacity-60 sm:h-10"
+                  />
+                  <Image
+                    src="/why%20humanities/jp%20morgan.png"
+                    alt="JP Morgan"
+                    width={140}
+                    height={40}
+                    className="h-8 w-auto object-contain opacity-60 sm:h-10"
+                  />
+                </div>
               </div>
               <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
                 <Image
@@ -304,9 +322,25 @@ export default function AcademyPage() {
           </div>
         </section>
 
-        {/* TESTIMONIALS */}
+        {/* ACCEPTANCES */}
         <section
           ref={(el) => { sectionRefs.current[5] = el; }}
+          id="acceptances"
+          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center bg-white/50"
+        >
+          <div className="mx-auto w-full max-w-6xl px-6 py-16">
+            <h2 className="text-center text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+              Our students' acceptances
+            </h2>
+            <div className="mt-12">
+              <LogoMarquee />
+            </div>
+          </div>
+        </section>
+
+        {/* TESTIMONIALS */}
+        <section
+          ref={(el) => { sectionRefs.current[6] = el; }}
           id="testimonials"
           className="scroll-snap-section section-reveal flex min-h-[100svh] items-center bg-white/50"
         >
@@ -337,7 +371,7 @@ export default function AcademyPage() {
 
         {/* FINAL CTA */}
         <section
-          ref={(el) => { sectionRefs.current[6] = el; }}
+          ref={(el) => { sectionRefs.current[7] = el; }}
           id="cta"
           className="scroll-snap-section section-reveal flex min-h-[100svh] items-center"
         >
