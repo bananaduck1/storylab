@@ -8,8 +8,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  /* Display / body font: Literata (Google Fonts) with graceful fallbacks */
-  --font-display: var(--font-literata), "Fraunces", "Iowan Old Style", "Georgia", ui-serif, serif;
+  /* Fallback serif stack (Literata applied via runtime CSS variable in body/heading rules) */
+  --font-display: "Fraunces", "Iowan Old Style", "Georgia", ui-serif, serif;
   --font-body: var(--font-display);
   /* Tailwind v4 font tokens */
   --font-sans: var(--font-body);
@@ -35,7 +35,7 @@ body {
   background-size: 1200px 800px, 900px 700px, 1000px 800px, 600px 600px;
   background-attachment: fixed, fixed, fixed, scroll;
   color: var(--foreground);
-  font-family: var(--font-body), ui-serif, serif;
+  font-family: var(--font-literata), "Fraunces", "Iowan Old Style", "Georgia", ui-serif, serif;
   font-size: 1.0625rem; /* 17px base - slightly larger than default 16px */
   line-height: 1.7;
   text-rendering: optimizeLegibility;
@@ -48,7 +48,7 @@ body {
 h1,
 h2,
 h3 {
-  font-family: var(--font-display);
+  font-family: var(--font-literata), "Fraunces", "Iowan Old Style", "Georgia", ui-serif, serif;
   font-weight: 600;
   letter-spacing: 0.005em;
 }
