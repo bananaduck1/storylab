@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 
 type Logo = {
   src: string;
@@ -15,10 +14,31 @@ const logos: Logo[] = [
   { src: "/logos/stanford.png", alt: "Stanford" },
   { src: "/logos/northwestern.png", alt: "Northwestern" },
   { src: "/logos/uchicago.png", alt: "UChicago" },
-  { src: "/logos/vanderbilt.webp", alt: "Vanderbilt" },
+  { src: "/logos/vanderbilt.png", alt: "Vanderbilt" },
   { src: "/logos/jhu.png", alt: "Johns Hopkins" },
   { src: "/logos/northeastern.png", alt: "Northeastern" },
 ];
+
+function LogoSet() {
+  return (
+    <>
+      {logos.map((logo) => (
+        <div
+          key={logo.alt}
+          className="flex shrink-0 items-center justify-center"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={logo.src}
+            alt={logo.alt}
+            className="h-12 w-auto object-contain opacity-60 transition-opacity duration-300 hover:opacity-100 sm:h-16 md:h-20"
+            loading="lazy"
+          />
+        </div>
+      ))}
+    </>
+  );
+}
 
 export function LogoMarquee() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -33,48 +53,31 @@ export function LogoMarquee() {
 
   return (
     <div
-      className="group relative overflow-hidden"
+      className="group relative overflow-hidden py-4"
       aria-label="Schools our students have been accepted to"
     >
       {/* Soft edge fades */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-white/80 to-transparent sm:w-24" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-white/80 to-transparent sm:w-24" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-white/90 to-transparent sm:w-32" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-white/90 to-transparent sm:w-32" />
 
-      <div
-        className={`flex items-center gap-12 sm:gap-16 ${
-          prefersReducedMotion ? "" : "marquee-track group-hover:[animation-play-state:paused]"
-        }`}
-        style={
-          prefersReducedMotion
-            ? { justifyContent: "center", flexWrap: "wrap", gap: "2rem" }
-            : undefined
-        }
-      >
-        {/* Two copies for seamless infinite loop */}
-        {[0, 1].map((copy) => (
-          <div
-            key={copy}
-            className="flex shrink-0 items-center gap-12 sm:gap-16"
-            aria-hidden={copy === 1 ? "true" : undefined}
-          >
-            {logos.map((logo) => (
-              <div
-                key={logo.alt}
-                className="flex h-14 w-32 shrink-0 items-center justify-center sm:h-16 sm:w-40"
-              >
-                <Image
-                  src={logo.src}
-                  alt={logo.alt}
-                  width={160}
-                  height={64}
-                  unoptimized
-                  className="h-full w-full object-contain opacity-70 transition-opacity duration-300 hover:opacity-100"
-                />
-              </div>
-            ))}
+      {prefersReducedMotion ? (
+        <div className="flex flex-wrap items-center justify-center gap-8">
+          <LogoSet />
+        </div>
+      ) : (
+        <div className="marquee-track group-hover:[animation-play-state:paused]">
+          {/* Two identical strips, back-to-back, no gap on the track itself */}
+          <div className="flex shrink-0 items-center gap-14 pr-14 sm:gap-20 sm:pr-20">
+            <LogoSet />
           </div>
-        ))}
-      </div>
+          <div
+            className="flex shrink-0 items-center gap-14 pr-14 sm:gap-20 sm:pr-20"
+            aria-hidden="true"
+          >
+            <LogoSet />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
