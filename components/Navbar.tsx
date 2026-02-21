@@ -1,3 +1,6 @@
+"use client";
+
+import { useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -16,6 +19,21 @@ const academyLinks: Array<{ href: string; label: string }> = [
 ];
 
 export function Navbar() {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openDropdown = useCallback(() => {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+    setDropdownOpen(true);
+  }, []);
+
+  const closeDropdown = useCallback(() => {
+    closeTimer.current = setTimeout(() => setDropdownOpen(false), 150);
+  }, []);
+
   return (
     <header className="sticky top-0 z-40 border-b border-line/80 bg-soft/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 min-h-20 py-5">
@@ -41,15 +59,28 @@ export function Navbar() {
               AI Editor
             </Link> */}
             {/* Academy dropdown */}
-            <div className="group relative">
+            <div
+              className="relative"
+              onMouseEnter={openDropdown}
+              onMouseLeave={closeDropdown}
+            >
               <Link
                 href="/academy"
                 className="inline-flex items-center gap-1 text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
+                onFocus={openDropdown}
               >
                 Academy
               </Link>
-              <div className="absolute right-0 top-full pt-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
-                <div className="min-w-[220px] rounded-lg border border-zinc-200 bg-white py-1 shadow-lg">
+              <div
+                className={`absolute right-0 top-full pt-2 transition-opacity duration-150 ${
+                  dropdownOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                }`}
+              >
+                <div
+                  className="min-w-[220px] rounded-lg border border-zinc-200 bg-white py-1 shadow-lg"
+                  onFocus={openDropdown}
+                  onBlur={closeDropdown}
+                >
                   {/* Programs section with nested items */}
                   <div className="px-4 py-2">
                     <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Programs</p>
