@@ -59,22 +59,22 @@ export function Navbar() {
               AI Editor
             </Link> */}
             {/* Academy dropdown */}
-            <div
-              className="relative"
-              onMouseEnter={openDropdown}
-              onMouseLeave={closeDropdown}
-            >
+            <div className="relative">
               <Link
                 href="/academy"
                 className="inline-flex items-center gap-1 text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
+                onMouseEnter={openDropdown}
+                onMouseLeave={closeDropdown}
                 onFocus={openDropdown}
               >
                 Academy
               </Link>
               <div
                 className={`absolute right-0 top-full pt-2 transition-opacity duration-150 ${
-                  dropdownOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                  dropdownOpen ? "opacity-100" : "opacity-0 pointer-events-none"
                 }`}
+                onMouseEnter={openDropdown}
+                onMouseLeave={closeDropdown}
               >
                 <div
                   className="min-w-[220px] rounded-lg border border-zinc-200 bg-white py-1 shadow-lg"
