@@ -44,11 +44,13 @@ export function Navbar() {
             <div className="group relative">
               <Link
                 href="/academy"
-                className="text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
+                className="inline-flex items-center gap-1 text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
               >
                 Academy
               </Link>
-              <div className="pointer-events-none absolute right-0 top-full pt-2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
+              {/* Invisible bridge so cursor can travel from trigger to menu */}
+              <div className="absolute left-1/2 top-full h-3 w-full -translate-x-1/2" />
+              <div className="pointer-events-none absolute right-0 top-[calc(100%+0.5rem)] opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
                 <div className="min-w-[220px] rounded-lg border border-zinc-200 bg-white py-1 shadow-lg">
                   {/* Programs section with nested items */}
                   <div className="px-4 py-2">
