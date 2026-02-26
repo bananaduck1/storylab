@@ -143,7 +143,7 @@ const testimonials = [
   {
     quote:
       "Sam is a teacher who truly listens to what a student is wrestling with and draws out exactly what they need. I'm certain that any family who works with him will find their child going through the college process with a healthy, grounded, and even happy mindset.",
-    attribution: "Parent of a student admitted to Washington University in St. Louis",
+    attribution: "Parent of a student attending Washington University in St. Louis",
     type: "parent",
   },
 ];
@@ -269,12 +269,9 @@ function PhilosophyScrollSection({
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
             Our Approach
           </p>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950">
-            What we believe, and how we act on it.
-          </h2>
 
-          <p className="mt-10 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
-            What we believe
+          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
+            Our Philosophy
           </p>
           <div className="relative mt-4 mb-4 h-36 overflow-hidden rounded-xl">
             <Image src="/photo-1.png" alt="" fill className="object-cover" />
@@ -288,7 +285,7 @@ function PhilosophyScrollSection({
           <div className="my-10 border-t border-zinc-200" />
 
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
-            How we act on it
+            The StoryLab Difference
           </p>
           <div className="relative mt-4 mb-4 h-36 overflow-hidden rounded-xl">
             <Image src="/in the crowd.png" alt="" fill className="object-cover" />
@@ -311,37 +308,54 @@ function PhilosophyScrollSection({
         <div className="mx-auto w-full max-w-6xl px-6">
           <div className="grid grid-cols-[2fr_3fr] items-center gap-16">
 
-            {/* Left: label + dots */}
+            {/* Left: label + crossfading title + crossfading photo + dots */}
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
                 Our Approach
               </p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-                What we believe, and how we act on it.
-              </h2>
 
-              {/* Step label (crossfades) */}
-              <div className="mt-8" style={{ display: "grid" }}>
-                <p
+              {/* Step title (crossfades) */}
+              <div className="mt-4" style={{ display: "grid" }}>
+                <h2
                   style={{ gridArea: "1 / 1" }}
-                  className={`text-xl font-semibold text-zinc-900 transition-opacity duration-[250ms] ${
+                  className={`text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl transition-opacity duration-[250ms] ${
                     step === 0 ? "opacity-100" : "opacity-0"
                   }`}
                 >
-                  What we believe
-                </p>
-                <p
+                  Our Philosophy
+                </h2>
+                <h2
                   style={{ gridArea: "1 / 1" }}
-                  className={`text-xl font-semibold text-zinc-900 transition-opacity duration-[250ms] ${
+                  className={`text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl transition-opacity duration-[250ms] ${
                     step === 1 ? "opacity-100" : "opacity-0"
                   }`}
                 >
-                  How we act on it
-                </p>
+                  The StoryLab Difference
+                </h2>
+              </div>
+
+              {/* Step photo (crossfades) */}
+              <div className="mt-6" style={{ display: "grid" }}>
+                <div
+                  style={{ gridArea: "1 / 1" }}
+                  className={`relative h-40 overflow-hidden rounded-xl transition-opacity duration-[250ms] ${
+                    step === 0 ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  <Image src="/photo-1.png" alt="" fill className="object-cover" />
+                </div>
+                <div
+                  style={{ gridArea: "1 / 1" }}
+                  className={`relative h-40 overflow-hidden rounded-xl transition-opacity duration-[250ms] ${
+                    step === 1 ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  <Image src="/in the crowd.png" alt="" fill className="object-cover" />
+                </div>
               </div>
 
               {/* Dots */}
-              <div className="mt-4 flex gap-2">
+              <div className="mt-6 flex gap-2">
                 <div
                   className={`h-2 w-2 rounded-full transition-colors duration-[250ms] ${
                     step === 0 ? "bg-zinc-900" : "bg-zinc-200"
@@ -366,9 +380,6 @@ function PhilosophyScrollSection({
                     : "opacity-0 -translate-y-2 pointer-events-none"
                 }`}
               >
-                <div className="relative mb-5 h-36 overflow-hidden rounded-xl">
-                  <Image src="/photo-1.png" alt="" fill className="object-cover" />
-                </div>
                 {philosophy.map((item) => (
                   <PhilosophyItemEl key={item.number} number={item.number} text={item.belief} />
                 ))}
@@ -383,9 +394,6 @@ function PhilosophyScrollSection({
                     : "opacity-0 translate-y-2 pointer-events-none"
                 }`}
               >
-                <div className="relative mb-5 h-36 overflow-hidden rounded-xl">
-                  <Image src="/in the crowd.png" alt="" fill className="object-cover" />
-                </div>
                 {philosophy.map((item) => (
                   <PhilosophyItemEl
                     key={item.number}
