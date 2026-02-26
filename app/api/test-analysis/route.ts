@@ -1,4 +1,4 @@
-import { analyzeEssay } from "@/src/lib/analyzeEssay";
+import { analyzeEssay } from "@/lib/analyzeEssay";
 import { NextResponse } from "next/server";
 
 export async function GET() {
