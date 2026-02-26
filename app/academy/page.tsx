@@ -10,9 +10,9 @@ import { LogoMarquee } from "@/components/LogoMarquee";
 
 const caseStudySummaries = [
   {
-    slug: "jason-lim",
+    slug: "jason",
     initial: "J",
-    name: "Jason Lim",
+    name: "Jason",
     grade: "Senior",
     applying: "Yale, Columbia, UChicago",
     outcome: "Accepted — UChicago",
@@ -21,9 +21,9 @@ const caseStudySummaries = [
       "His first essay hit every note: leadership, service, resilience. By the second paragraph, you could predict every sentence coming. That was the problem.",
   },
   {
-    slug: "sarah-oh",
+    slug: "sarah",
     initial: "S",
-    name: "Sarah Oh",
+    name: "Sarah",
     grade: "Senior",
     applying: "Stanford, Yale, Northwestern, Columbia",
     outcome: "Accepted — Northwestern ED",
@@ -32,9 +32,9 @@ const caseStudySummaries = [
       "Her essay was beautifully written — clean, controlled, and emotionally distant. After 600 words, you didn't know her any better than at the top of the page.",
   },
   {
-    slug: "mia-kang",
+    slug: "mia",
     initial: "M",
-    name: "Mia Kang",
+    name: "Mia",
     grade: "Senior",
     applying: "Emory, Georgetown, UVA, Boston University",
     outcome: "Accepted — Emory ED",
@@ -197,66 +197,267 @@ const sections = [
   { id: "cta", label: "Get Started" },
 ];
 
-// ─── Philosophy Toggle ────────────────────────────────────────────────────────
+// ─── Shared scroll hook ───────────────────────────────────────────────────────
 
-function PhilosophyToggle() {
-  const [tab, setTab] = useState<"philosophy" | "difference">("philosophy");
+function useScrollMidpoint(ref: React.RefObject<HTMLElement | null>) {
+  const [isPastMidpoint, setIsPastMidpoint] = useState(false);
+  useEffect(() => {
+    const handleScroll = () => {
+      const el = ref.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const scrolledIn = Math.max(0, -rect.top);
+      const totalRange = el.offsetHeight - window.innerHeight;
+      if (totalRange <= 0) return;
+      setIsPastMidpoint(scrolledIn > totalRange / 2);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [ref]);
+  return isPastMidpoint;
+}
+
+// ─── Philosophy scroll section ────────────────────────────────────────────────
+
+function PhilosophyScrollSection({
+  sectionRefCallback,
+}: {
+  sectionRefCallback: (el: HTMLElement | null) => void;
+}) {
+  const innerRef = useRef<HTMLElement | null>(null);
+
+  const setRef = (el: HTMLElement | null) => {
+    innerRef.current = el;
+    sectionRefCallback(el);
+  };
+
+  const isPastMidpoint = useScrollMidpoint(innerRef);
 
   return (
-    <div>
-      {/* Toggle */}
-      <div className="flex w-fit rounded-full border border-zinc-200 bg-white p-1">
-        <button
-          onClick={() => setTab("philosophy")}
-          className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${
-            tab === "philosophy"
-              ? "bg-zinc-900 text-white shadow-sm"
-              : "text-zinc-400 hover:text-zinc-600"
-          }`}
-        >
-          Our Philosophy
-        </button>
-        <button
-          onClick={() => setTab("difference")}
-          className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${
-            tab === "difference"
-              ? "bg-zinc-900 text-white shadow-sm"
-              : "text-zinc-400 hover:text-zinc-600"
-          }`}
-        >
-          The StoryLab Difference
-        </button>
-      </div>
+    <section
+      ref={setRef}
+      id="philosophy"
+      className="scroll-snap-section section-reveal relative min-h-[200vh]"
+    >
+      <div className="sticky top-0 flex h-screen items-center">
+        <div className="mx-auto w-full max-w-6xl px-6 py-10">
 
-      {/* Items */}
-      <div className="mt-6 space-y-3">
-        {philosophy.map((item) => (
-          <div
-            key={item.number}
-            className={`relative overflow-hidden rounded-2xl border bg-white px-8 py-10 transition-all ${
-              tab === "difference"
-                ? "border-zinc-200 border-l-4 border-l-emerald-400"
-                : "border-zinc-200"
-            }`}
-          >
-            {/* Ghosted number */}
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute right-6 top-1/2 -translate-y-1/2 select-none text-8xl font-bold leading-none text-zinc-900 opacity-[0.05]"
-            >
-              {item.number}
-            </span>
-
-            {/* Content */}
-            <div className="relative">
-              <p className="text-sm leading-relaxed text-zinc-600">
-                {tab === "philosophy" ? item.belief : item.difference}
-              </p>
-            </div>
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
+              Our Approach
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+              What we believe, and how we act on it.
+            </h2>
           </div>
-        ))}
+
+          <div className="mt-8 space-y-3">
+            {philosophy.map((item) => (
+              <div
+                key={item.number}
+                className={`relative overflow-hidden rounded-2xl border bg-white px-8 py-8 transition-all duration-500 ${
+                  isPastMidpoint
+                    ? "border-zinc-200 border-l-4 border-l-emerald-400"
+                    : "border-zinc-200"
+                }`}
+              >
+                {/* Ghosted number */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute right-6 top-1/2 -translate-y-1/2 select-none text-8xl font-bold leading-none text-zinc-900 opacity-[0.05]"
+                >
+                  {item.number}
+                </span>
+
+                {/* Crossfade text — both in same grid cell so container sizes to tallest */}
+                <div style={{ display: "grid" }}>
+                  <p
+                    style={{ gridArea: "1 / 1" }}
+                    className={`text-sm leading-relaxed text-zinc-600 transition-opacity duration-300 ${
+                      isPastMidpoint ? "opacity-0 pointer-events-none" : "opacity-100"
+                    }`}
+                  >
+                    {item.belief}
+                  </p>
+                  <p
+                    style={{ gridArea: "1 / 1" }}
+                    className={`text-sm leading-relaxed text-zinc-700 transition-opacity duration-300 ${
+                      isPastMidpoint ? "opacity-100" : "opacity-0 pointer-events-none"
+                    }`}
+                  >
+                    {item.difference}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Progress indicator */}
+          <div className="mt-6 flex items-center gap-3">
+            <span
+              className={`text-xs font-medium transition-colors duration-300 ${
+                !isPastMidpoint ? "text-zinc-700" : "text-zinc-300"
+              }`}
+            >
+              Our Philosophy
+            </span>
+            <div className="flex gap-1.5">
+              <div
+                className={`h-1 rounded-full transition-all duration-300 ${
+                  !isPastMidpoint ? "w-6 bg-zinc-900" : "w-3 bg-zinc-200"
+                }`}
+              />
+              <div
+                className={`h-1 rounded-full transition-all duration-300 ${
+                  isPastMidpoint ? "w-6 bg-zinc-900" : "w-3 bg-zinc-200"
+                }`}
+              />
+            </div>
+            <span
+              className={`text-xs font-medium transition-colors duration-300 ${
+                isPastMidpoint ? "text-zinc-700" : "text-zinc-300"
+              }`}
+            >
+              The StoryLab Difference
+            </span>
+          </div>
+
+        </div>
       </div>
-    </div>
+    </section>
+  );
+}
+
+// ─── Why It Matters scroll section ───────────────────────────────────────────
+
+function WhyItMattersScrollSection({
+  sectionRefCallback,
+}: {
+  sectionRefCallback: (el: HTMLElement | null) => void;
+}) {
+  const innerRef = useRef<HTMLElement | null>(null);
+
+  const setRef = (el: HTMLElement | null) => {
+    innerRef.current = el;
+    sectionRefCallback(el);
+  };
+
+  const isPastMidpoint = useScrollMidpoint(innerRef);
+
+  return (
+    <section
+      ref={setRef}
+      id="why"
+      className="scroll-snap-section section-reveal relative min-h-[200vh] bg-white/50"
+    >
+      <div className="sticky top-0 flex h-screen items-center">
+        <div className="mx-auto w-full max-w-6xl px-6 py-10">
+
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
+              Why It Matters
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+              Preparing for college is preparing for the real world.
+            </h2>
+            <p className="mt-4 text-base leading-relaxed text-zinc-500">
+              In an era where AI can perform most technical skills, the people who succeed are the
+              ones who can think clearly, write persuasively, and make meaning. We train that.
+            </p>
+          </div>
+
+          {/* Quote crossfade */}
+          <div className="mt-10 max-w-2xl">
+            <figure className="rounded-2xl border border-zinc-200 bg-white p-8">
+              <div style={{ display: "grid" }}>
+                <blockquote
+                  style={{ gridArea: "1 / 1" }}
+                  className={`text-base leading-relaxed text-zinc-700 transition-opacity duration-300 ${
+                    isPastMidpoint ? "opacity-0 pointer-events-none" : "opacity-100"
+                  }`}
+                >
+                  <span className="mr-0.5 text-2xl leading-none text-zinc-200">&ldquo;</span>
+                  <strong className="font-semibold text-zinc-900">
+                    I actually think studying the humanities is going to be more important than ever.
+                  </strong>{" "}
+                  A lot of these [AI] models are actually very good at STEM. But I think this idea
+                  that there are things that make us uniquely human — understanding ourselves,
+                  understanding history, understanding what makes us tick — I think that will always
+                  be really, really important.
+                </blockquote>
+                <blockquote
+                  style={{ gridArea: "1 / 1" }}
+                  className={`text-base leading-relaxed text-zinc-700 transition-opacity duration-300 ${
+                    isPastMidpoint ? "opacity-100" : "opacity-0 pointer-events-none"
+                  }`}
+                >
+                  <span className="mr-0.5 text-2xl leading-none text-zinc-200">&ldquo;</span>
+                  My advice to people would be critical thinking, learn skills, learn your EQ, learn
+                  how to be good in a meeting,{" "}
+                  <strong className="font-semibold text-zinc-900">
+                    how to communicate, how to write. You&rsquo;ll have plenty of jobs.
+                  </strong>
+                </blockquote>
+              </div>
+
+              <figcaption className="mt-6 flex items-center gap-3">
+                <div className="h-px flex-1 bg-zinc-100" />
+                <div style={{ display: "grid" }}>
+                  <p
+                    style={{ gridArea: "1 / 1" }}
+                    className={`text-xs font-medium text-zinc-500 transition-opacity duration-300 ${
+                      isPastMidpoint ? "opacity-0" : "opacity-100"
+                    }`}
+                  >
+                    Daniela Amodei, President of Anthropic
+                  </p>
+                  <p
+                    style={{ gridArea: "1 / 1" }}
+                    className={`text-xs font-medium text-zinc-500 transition-opacity duration-300 ${
+                      isPastMidpoint ? "opacity-100" : "opacity-0"
+                    }`}
+                  >
+                    Jamie Dimon, CEO of JPMorgan Chase
+                  </p>
+                </div>
+              </figcaption>
+            </figure>
+          </div>
+
+          {/* Progress indicator */}
+          <div className="mt-6 flex items-center gap-3">
+            <span
+              className={`text-xs font-medium transition-colors duration-300 ${
+                !isPastMidpoint ? "text-zinc-700" : "text-zinc-300"
+              }`}
+            >
+              Daniela Amodei
+            </span>
+            <div className="flex gap-1.5">
+              <div
+                className={`h-1 rounded-full transition-all duration-300 ${
+                  !isPastMidpoint ? "w-6 bg-zinc-900" : "w-3 bg-zinc-200"
+                }`}
+              />
+              <div
+                className={`h-1 rounded-full transition-all duration-300 ${
+                  isPastMidpoint ? "w-6 bg-zinc-900" : "w-3 bg-zinc-200"
+                }`}
+              />
+            </div>
+            <span
+              className={`text-xs font-medium transition-colors duration-300 ${
+                isPastMidpoint ? "text-zinc-700" : "text-zinc-300"
+              }`}
+            >
+              Jamie Dimon
+            </span>
+          </div>
+
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -314,7 +515,7 @@ export default function AcademyPage() {
           }
         });
       },
-      { threshold: 0.35, rootMargin: "-10% 0px -10% 0px" }
+      { threshold: 0.2, rootMargin: "-5% 0px -5% 0px" }
     );
     sectionRefs.current.forEach((s) => {
       if (s) observer.observe(s);
@@ -400,13 +601,18 @@ export default function AcademyPage() {
                 </h2>
                 <div className="mt-6 space-y-4 text-base leading-relaxed text-zinc-600">
                   <p>
-                    By application season, I hadn&rsquo;t won any national awards, nor had I founded an organization that made a huge social impact. I wasn&rsquo;t mobilizing movements; I was nowhere to be found in online media or press.
+                    By application season, I hadn&rsquo;t won any national awards, nor had I founded
+                    an organization that made a huge social impact. I wasn&rsquo;t mobilizing
+                    movements; I was nowhere to be found in online media or press.
                   </p>
                   <p>
-                    By the standards of high-achieving students aiming for top schools, I was not an &ldquo;impressive&rdquo; student. All I had done was get good grades and participate in school activities.
+                    By the standards of high-achieving students aiming for top schools, I was not
+                    an &ldquo;impressive&rdquo; student. All I had done was get good grades and
+                    participate in school activities.
                   </p>
                   <p>
-                    And yet, come March my senior year, I got into Harvard, Yale, Stanford, and Princeton — the only schools I had applied to.
+                    And yet, come March my senior year, I got into Harvard, Yale, Stanford, and
+                    Princeton — the only schools I had applied to.
                   </p>
                   <p className="font-medium text-zinc-800">
                     I started StoryLab to teach students the philosophy that got me in.
@@ -414,7 +620,10 @@ export default function AcademyPage() {
                 </div>
                 <div className="mt-8 border-t border-zinc-100 pt-8">
                   <p className="text-sm leading-relaxed text-zinc-500">
-                    At Yale, I graduated <em>magna cum laude</em> and Phi Beta Kappa with a B.A. in Comparative Literature. In college, I wrote for some of the world&rsquo;s biggest companies alongside former White House speechwriters, and evaluated high school seniors for the Yale admissions office.
+                    At Yale, I graduated <em>magna cum laude</em> and Phi Beta Kappa with a B.A. in
+                    Comparative Literature. In college, I wrote for some of the world&rsquo;s biggest
+                    companies alongside former White House speechwriters, and evaluated high school
+                    seniors for the Yale admissions office.
                   </p>
                 </div>
               </div>
@@ -422,29 +631,10 @@ export default function AcademyPage() {
           </div>
         </section>
 
-        {/* ── 2. PHILOSOPHY ───────────────────────────────────────────── */}
-        <section
-          ref={(el) => { sectionRefs.current[2] = el; }}
-          id="philosophy"
-          className="scroll-snap-section section-reveal min-h-[100svh] py-24"
-        >
-          <div className="mx-auto w-full max-w-6xl px-6">
-            <div className="max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-                Our Approach
-              </p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-                What we believe, and how we act on it.
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-zinc-500">
-                Toggle between our core beliefs and what they mean in practice.
-              </p>
-            </div>
-            <div className="mt-10">
-              <PhilosophyToggle />
-            </div>
-          </div>
-        </section>
+        {/* ── 2. PHILOSOPHY (scroll-driven) ───────────────────────────── */}
+        <PhilosophyScrollSection
+          sectionRefCallback={(el) => { sectionRefs.current[2] = el; }}
+        />
 
         {/* ── 3. STUDENT STORIES ──────────────────────────────────────── */}
         <section
@@ -461,7 +651,8 @@ export default function AcademyPage() {
                 Meet some of our students.
               </h2>
               <p className="mt-4 text-base leading-relaxed text-zinc-500">
-                Every student who arrives at StoryLab has something real to say. They just haven&rsquo;t found it yet.
+                Every student who arrives at StoryLab has something real to say. They just haven&rsquo;t
+                found it yet.
               </p>
             </div>
 
@@ -469,10 +660,9 @@ export default function AcademyPage() {
               {caseStudySummaries.map((s) => (
                 <Link
                   key={s.slug}
-                  href={`/academy/students/${s.slug}`}
+                  href={`/academy/students?student=${s.slug}`}
                   className="group flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white transition-all hover:border-zinc-300 hover:shadow-lg"
                 >
-                  {/* Card header */}
                   <div className="flex items-center gap-4 border-b border-zinc-100 px-6 py-5">
                     <div
                       className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${s.color} text-base font-semibold text-white`}
@@ -484,13 +674,9 @@ export default function AcademyPage() {
                       <p className="text-xs text-zinc-400">{s.grade}</p>
                     </div>
                   </div>
-
-                  {/* Card body */}
                   <div className="flex flex-1 flex-col p-6">
                     <p className="text-xs text-zinc-400">{s.applying}</p>
-                    <p className="mt-3 flex-1 text-sm leading-relaxed text-zinc-600">
-                      {s.teaser}
-                    </p>
+                    <p className="mt-3 flex-1 text-sm leading-relaxed text-zinc-600">{s.teaser}</p>
                     <div className="mt-5 flex items-center justify-between">
                       <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
                         {s.outcome}
@@ -503,7 +689,6 @@ export default function AcademyPage() {
                 </Link>
               ))}
             </div>
-
           </div>
         </section>
 
@@ -543,9 +728,7 @@ export default function AcademyPage() {
                   <h3 className="text-xl font-semibold tracking-tight text-zinc-950 group-hover:text-zinc-700">
                     {p.title}
                   </h3>
-                  <p className="mt-3 text-base leading-relaxed text-zinc-600">
-                    {p.desc}
-                  </p>
+                  <p className="mt-3 text-base leading-relaxed text-zinc-600">{p.desc}</p>
                   <p className="mt-4 text-sm font-medium text-zinc-400 group-hover:text-zinc-700">
                     Learn more →
                   </p>
@@ -570,67 +753,16 @@ export default function AcademyPage() {
           />
         </section>
 
-        {/* ── 6. WHY IT MATTERS ───────────────────────────────────────── */}
-        <section
-          ref={(el) => { sectionRefs.current[6] = el; }}
-          id="why"
-          className="scroll-snap-section section-reveal min-h-[100svh] py-24"
-        >
-          <div className="mx-auto w-full max-w-6xl px-6">
-            <div className="max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-                Why It Matters
-              </p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-                Preparing for college is preparing for the real world.
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-zinc-500">
-                In an era where AI can perform most technical skills, the people who succeed are the ones who can think clearly, write persuasively, and make meaning. We train that.
-              </p>
-            </div>
-
-            <div className="mt-14 grid gap-6 md:grid-cols-2">
-              <figure className="rounded-2xl border border-zinc-200 bg-white p-8">
-                <blockquote className="text-base leading-relaxed text-zinc-700">
-                  <span className="text-2xl leading-none text-zinc-200">&ldquo;</span>
-                  I actually think studying the humanities is going to be{" "}
-                  <strong className="font-semibold text-zinc-900">
-                    more important than ever.
-                  </strong>{" "}
-                  A lot of these [AI] models are actually very good at STEM. But I think this idea that there are things that make us uniquely human — understanding ourselves, understanding history, understanding what makes us tick — I think that will always be really, really important.
-                </blockquote>
-                <figcaption className="mt-6 flex items-center gap-3">
-                  <div className="h-px flex-1 bg-zinc-100" />
-                  <p className="text-xs font-medium text-zinc-500">
-                    Daniela Amodei, President of Anthropic
-                  </p>
-                </figcaption>
-              </figure>
-
-              <figure className="rounded-2xl border border-zinc-200 bg-white p-8">
-                <blockquote className="text-base leading-relaxed text-zinc-700">
-                  <span className="text-2xl leading-none text-zinc-200">&ldquo;</span>
-                  My advice to people would be critical thinking, learn skills, learn your EQ, learn how to be good in a meeting,{" "}
-                  <strong className="font-semibold text-zinc-900">
-                    how to communicate, how to write. You&rsquo;ll have plenty of jobs.
-                  </strong>
-                </blockquote>
-                <figcaption className="mt-6 flex items-center gap-3">
-                  <div className="h-px flex-1 bg-zinc-100" />
-                  <p className="text-xs font-medium text-zinc-500">
-                    Jamie Dimon, CEO of JPMorgan Chase
-                  </p>
-                </figcaption>
-              </figure>
-            </div>
-          </div>
-        </section>
+        {/* ── 6. WHY IT MATTERS (scroll-driven) ───────────────────────── */}
+        <WhyItMattersScrollSection
+          sectionRefCallback={(el) => { sectionRefs.current[6] = el; }}
+        />
 
         {/* ── 7. TESTIMONIALS ─────────────────────────────────────────── */}
         <section
           ref={(el) => { sectionRefs.current[7] = el; }}
           id="testimonials"
-          className="scroll-snap-section section-reveal min-h-[100svh] bg-white/50 py-24"
+          className="scroll-snap-section section-reveal min-h-[100svh] py-24"
         >
           <div className="mx-auto w-full max-w-6xl px-6">
             <div className="max-w-xl">
@@ -648,7 +780,7 @@ export default function AcademyPage() {
                   key={i}
                   className={`flex flex-col rounded-2xl border p-8 ${
                     t.type === "parent"
-                      ? "border-zinc-300 bg-zinc-50 md:col-span-2"
+                      ? "border-zinc-300 bg-zinc-50"
                       : "border-zinc-200 bg-white"
                   }`}
                 >
@@ -684,7 +816,7 @@ export default function AcademyPage() {
         <section
           ref={(el) => { sectionRefs.current[8] = el; }}
           id="acceptances"
-          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center"
+          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center bg-white/50"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
             <h2 className="text-center text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
@@ -700,7 +832,7 @@ export default function AcademyPage() {
         <section
           ref={(el) => { sectionRefs.current[9] = el; }}
           id="cta"
-          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center bg-white/50"
+          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
             <div className="mx-auto max-w-3xl rounded-3xl border border-zinc-200 bg-white p-10 text-center sm:p-14">
@@ -708,7 +840,8 @@ export default function AcademyPage() {
                 We take limited students each cycle.
               </h2>
               <p className="mt-6 text-lg leading-relaxed text-zinc-600">
-                Writing develops slowly. The earlier you start, the more options you have. Schedule a consultation to discuss fit and timing.
+                Writing develops slowly. The earlier you start, the more options you have. Schedule a
+                consultation to discuss fit and timing.
               </p>
               <div className="mt-10">
                 <Link
