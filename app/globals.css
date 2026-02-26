@@ -15,6 +15,10 @@
   --font-sans: var(--font-body);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     "Courier New", monospace;
+  /* Floor all text sizes at ~14pt (18px). Tailwind's xs/sm/base are smaller by default. */
+  --text-xs: 1.125rem;
+  --text-sm: 1.125rem;
+  --text-base: 1.125rem;
 }
 
 @media (prefers-color-scheme: dark) {

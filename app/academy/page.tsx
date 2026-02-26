@@ -189,10 +189,10 @@ const sections = [
   { id: "founder", label: "Our Story" },
   { id: "thesis", label: "Our Mission" },
   { id: "philosophy", label: "Philosophy" },
+  { id: "why", label: "Why It Matters" },
   { id: "cases", label: "Student Stories" },
   { id: "paths", label: "Programs" },
   { id: "tutors", label: "Our Team" },
-  { id: "why", label: "Why It Matters" },
   { id: "testimonials", label: "Results" },
   { id: "acceptances", label: "Acceptances" },
   { id: "cta", label: "Get Started" },
@@ -804,9 +804,14 @@ export default function AcademyPage() {
           sectionRefCallback={(el) => { sectionRefs.current[3] = el; }}
         />
 
-        {/* ── 4. STUDENT STORIES ──────────────────────────────────────── */}
+        {/* ── 4. WHY IT MATTERS (scroll-driven) ───────────────────────── */}
+        <WhyItMattersScrollSection
+          sectionRefCallback={(el) => { sectionRefs.current[4] = el; }}
+        />
+
+        {/* ── 5. STUDENT STORIES ──────────────────────────────────────── */}
         <section
-          ref={(el) => { sectionRefs.current[4] = el; }}
+          ref={(el) => { sectionRefs.current[5] = el; }}
           id="cases"
           className="scroll-snap-section section-reveal min-h-[100svh] bg-white/50 py-24"
         >
@@ -859,9 +864,9 @@ export default function AcademyPage() {
           </div>
         </section>
 
-        {/* ── 5. THREE PATHS ──────────────────────────────────────────── */}
+        {/* ── 6. THREE PATHS ──────────────────────────────────────────── */}
         <section
-          ref={(el) => { sectionRefs.current[5] = el; }}
+          ref={(el) => { sectionRefs.current[6] = el; }}
           id="paths"
           className="scroll-snap-section section-reveal flex min-h-[100svh] items-center"
         >
@@ -905,9 +910,9 @@ export default function AcademyPage() {
           </div>
         </section>
 
-        {/* ── 6. OUR TUTORS ───────────────────────────────────────────── */}
+        {/* ── 7. OUR TUTORS ───────────────────────────────────────────── */}
         <section
-          ref={(el) => { sectionRefs.current[6] = el; }}
+          ref={(el) => { sectionRefs.current[7] = el; }}
           id="tutors"
           className="scroll-snap-section section-reveal min-h-[100svh] bg-white/50 py-16"
         >
@@ -919,11 +924,6 @@ export default function AcademyPage() {
             ctaLabel="Meet the full team"
           />
         </section>
-
-        {/* ── 7. WHY IT MATTERS (scroll-driven) ───────────────────────── */}
-        <WhyItMattersScrollSection
-          sectionRefCallback={(el) => { sectionRefs.current[7] = el; }}
-        />
 
         {/* ── 8. TESTIMONIALS ─────────────────────────────────────────── */}
         <section
