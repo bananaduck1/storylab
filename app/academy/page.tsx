@@ -143,7 +143,7 @@ const testimonials = [
   {
     quote:
       "Sam is a teacher who truly listens to what a student is wrestling with and draws out exactly what they need. I'm certain that any family who works with him will find their child going through the college process with a healthy, grounded, and even happy mindset.",
-    attribution: "Parent of a student admitted to Washington University in St. Louis",
+    attribution: "Parent of a student attending Washington University in St. Louis",
     type: "parent",
   },
 ];
@@ -187,6 +187,7 @@ const tutors: Tutor[] = [
 const sections = [
   { id: "hero", label: "Welcome" },
   { id: "founder", label: "Our Story" },
+  { id: "thesis", label: "Our Mission" },
   { id: "philosophy", label: "Philosophy" },
   { id: "cases", label: "Student Stories" },
   { id: "paths", label: "Programs" },
@@ -217,7 +218,7 @@ function PhilosophyItemEl({
         {number}
       </span>
       <p
-        className={`relative pl-14 text-sm leading-relaxed ${
+        className={`relative pl-14 text-base leading-relaxed ${
           isDifference ? "text-zinc-700" : "text-zinc-600"
         }`}
       >
@@ -268,13 +269,13 @@ function PhilosophyScrollSection({
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
             Our Approach
           </p>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950">
-            What we believe, and how we act on it.
-          </h2>
 
-          <p className="mt-10 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
+          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
             Our Philosophy
           </p>
+          <div className="relative mt-4 mb-4 h-36 overflow-hidden rounded-xl">
+            <Image src="/photo-1.png" alt="" fill className="object-cover" />
+          </div>
           <div className="mt-2 space-y-1">
             {philosophy.map((item) => (
               <PhilosophyItemEl key={item.number} number={item.number} text={item.belief} />
@@ -286,6 +287,9 @@ function PhilosophyScrollSection({
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
             The StoryLab Difference
           </p>
+          <div className="relative mt-4 mb-4 h-36 overflow-hidden rounded-xl">
+            <Image src="/in the crowd.png" alt="" fill className="object-cover" />
+          </div>
           <div className="mt-2 space-y-1">
             {philosophy.map((item) => (
               <PhilosophyItemEl
@@ -304,37 +308,54 @@ function PhilosophyScrollSection({
         <div className="mx-auto w-full max-w-6xl px-6">
           <div className="grid grid-cols-[2fr_3fr] items-center gap-16">
 
-            {/* Left: label + dots */}
+            {/* Left: label + crossfading title + crossfading photo + dots */}
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
                 Our Approach
               </p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-                What we believe, and how we act on it.
-              </h2>
 
-              {/* Step label (crossfades) */}
-              <div className="mt-8" style={{ display: "grid" }}>
-                <p
+              {/* Step title (crossfades) */}
+              <div className="mt-4" style={{ display: "grid" }}>
+                <h2
                   style={{ gridArea: "1 / 1" }}
-                  className={`text-xl font-semibold text-zinc-900 transition-opacity duration-[250ms] ${
+                  className={`text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl transition-opacity duration-[250ms] ${
                     step === 0 ? "opacity-100" : "opacity-0"
                   }`}
                 >
                   Our Philosophy
-                </p>
-                <p
+                </h2>
+                <h2
                   style={{ gridArea: "1 / 1" }}
-                  className={`text-xl font-semibold text-zinc-900 transition-opacity duration-[250ms] ${
+                  className={`text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl transition-opacity duration-[250ms] ${
                     step === 1 ? "opacity-100" : "opacity-0"
                   }`}
                 >
                   The StoryLab Difference
-                </p>
+                </h2>
+              </div>
+
+              {/* Step photo (crossfades) */}
+              <div className="mt-6" style={{ display: "grid" }}>
+                <div
+                  style={{ gridArea: "1 / 1" }}
+                  className={`relative h-40 overflow-hidden rounded-xl transition-opacity duration-[250ms] ${
+                    step === 0 ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  <Image src="/photo-1.png" alt="" fill className="object-cover" />
+                </div>
+                <div
+                  style={{ gridArea: "1 / 1" }}
+                  className={`relative h-40 overflow-hidden rounded-xl transition-opacity duration-[250ms] ${
+                    step === 1 ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  <Image src="/in the crowd.png" alt="" fill className="object-cover" />
+                </div>
               </div>
 
               {/* Dots */}
-              <div className="mt-4 flex gap-2">
+              <div className="mt-6 flex gap-2">
                 <div
                   className={`h-2 w-2 rounded-full transition-colors duration-[250ms] ${
                     step === 0 ? "bg-zinc-900" : "bg-zinc-200"
@@ -444,6 +465,11 @@ function WhyItMattersScrollSection({
         <div className="mx-auto mt-12 max-w-3xl space-y-10 px-6">
           {/* Amodei */}
           <div>
+            <div className="mb-5 flex justify-center">
+              <div className="relative h-14 w-14 overflow-hidden rounded-full border border-zinc-200">
+                <Image src="/daniela amodei.png" alt="Daniela Amodei" fill className="object-cover" />
+              </div>
+            </div>
             <blockquote className="text-xl italic leading-relaxed text-zinc-700">
               <strong className="not-italic font-semibold text-zinc-900">
                 I actually think studying the humanities is going to be more important than ever.
@@ -461,6 +487,11 @@ function WhyItMattersScrollSection({
 
           {/* Dimon */}
           <div>
+            <div className="mb-5 flex justify-center">
+              <div className="relative h-14 w-14 overflow-hidden rounded-full border border-zinc-200">
+                <Image src="/jamie dimon.png" alt="Jamie Dimon" fill className="object-cover" />
+              </div>
+            </div>
             <blockquote className="text-xl italic leading-relaxed text-zinc-700">
               My advice to people would be critical thinking, learn skills, learn your EQ, learn
               how to be good in a meeting,{" "}
@@ -506,6 +537,11 @@ function WhyItMattersScrollSection({
                   : "opacity-0 -translate-y-2 pointer-events-none"
               }`}
             >
+              <div className="mb-8 flex justify-center">
+                <div className="relative h-16 w-16 overflow-hidden rounded-full border border-zinc-200">
+                  <Image src="/daniela amodei.png" alt="Daniela Amodei" fill className="object-cover" />
+                </div>
+              </div>
               <blockquote className="text-2xl italic leading-relaxed text-zinc-700">
                 <strong className="not-italic font-semibold text-zinc-900">
                   I actually think studying the humanities is going to be more important than ever.
@@ -530,6 +566,11 @@ function WhyItMattersScrollSection({
                   : "opacity-0 translate-y-2 pointer-events-none"
               }`}
             >
+              <div className="mb-8 flex justify-center">
+                <div className="relative h-16 w-16 overflow-hidden rounded-full border border-zinc-200">
+                  <Image src="/jamie dimon.png" alt="Jamie Dimon" fill className="object-cover" />
+                </div>
+              </div>
               <blockquote className="text-2xl italic leading-relaxed text-zinc-700">
                 My advice to people would be critical thinking, learn skills, learn your EQ, learn
                 how to be good in a meeting,{" "}
@@ -669,7 +710,7 @@ export default function AcademyPage() {
               </div>
               <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
                 <Image
-                  src="/photo-1.png"
+                  src="/photo-2.png"
                   alt="Students working together"
                   fill
                   className="object-cover"
@@ -690,10 +731,10 @@ export default function AcademyPage() {
             <div className="grid items-center gap-16 md:grid-cols-2">
               <div className="relative aspect-[4/3] overflow-hidden rounded-2xl md:order-1">
                 <Image
-                  src="/photo-1.png"
+                  src="/StoryLab Sam talking.png"
                   alt="Sam Ahn"
                   fill
-                  className="object-cover object-top"
+                  className="object-cover object-center"
                 />
               </div>
               <div className="md:order-2">
@@ -718,12 +759,10 @@ export default function AcademyPage() {
                     And yet, come March my senior year, I got into Harvard, Yale, Stanford, and
                     Princeton — the only schools I had applied to.
                   </p>
-                  <p className="font-medium text-zinc-800">
+                  <p>
                     I started StoryLab to teach students the philosophy that got me in.
                   </p>
-                </div>
-                <div className="mt-8 border-t border-zinc-100 pt-8">
-                  <p className="text-sm leading-relaxed text-zinc-500">
+                  <p>
                     At Yale, I graduated <em>magna cum laude</em> and Phi Beta Kappa with a B.A. in
                     Comparative Literature. In college, I wrote for some of the world&rsquo;s biggest
                     companies alongside former White House speechwriters, and evaluated high school
@@ -735,14 +774,45 @@ export default function AcademyPage() {
           </div>
         </section>
 
-        {/* ── 2. PHILOSOPHY (scroll-driven) ───────────────────────────── */}
+        {/* ── 2. THESIS ────────────────────────────────────────────────── */}
+        <section
+          ref={(el) => { sectionRefs.current[2] = el; }}
+          id="thesis"
+          className="scroll-snap-section section-reveal flex min-h-[100svh] items-stretch"
+        >
+          <div className="grid w-full md:grid-cols-2">
+            {/* Left: bold statement */}
+            <div
+              className="flex items-center px-8 py-16 md:px-16"
+              style={{ backgroundColor: "#cee0c8" }}
+            >
+              <p className="text-4xl font-bold leading-snug tracking-tight text-zinc-950 sm:text-5xl">
+                In an application field where it&rsquo;s harder to stand out than ever, we give
+                students the tools to tell a killer story.
+              </p>
+            </div>
+            {/* Right: supporting copy */}
+            <div
+              className="flex items-center justify-center px-8 py-16 md:px-16"
+              style={{ backgroundColor: "#bad4b3" }}
+            >
+              <p className="text-center text-xl leading-relaxed text-emerald-900 sm:text-2xl">
+                Many families make the mistake of pouring all their energy into hard parts of the
+                application like test scores and awards, when it&rsquo;s the softer parts of an
+                application that get students admitted.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 3. PHILOSOPHY (scroll-driven) ───────────────────────────── */}
         <PhilosophyScrollSection
-          sectionRefCallback={(el) => { sectionRefs.current[2] = el; }}
+          sectionRefCallback={(el) => { sectionRefs.current[3] = el; }}
         />
 
-        {/* ── 3. STUDENT STORIES ──────────────────────────────────────── */}
+        {/* ── 4. STUDENT STORIES ──────────────────────────────────────── */}
         <section
-          ref={(el) => { sectionRefs.current[3] = el; }}
+          ref={(el) => { sectionRefs.current[4] = el; }}
           id="cases"
           className="scroll-snap-section section-reveal min-h-[100svh] bg-white/50 py-24"
         >
@@ -779,8 +849,7 @@ export default function AcademyPage() {
                     </div>
                   </div>
                   <div className="flex flex-1 flex-col p-6">
-                    <p className="text-xs text-zinc-400">{s.applying}</p>
-                    <p className="mt-3 flex-1 text-sm leading-relaxed text-zinc-600">{s.teaser}</p>
+                    <p className="flex-1 text-sm leading-relaxed text-zinc-600">{s.teaser}</p>
                     <div className="mt-5 flex items-center justify-between">
                       <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
                         {s.outcome}
@@ -796,9 +865,9 @@ export default function AcademyPage() {
           </div>
         </section>
 
-        {/* ── 4. THREE PATHS ──────────────────────────────────────────── */}
+        {/* ── 5. THREE PATHS ──────────────────────────────────────────── */}
         <section
-          ref={(el) => { sectionRefs.current[4] = el; }}
+          ref={(el) => { sectionRefs.current[5] = el; }}
           id="paths"
           className="scroll-snap-section section-reveal flex min-h-[100svh] items-center"
         >
@@ -842,9 +911,9 @@ export default function AcademyPage() {
           </div>
         </section>
 
-        {/* ── 5. OUR TUTORS ───────────────────────────────────────────── */}
+        {/* ── 6. OUR TUTORS ───────────────────────────────────────────── */}
         <section
-          ref={(el) => { sectionRefs.current[5] = el; }}
+          ref={(el) => { sectionRefs.current[6] = el; }}
           id="tutors"
           className="scroll-snap-section section-reveal min-h-[100svh] bg-white/50 py-16"
         >
@@ -857,14 +926,14 @@ export default function AcademyPage() {
           />
         </section>
 
-        {/* ── 6. WHY IT MATTERS (scroll-driven) ───────────────────────── */}
+        {/* ── 7. WHY IT MATTERS (scroll-driven) ───────────────────────── */}
         <WhyItMattersScrollSection
-          sectionRefCallback={(el) => { sectionRefs.current[6] = el; }}
+          sectionRefCallback={(el) => { sectionRefs.current[7] = el; }}
         />
 
-        {/* ── 7. TESTIMONIALS ─────────────────────────────────────────── */}
+        {/* ── 8. TESTIMONIALS ─────────────────────────────────────────── */}
         <section
-          ref={(el) => { sectionRefs.current[7] = el; }}
+          ref={(el) => { sectionRefs.current[8] = el; }}
           id="testimonials"
           className="scroll-snap-section section-reveal min-h-[100svh] py-24"
         >
@@ -916,9 +985,9 @@ export default function AcademyPage() {
           </div>
         </section>
 
-        {/* ── 8. ACCEPTANCES ──────────────────────────────────────────── */}
+        {/* ── 9. ACCEPTANCES ──────────────────────────────────────────── */}
         <section
-          ref={(el) => { sectionRefs.current[8] = el; }}
+          ref={(el) => { sectionRefs.current[9] = el; }}
           id="acceptances"
           className="scroll-snap-section section-reveal flex min-h-[100svh] items-center bg-white/50"
         >
@@ -932,9 +1001,9 @@ export default function AcademyPage() {
           </div>
         </section>
 
-        {/* ── 9. CTA ──────────────────────────────────────────────────── */}
+        {/* ── 10. CTA ─────────────────────────────────────────────────── */}
         <section
-          ref={(el) => { sectionRefs.current[9] = el; }}
+          ref={(el) => { sectionRefs.current[10] = el; }}
           id="cta"
           className="scroll-snap-section section-reveal flex min-h-[100svh] items-center"
         >

@@ -140,7 +140,7 @@ function StudentsContent() {
                 {student.name}
               </h1>
               <p className="mt-1 text-sm text-zinc-400">
-                {student.grade} &middot; Applying to {student.applying}
+                {student.grade}
               </p>
             </div>
           </div>
