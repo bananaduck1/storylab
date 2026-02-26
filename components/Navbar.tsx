@@ -40,42 +40,12 @@ export function Navbar() {
             >
               AI Editor
             </Link> */}
-            {/* Academy dropdown */}
-            <div className="group relative">
-              <Link
-                href="/academy"
-                className="text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
-              >
-                Academy
-              </Link>
-              <div className="pointer-events-none absolute right-0 top-full pt-2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
-                <div className="min-w-[220px] rounded-lg border border-zinc-200 bg-white py-1 shadow-lg">
-                  {/* Programs section with nested items */}
-                  <div className="px-4 py-2">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Programs</p>
-                  </div>
-                  {programLinks.map((l) => (
-                    <Link
-                      key={l.href}
-                      href={l.href}
-                      className="block px-4 py-2 pl-6 text-sm text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950"
-                    >
-                      {l.label}
-                    </Link>
-                  ))}
-                  <div className="my-1 border-t border-zinc-100" />
-                  {academyLinks.slice(1).map((l) => (
-                    <Link
-                      key={l.href}
-                      href={l.href}
-                      className="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950"
-                    >
-                      {l.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <Link
+              href="/academy"
+              className="text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
+            >
+              Academy
+            </Link>
             <Link
               href="/lab"
               className="text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"

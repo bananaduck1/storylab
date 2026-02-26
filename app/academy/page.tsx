@@ -14,8 +14,8 @@ const caseStudySummaries = [
     initial: "J",
     name: "Jason",
     grade: "Senior",
-    applying: "Yale, Columbia, UChicago",
-    outcome: "Accepted — UChicago",
+    applying: "Yale, Columbia, Dartmouth",
+    outcome: "Accepted — Dartmouth",
     color: "bg-[#2C4A3E]",
     teaser:
       "His first essay hit every note: leadership, service, resilience. By the second paragraph, you could predict every sentence coming. That was the problem.",
@@ -26,7 +26,7 @@ const caseStudySummaries = [
     name: "Sarah",
     grade: "Senior",
     applying: "Stanford, Yale, Northwestern, Columbia",
-    outcome: "Accepted — Northwestern ED",
+    outcome: "Accepted — Princeton",
     color: "bg-[#2A3F5A]",
     teaser:
       "Her essay was beautifully written — clean, controlled, and emotionally distant. After 600 words, you didn't know her any better than at the top of the page.",
@@ -37,7 +37,7 @@ const caseStudySummaries = [
     name: "Mia",
     grade: "Senior",
     applying: "Emory, Georgetown, UVA, Boston University",
-    outcome: "Accepted — Emory ED",
+    outcome: "Accepted — Northwestern",
     color: "bg-[#3A4A2A]",
     teaser:
       "Her counselor told her not to write about filmmaking. So she wrote about everything else — and none of it was the thing that actually made her, her.",
@@ -824,8 +824,7 @@ export default function AcademyPage() {
                 Meet some of our students.
               </h2>
               <p className="mt-4 text-base leading-relaxed text-zinc-500">
-                Every student who arrives at StoryLab has something real to say. They just haven&rsquo;t
-                found it yet.
+                Every student who arrives at StoryLab has something real to say. They just haven&rsquo;t found it&nbsp;yet.
               </p>
             </div>
 
@@ -849,12 +848,9 @@ export default function AcademyPage() {
                   </div>
                   <div className="flex flex-1 flex-col p-6">
                     <p className="flex-1 text-sm leading-relaxed text-zinc-600">{s.teaser}</p>
-                    <div className="mt-5 flex items-center justify-between">
-                      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+                    <div className="mt-8">
+                      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-medium text-emerald-700">
                         {s.outcome}
-                      </span>
-                      <span className="text-sm font-medium text-zinc-400 transition-colors group-hover:text-zinc-700">
-                        Read more →
                       </span>
                     </div>
                   </div>
@@ -956,11 +952,7 @@ export default function AcademyPage() {
                   </blockquote>
                   <figcaption className="mt-6 flex items-center gap-3">
                     <div className="h-px flex-1 bg-zinc-200" />
-                    <p
-                      className={`text-xs font-medium ${
-                        t.type === "parent" ? "text-zinc-600" : "text-zinc-400"
-                      }`}
-                    >
+                    <p className="text-xs font-medium text-zinc-400">
                       {t.attribution}
                     </p>
                   </figcaption>
