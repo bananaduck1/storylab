@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { analyzeEssay } from "@/lib/analyzeEssay";
+import { analyzeEssay } from "./analyzeEssay";
 
 export const runtime = "nodejs"; // ensure Node runtime (OpenAI, fs, etc.)
 export const dynamic = "force-dynamic"; // avoid caching
