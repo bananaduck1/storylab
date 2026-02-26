@@ -210,15 +210,15 @@ function PhilosophyItemEl({
   isDifference?: boolean;
 }) {
   return (
-    <div className="relative py-4">
+    <div className="flex items-start gap-5 py-4">
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 select-none text-[80px] font-bold leading-none text-zinc-900 opacity-[0.05]"
+        className="flex-shrink-0 w-8 text-lg font-bold leading-none text-zinc-300 mt-0.5"
       >
         {number}
       </span>
       <p
-        className={`relative pl-14 text-base leading-relaxed ${
+        className={`text-base leading-relaxed ${
           isDifference ? "text-zinc-700" : "text-zinc-600"
         }`}
       >

@@ -36,7 +36,7 @@ body {
   background-attachment: fixed, fixed, fixed, scroll;
   color: var(--foreground);
   font-family: var(--font-cooper), var(--font-body), ui-serif, serif;
-  font-size: 1.0625rem; /* 17px base - slightly larger than default 16px */
+  font-size: 1.125rem; /* 18px base */
   line-height: 1.7;
   text-rendering: optimizeLegibility;
 }
