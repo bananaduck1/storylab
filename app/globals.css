@@ -35,7 +35,7 @@ body {
   background-size: 1200px 800px, 900px 700px, 1000px 800px, 600px 600px;
   background-attachment: fixed, fixed, fixed, scroll;
   color: var(--foreground);
-  font-family: var(--font-body), ui-serif, serif;
+  font-family: var(--font-cooper), var(--font-body), ui-serif, serif;
   font-size: 1.0625rem; /* 17px base - slightly larger than default 16px */
   line-height: 1.7;
   text-rendering: optimizeLegibility;

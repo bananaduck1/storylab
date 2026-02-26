@@ -68,8 +68,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full scroll-smooth">
-      <body className={`${cooper.variable} min-h-dvh text-zinc-900 antialiased`}>
+    <html lang="en" className={`h-full scroll-smooth ${cooper.variable}`}>
+      <body className={`${cooper.variable} ${cooper.className} min-h-dvh text-zinc-900 antialiased`}>
         <a
           href="#content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-zinc-900 focus:shadow"

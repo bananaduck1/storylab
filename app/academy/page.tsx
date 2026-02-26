@@ -273,8 +273,8 @@ function PhilosophyScrollSection({
           <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
             Our Philosophy
           </p>
-          <div className="relative mt-4 mb-4 h-52 overflow-hidden rounded-xl">
-            <Image src="/photo-1.png" alt="" fill className="object-contain" />
+          <div className="relative mt-4 mb-4 h-80 overflow-hidden rounded-xl">
+            <Image src="/in%20the%20crowd.png" alt="" fill className="object-contain" />
           </div>
           <div className="mt-2 space-y-1">
             {philosophy.map((item) => (
@@ -287,8 +287,8 @@ function PhilosophyScrollSection({
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
             The StoryLab Difference
           </p>
-          <div className="relative mt-4 mb-4 h-52 overflow-hidden rounded-xl">
-            <Image src="/in%20the%20crowd.png" alt="" fill className="object-contain" />
+          <div className="relative mt-4 mb-4 h-80 overflow-hidden rounded-xl">
+            <Image src="/photo-1.png" alt="" fill className="object-contain" />
           </div>
           <div className="mt-2 space-y-1">
             {philosophy.map((item) => (
@@ -338,19 +338,19 @@ function PhilosophyScrollSection({
               <div className="mt-6" style={{ display: "grid" }}>
                 <div
                   style={{ gridArea: "1 / 1" }}
-                  className={`relative h-52 overflow-hidden rounded-xl transition-opacity duration-[250ms] ${
+                  className={`relative h-80 overflow-hidden rounded-xl transition-opacity duration-[250ms] ${
                     step === 0 ? "opacity-100" : "opacity-0"
                   }`}
                 >
-                  <Image src="/photo-1.png" alt="" fill className="object-contain" />
+                  <Image src="/in%20the%20crowd.png" alt="" fill className="object-contain" />
                 </div>
                 <div
                   style={{ gridArea: "1 / 1" }}
-                  className={`relative h-52 overflow-hidden rounded-xl transition-opacity duration-[250ms] ${
+                  className={`relative h-80 overflow-hidden rounded-xl transition-opacity duration-[250ms] ${
                     step === 1 ? "opacity-100" : "opacity-0"
                   }`}
                 >
-                  <Image src="/in%20the%20crowd.png" alt="" fill className="object-contain" />
+                  <Image src="/photo-1.png" alt="" fill className="object-contain" />
                 </div>
               </div>
 
@@ -465,10 +465,8 @@ function WhyItMattersScrollSection({
         <div className="mx-auto mt-12 max-w-3xl space-y-10 px-6">
           {/* Amodei */}
           <div>
-            <div className="mb-5 flex justify-center">
-              <div className="relative h-14 w-14 overflow-hidden rounded-full border border-zinc-200">
-                <Image src="/daniela%20amodei.png" alt="Daniela Amodei" fill className="object-cover" />
-              </div>
+            <div className="mb-5 relative h-56 w-full overflow-hidden rounded-xl opacity-80">
+              <Image src="/daniela%20amodei.png" alt="Daniela Amodei" fill className="object-cover" />
             </div>
             <blockquote className="text-xl italic leading-relaxed text-zinc-700">
               <strong className="not-italic font-semibold text-zinc-900">
@@ -487,10 +485,8 @@ function WhyItMattersScrollSection({
 
           {/* Dimon */}
           <div>
-            <div className="mb-5 flex justify-center">
-              <div className="relative h-14 w-14 overflow-hidden rounded-full border border-zinc-200">
-                <Image src="/jamie%20dimon.png" alt="Jamie Dimon" fill className="object-cover" />
-              </div>
+            <div className="mb-5 relative h-56 w-full overflow-hidden rounded-xl">
+              <Image src="/jamie%20dimon.png" alt="Jamie Dimon" fill className="object-cover" />
             </div>
             <blockquote className="text-xl italic leading-relaxed text-zinc-700">
               My advice to people would be critical thinking, learn skills, learn your EQ, learn
@@ -508,11 +504,11 @@ function WhyItMattersScrollSection({
       </div>
 
       {/* ── Desktop: scroll-jacked sticky ────────────────────────── */}
-      <div className="hidden md:flex sticky top-0 h-screen items-center justify-center px-6">
-        <div className="w-full max-w-3xl">
+      <div className="hidden md:flex sticky top-0 h-screen items-center px-6">
+        <div className="w-full max-w-6xl mx-auto">
 
           {/* Section header */}
-          <div className="mb-12">
+          <div className="mb-10">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
               Why It Matters
             </p>
@@ -528,7 +524,7 @@ function WhyItMattersScrollSection({
           {/* Crossfading quotes */}
           <div style={{ display: "grid" }}>
 
-            {/* Step 0: Amodei */}
+            {/* Step 0: Amodei — photo left, text right */}
             <div
               style={{ gridArea: "1 / 1" }}
               className={`transition-all duration-[250ms] ease-out ${
@@ -537,27 +533,29 @@ function WhyItMattersScrollSection({
                   : "opacity-0 -translate-y-2 pointer-events-none"
               }`}
             >
-              <div className="mb-8 flex justify-center">
-                <div className="relative h-16 w-16 overflow-hidden rounded-full border border-zinc-200">
-                  <Image src="/daniela%20amodei.png" alt="Daniela Amodei" fill className="object-cover" />
+              <div className="grid grid-cols-2 gap-12 items-center">
+                <div className="relative overflow-hidden rounded-xl opacity-80 min-h-[360px]">
+                  <Image src="/daniela%20amodei.png" alt="Daniela Amodei" fill className="object-cover object-top" />
                 </div>
-              </div>
-              <blockquote className="text-2xl italic leading-relaxed text-zinc-700">
-                <strong className="not-italic font-semibold text-zinc-900">
-                  I actually think studying the humanities is going to be more important than ever.
-                </strong>{" "}
-                A lot of these [AI] models are actually very good at STEM. But I think this idea
-                that there are things that make us uniquely human — understanding ourselves,
-                understanding history, understanding what makes us tick — I think that will always
-                be really, really important.
-              </blockquote>
-              <div className="mt-6 flex items-center gap-3">
-                <div className="h-px w-10 bg-zinc-300" />
-                <p className="text-xs text-zinc-400">Daniela Amodei, President of Anthropic</p>
+                <div>
+                  <blockquote className="text-2xl italic leading-relaxed text-zinc-700">
+                    <strong className="not-italic font-semibold text-zinc-900">
+                      I actually think studying the humanities is going to be more important than ever.
+                    </strong>{" "}
+                    A lot of these [AI] models are actually very good at STEM. But I think this idea
+                    that there are things that make us uniquely human — understanding ourselves,
+                    understanding history, understanding what makes us tick — I think that will always
+                    be really, really important.
+                  </blockquote>
+                  <div className="mt-6 flex items-center gap-3">
+                    <div className="h-px w-10 bg-zinc-300" />
+                    <p className="text-xs text-zinc-400">Daniela Amodei, President of Anthropic</p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Step 1: Dimon */}
+            {/* Step 1: Dimon — text left, photo right */}
             <div
               style={{ gridArea: "1 / 1" }}
               className={`transition-all duration-[250ms] ease-out ${
@@ -566,28 +564,30 @@ function WhyItMattersScrollSection({
                   : "opacity-0 translate-y-2 pointer-events-none"
               }`}
             >
-              <div className="mb-8 flex justify-center">
-                <div className="relative h-16 w-16 overflow-hidden rounded-full border border-zinc-200">
-                  <Image src="/jamie%20dimon.png" alt="Jamie Dimon" fill className="object-cover" />
+              <div className="grid grid-cols-2 gap-12 items-center">
+                <div>
+                  <blockquote className="text-2xl italic leading-relaxed text-zinc-700">
+                    My advice to people would be critical thinking, learn skills, learn your EQ, learn
+                    how to be good in a meeting,{" "}
+                    <strong className="not-italic font-semibold text-zinc-900">
+                      how to communicate, how to write. You&rsquo;ll have plenty of jobs.
+                    </strong>
+                  </blockquote>
+                  <div className="mt-6 flex items-center gap-3">
+                    <div className="h-px w-10 bg-zinc-300" />
+                    <p className="text-xs text-zinc-400">Jamie Dimon, CEO of JPMorgan Chase</p>
+                  </div>
                 </div>
-              </div>
-              <blockquote className="text-2xl italic leading-relaxed text-zinc-700">
-                My advice to people would be critical thinking, learn skills, learn your EQ, learn
-                how to be good in a meeting,{" "}
-                <strong className="not-italic font-semibold text-zinc-900">
-                  how to communicate, how to write. You&rsquo;ll have plenty of jobs.
-                </strong>
-              </blockquote>
-              <div className="mt-6 flex items-center gap-3">
-                <div className="h-px w-10 bg-zinc-300" />
-                <p className="text-xs text-zinc-400">Jamie Dimon, CEO of JPMorgan Chase</p>
+                <div className="relative overflow-hidden rounded-xl min-h-[360px]">
+                  <Image src="/jamie%20dimon.png" alt="Jamie Dimon" fill className="object-cover object-top" />
+                </div>
               </div>
             </div>
 
           </div>
 
           {/* Progress dots */}
-          <div className="mt-10 flex justify-center gap-2">
+          <div className="mt-8 flex gap-2">
             <div
               className={`h-2 w-2 rounded-full transition-colors duration-[250ms] ${
                 step === 0 ? "bg-zinc-900" : "bg-zinc-200"
@@ -782,14 +782,14 @@ export default function AcademyPage() {
         >
           <div className="grid w-full md:grid-cols-2">
             {/* Left: bold statement */}
-            <div className="flex items-center px-8 py-10 md:px-16">
-              <p className="text-4xl font-bold leading-snug tracking-tight text-zinc-950 sm:text-5xl">
+            <div className="flex items-center px-8 py-6 md:px-16">
+              <p className="text-4xl font-bold leading-tight tracking-tight text-zinc-950 sm:text-5xl">
                 In an application field where it&rsquo;s harder to stand out than ever, we give
                 students the tools to tell a killer story.
               </p>
             </div>
             {/* Right: supporting copy */}
-            <div className="flex items-center justify-center bg-white/60 px-8 py-10 md:px-16">
+            <div className="flex items-center justify-center bg-white/60 px-8 py-6 md:px-16">
               <p className="text-center text-xl leading-relaxed text-zinc-600 sm:text-2xl">
                 Many families make the mistake of pouring all their energy into hard parts of the
                 application like test scores and awards, when it&rsquo;s the softer parts of an
