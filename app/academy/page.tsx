@@ -273,8 +273,8 @@ function PhilosophyScrollSection({
           <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
             Our Philosophy
           </p>
-          <div className="relative mt-4 mb-4 h-36 overflow-hidden rounded-xl">
-            <Image src="/photo-1.png" alt="" fill className="object-cover" />
+          <div className="relative mt-4 mb-4 h-52 overflow-hidden rounded-xl">
+            <Image src="/photo-1.png" alt="" fill className="object-contain" />
           </div>
           <div className="mt-2 space-y-1">
             {philosophy.map((item) => (
@@ -287,8 +287,8 @@ function PhilosophyScrollSection({
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
             The StoryLab Difference
           </p>
-          <div className="relative mt-4 mb-4 h-36 overflow-hidden rounded-xl">
-            <Image src="/in the crowd.png" alt="" fill className="object-cover" />
+          <div className="relative mt-4 mb-4 h-52 overflow-hidden rounded-xl">
+            <Image src="/in%20the%20crowd.png" alt="" fill className="object-contain" />
           </div>
           <div className="mt-2 space-y-1">
             {philosophy.map((item) => (
@@ -338,19 +338,19 @@ function PhilosophyScrollSection({
               <div className="mt-6" style={{ display: "grid" }}>
                 <div
                   style={{ gridArea: "1 / 1" }}
-                  className={`relative h-40 overflow-hidden rounded-xl transition-opacity duration-[250ms] ${
+                  className={`relative h-52 overflow-hidden rounded-xl transition-opacity duration-[250ms] ${
                     step === 0 ? "opacity-100" : "opacity-0"
                   }`}
                 >
-                  <Image src="/photo-1.png" alt="" fill className="object-cover" />
+                  <Image src="/photo-1.png" alt="" fill className="object-contain" />
                 </div>
                 <div
                   style={{ gridArea: "1 / 1" }}
-                  className={`relative h-40 overflow-hidden rounded-xl transition-opacity duration-[250ms] ${
+                  className={`relative h-52 overflow-hidden rounded-xl transition-opacity duration-[250ms] ${
                     step === 1 ? "opacity-100" : "opacity-0"
                   }`}
                 >
-                  <Image src="/in the crowd.png" alt="" fill className="object-cover" />
+                  <Image src="/in%20the%20crowd.png" alt="" fill className="object-contain" />
                 </div>
               </div>
 
@@ -467,7 +467,7 @@ function WhyItMattersScrollSection({
           <div>
             <div className="mb-5 flex justify-center">
               <div className="relative h-14 w-14 overflow-hidden rounded-full border border-zinc-200">
-                <Image src="/daniela amodei.png" alt="Daniela Amodei" fill className="object-cover" />
+                <Image src="/daniela%20amodei.png" alt="Daniela Amodei" fill className="object-cover" />
               </div>
             </div>
             <blockquote className="text-xl italic leading-relaxed text-zinc-700">
@@ -489,7 +489,7 @@ function WhyItMattersScrollSection({
           <div>
             <div className="mb-5 flex justify-center">
               <div className="relative h-14 w-14 overflow-hidden rounded-full border border-zinc-200">
-                <Image src="/jamie dimon.png" alt="Jamie Dimon" fill className="object-cover" />
+                <Image src="/jamie%20dimon.png" alt="Jamie Dimon" fill className="object-cover" />
               </div>
             </div>
             <blockquote className="text-xl italic leading-relaxed text-zinc-700">
@@ -539,7 +539,7 @@ function WhyItMattersScrollSection({
             >
               <div className="mb-8 flex justify-center">
                 <div className="relative h-16 w-16 overflow-hidden rounded-full border border-zinc-200">
-                  <Image src="/daniela amodei.png" alt="Daniela Amodei" fill className="object-cover" />
+                  <Image src="/daniela%20amodei.png" alt="Daniela Amodei" fill className="object-cover" />
                 </div>
               </div>
               <blockquote className="text-2xl italic leading-relaxed text-zinc-700">
@@ -568,7 +568,7 @@ function WhyItMattersScrollSection({
             >
               <div className="mb-8 flex justify-center">
                 <div className="relative h-16 w-16 overflow-hidden rounded-full border border-zinc-200">
-                  <Image src="/jamie dimon.png" alt="Jamie Dimon" fill className="object-cover" />
+                  <Image src="/jamie%20dimon.png" alt="Jamie Dimon" fill className="object-cover" />
                 </div>
               </div>
               <blockquote className="text-2xl italic leading-relaxed text-zinc-700">
@@ -731,7 +731,7 @@ export default function AcademyPage() {
             <div className="grid items-center gap-16 md:grid-cols-2">
               <div className="relative aspect-[4/3] overflow-hidden rounded-2xl md:order-1">
                 <Image
-                  src="/StoryLab Sam talking.png"
+                  src="/StoryLab%20Sam%20talking.png"
                   alt="Sam Ahn"
                   fill
                   className="object-cover object-center"
@@ -782,21 +782,15 @@ export default function AcademyPage() {
         >
           <div className="grid w-full md:grid-cols-2">
             {/* Left: bold statement */}
-            <div
-              className="flex items-center px-8 py-16 md:px-16"
-              style={{ backgroundColor: "#cee0c8" }}
-            >
+            <div className="flex items-center px-8 py-10 md:px-16">
               <p className="text-4xl font-bold leading-snug tracking-tight text-zinc-950 sm:text-5xl">
                 In an application field where it&rsquo;s harder to stand out than ever, we give
                 students the tools to tell a killer story.
               </p>
             </div>
             {/* Right: supporting copy */}
-            <div
-              className="flex items-center justify-center px-8 py-16 md:px-16"
-              style={{ backgroundColor: "#bad4b3" }}
-            >
-              <p className="text-center text-xl leading-relaxed text-emerald-900 sm:text-2xl">
+            <div className="flex items-center justify-center bg-white/60 px-8 py-10 md:px-16">
+              <p className="text-center text-xl leading-relaxed text-zinc-600 sm:text-2xl">
                 Many families make the mistake of pouring all their energy into hard parts of the
                 application like test scores and awards, when it&rsquo;s the softer parts of an
                 application that get students admitted.

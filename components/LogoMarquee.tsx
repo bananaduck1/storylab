@@ -17,6 +17,7 @@ const logos: Logo[] = [
   { src: "/logos/vanderbilt.png", alt: "Vanderbilt" },
   { src: "/logos/jhu.png", alt: "Johns Hopkins" },
   { src: "/logos/northeastern.png", alt: "Northeastern" },
+  { src: "/logos/washu.png", alt: "Washington University in St. Louis" },
 ];
 
 function LogoSet() {
