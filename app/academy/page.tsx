@@ -197,25 +197,34 @@ const sections = [
   { id: "cta", label: "Get Started" },
 ];
 
-// ─── Shared scroll hook ───────────────────────────────────────────────────────
+// ─── Philosophy item ──────────────────────────────────────────────────────────
 
-function useScrollMidpoint(ref: React.RefObject<HTMLElement | null>) {
-  const [isPastMidpoint, setIsPastMidpoint] = useState(false);
-  useEffect(() => {
-    const handleScroll = () => {
-      const el = ref.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const scrolledIn = Math.max(0, -rect.top);
-      const totalRange = el.offsetHeight - window.innerHeight;
-      if (totalRange <= 0) return;
-      setIsPastMidpoint(scrolledIn > totalRange / 2);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [ref]);
-  return isPastMidpoint;
+function PhilosophyItemEl({
+  number,
+  text,
+  isDifference = false,
+}: {
+  number: string;
+  text: React.ReactNode;
+  isDifference?: boolean;
+}) {
+  return (
+    <div className="relative py-4">
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 select-none text-[80px] font-bold leading-none text-zinc-900 opacity-[0.05]"
+      >
+        {number}
+      </span>
+      <p
+        className={`relative pl-14 text-sm leading-relaxed ${
+          isDifference ? "text-zinc-700" : "text-zinc-600"
+        }`}
+      >
+        {text}
+      </p>
+    </div>
+  );
 }
 
 // ─── Philosophy scroll section ────────────────────────────────────────────────
@@ -225,136 +234,254 @@ function PhilosophyScrollSection({
 }: {
   sectionRefCallback: (el: HTMLElement | null) => void;
 }) {
-  const innerRef = useRef<HTMLElement | null>(null);
+  const wrapperRef = useRef<HTMLElement | null>(null);
+  const [step, setStep] = useState(0);
 
   const setRef = (el: HTMLElement | null) => {
-    innerRef.current = el;
+    wrapperRef.current = el;
     sectionRefCallback(el);
   };
 
-  const isPastMidpoint = useScrollMidpoint(innerRef);
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!wrapperRef.current) return;
+      const rect = wrapperRef.current.getBoundingClientRect();
+      const totalRange = rect.height - window.innerHeight;
+      if (totalRange <= 0) return;
+      const progress = -rect.top / totalRange;
+      setStep(progress < 0.5 ? 0 : 1);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <section
       ref={setRef}
       id="philosophy"
-      className="scroll-snap-section section-reveal relative min-h-[200vh]"
+      className="scroll-snap-section section-reveal relative md:h-[300vh]"
     >
-      <div className="sticky top-0 flex h-screen items-center">
-        <div className="mx-auto w-full max-w-6xl px-6 py-10">
+      {/* ── Mobile: static stacked list ──────────────────────────── */}
+      <div className="md:hidden px-6 py-16">
+        <div className="mx-auto max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
+            Our Approach
+          </p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950">
+            What we believe, and how we act on it.
+          </h2>
 
-          <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-              Our Approach
-            </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-              What we believe, and how we act on it.
-            </h2>
-          </div>
-
-          <div className="mt-8 space-y-3">
+          <p className="mt-10 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
+            Our Philosophy
+          </p>
+          <div className="mt-2 space-y-1">
             {philosophy.map((item) => (
-              <div
-                key={item.number}
-                className={`relative overflow-hidden rounded-2xl border bg-white px-8 py-8 transition-all duration-500 ${
-                  isPastMidpoint
-                    ? "border-zinc-200 border-l-4 border-l-emerald-400"
-                    : "border-zinc-200"
-                }`}
-              >
-                {/* Ghosted number */}
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute right-6 top-1/2 -translate-y-1/2 select-none text-8xl font-bold leading-none text-zinc-900 opacity-[0.05]"
-                >
-                  {item.number}
-                </span>
-
-                {/* Crossfade text — both in same grid cell so container sizes to tallest */}
-                <div style={{ display: "grid" }}>
-                  <p
-                    style={{ gridArea: "1 / 1" }}
-                    className={`text-sm leading-relaxed text-zinc-600 transition-opacity duration-300 ${
-                      isPastMidpoint ? "opacity-0 pointer-events-none" : "opacity-100"
-                    }`}
-                  >
-                    {item.belief}
-                  </p>
-                  <p
-                    style={{ gridArea: "1 / 1" }}
-                    className={`text-sm leading-relaxed text-zinc-700 transition-opacity duration-300 ${
-                      isPastMidpoint ? "opacity-100" : "opacity-0 pointer-events-none"
-                    }`}
-                  >
-                    {item.difference}
-                  </p>
-                </div>
-              </div>
+              <PhilosophyItemEl key={item.number} number={item.number} text={item.belief} />
             ))}
           </div>
 
-          {/* Progress indicator */}
-          <div className="mt-6 flex items-center gap-3">
-            <span
-              className={`text-xs font-medium transition-colors duration-300 ${
-                !isPastMidpoint ? "text-zinc-700" : "text-zinc-300"
-              }`}
-            >
-              Our Philosophy
-            </span>
-            <div className="flex gap-1.5">
-              <div
-                className={`h-1 rounded-full transition-all duration-300 ${
-                  !isPastMidpoint ? "w-6 bg-zinc-900" : "w-3 bg-zinc-200"
-                }`}
-              />
-              <div
-                className={`h-1 rounded-full transition-all duration-300 ${
-                  isPastMidpoint ? "w-6 bg-zinc-900" : "w-3 bg-zinc-200"
-                }`}
-              />
-            </div>
-            <span
-              className={`text-xs font-medium transition-colors duration-300 ${
-                isPastMidpoint ? "text-zinc-700" : "text-zinc-300"
-              }`}
-            >
-              The StoryLab Difference
-            </span>
-          </div>
+          <div className="my-10 border-t border-zinc-200" />
 
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
+            The StoryLab Difference
+          </p>
+          <div className="mt-2 space-y-1">
+            {philosophy.map((item) => (
+              <PhilosophyItemEl
+                key={item.number}
+                number={item.number}
+                text={item.difference}
+                isDifference
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Desktop: scroll-jacked sticky ────────────────────────── */}
+      <div className="hidden md:flex sticky top-0 h-screen items-center">
+        <div className="mx-auto w-full max-w-6xl px-6">
+          <div className="grid grid-cols-[2fr_3fr] items-center gap-16">
+
+            {/* Left: label + dots */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
+                Our Approach
+              </p>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+                What we believe, and how we act on it.
+              </h2>
+
+              {/* Step label (crossfades) */}
+              <div className="mt-8" style={{ display: "grid" }}>
+                <p
+                  style={{ gridArea: "1 / 1" }}
+                  className={`text-xl font-semibold text-zinc-900 transition-opacity duration-[250ms] ${
+                    step === 0 ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  Our Philosophy
+                </p>
+                <p
+                  style={{ gridArea: "1 / 1" }}
+                  className={`text-xl font-semibold text-zinc-900 transition-opacity duration-[250ms] ${
+                    step === 1 ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  The StoryLab Difference
+                </p>
+              </div>
+
+              {/* Dots */}
+              <div className="mt-4 flex gap-2">
+                <div
+                  className={`h-2 w-2 rounded-full transition-colors duration-[250ms] ${
+                    step === 0 ? "bg-zinc-900" : "bg-zinc-200"
+                  }`}
+                />
+                <div
+                  className={`h-2 w-2 rounded-full transition-colors duration-[250ms] ${
+                    step === 1 ? "bg-zinc-900" : "bg-zinc-200"
+                  }`}
+                />
+              </div>
+            </div>
+
+            {/* Right: all 4 items, two steps overlaid */}
+            <div style={{ display: "grid" }}>
+              {/* Step 0: Philosophy */}
+              <div
+                style={{ gridArea: "1 / 1" }}
+                className={`space-y-1 transition-all duration-[250ms] ease-out ${
+                  step === 0
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 -translate-y-2 pointer-events-none"
+                }`}
+              >
+                {philosophy.map((item) => (
+                  <PhilosophyItemEl key={item.number} number={item.number} text={item.belief} />
+                ))}
+              </div>
+
+              {/* Step 1: Difference */}
+              <div
+                style={{ gridArea: "1 / 1" }}
+                className={`space-y-1 transition-all duration-[250ms] ease-out ${
+                  step === 1
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-2 pointer-events-none"
+                }`}
+              >
+                {philosophy.map((item) => (
+                  <PhilosophyItemEl
+                    key={item.number}
+                    number={item.number}
+                    text={item.difference}
+                    isDifference
+                  />
+                ))}
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-// ─── Why It Matters scroll section ───────────────────────────────────────────
+// ─── Quotes scroll section ────────────────────────────────────────────────────
 
 function WhyItMattersScrollSection({
   sectionRefCallback,
 }: {
   sectionRefCallback: (el: HTMLElement | null) => void;
 }) {
-  const innerRef = useRef<HTMLElement | null>(null);
+  const wrapperRef = useRef<HTMLElement | null>(null);
+  const [step, setStep] = useState(0);
 
   const setRef = (el: HTMLElement | null) => {
-    innerRef.current = el;
+    wrapperRef.current = el;
     sectionRefCallback(el);
   };
 
-  const isPastMidpoint = useScrollMidpoint(innerRef);
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!wrapperRef.current) return;
+      const rect = wrapperRef.current.getBoundingClientRect();
+      const totalRange = rect.height - window.innerHeight;
+      if (totalRange <= 0) return;
+      const progress = -rect.top / totalRange;
+      setStep(progress < 0.5 ? 0 : 1);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <section
       ref={setRef}
       id="why"
-      className="scroll-snap-section section-reveal relative min-h-[200vh] bg-white/50"
+      className="scroll-snap-section section-reveal relative bg-white/50 md:h-[250vh]"
     >
-      <div className="sticky top-0 flex h-screen items-center">
-        <div className="mx-auto w-full max-w-6xl px-6 py-10">
+      {/* ── Mobile: static stacked quotes ────────────────────────── */}
+      <div className="md:hidden px-6 py-16">
+        <div className="mx-auto max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
+            Why It Matters
+          </p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950">
+            Preparing for college is preparing for the real world.
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-zinc-500">
+            In an era where AI can perform most technical skills, the people who succeed are the
+            ones who can think clearly, write persuasively, and make meaning. We train that.
+          </p>
+        </div>
 
-          <div className="max-w-2xl">
+        <div className="mx-auto mt-12 max-w-3xl space-y-10 px-6">
+          {/* Amodei */}
+          <div>
+            <blockquote className="text-xl italic leading-relaxed text-zinc-700">
+              <strong className="not-italic font-semibold text-zinc-900">
+                I actually think studying the humanities is going to be more important than ever.
+              </strong>{" "}
+              A lot of these [AI] models are actually very good at STEM. But I think this idea
+              that there are things that make us uniquely human — understanding ourselves,
+              understanding history, understanding what makes us tick — I think that will always
+              be really, really important.
+            </blockquote>
+            <div className="mt-5 flex items-center gap-3">
+              <div className="h-px w-8 bg-zinc-300" />
+              <p className="text-xs text-zinc-400">Daniela Amodei, President of Anthropic</p>
+            </div>
+          </div>
+
+          {/* Dimon */}
+          <div>
+            <blockquote className="text-xl italic leading-relaxed text-zinc-700">
+              My advice to people would be critical thinking, learn skills, learn your EQ, learn
+              how to be good in a meeting,{" "}
+              <strong className="not-italic font-semibold text-zinc-900">
+                how to communicate, how to write. You&rsquo;ll have plenty of jobs.
+              </strong>
+            </blockquote>
+            <div className="mt-5 flex items-center gap-3">
+              <div className="h-px w-8 bg-zinc-300" />
+              <p className="text-xs text-zinc-400">Jamie Dimon, CEO of JPMorgan Chase</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Desktop: scroll-jacked sticky ────────────────────────── */}
+      <div className="hidden md:flex sticky top-0 h-screen items-center justify-center px-6">
+        <div className="w-full max-w-3xl">
+
+          {/* Section header */}
+          <div className="mb-12">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
               Why It Matters
             </p>
@@ -367,92 +494,69 @@ function WhyItMattersScrollSection({
             </p>
           </div>
 
-          {/* Quote crossfade */}
-          <div className="mt-10 max-w-2xl">
-            <figure className="rounded-2xl border border-zinc-200 bg-white p-8">
-              <div style={{ display: "grid" }}>
-                <blockquote
-                  style={{ gridArea: "1 / 1" }}
-                  className={`text-base leading-relaxed text-zinc-700 transition-opacity duration-300 ${
-                    isPastMidpoint ? "opacity-0 pointer-events-none" : "opacity-100"
-                  }`}
-                >
-                  <span className="mr-0.5 text-2xl leading-none text-zinc-200">&ldquo;</span>
-                  <strong className="font-semibold text-zinc-900">
-                    I actually think studying the humanities is going to be more important than ever.
-                  </strong>{" "}
-                  A lot of these [AI] models are actually very good at STEM. But I think this idea
-                  that there are things that make us uniquely human — understanding ourselves,
-                  understanding history, understanding what makes us tick — I think that will always
-                  be really, really important.
-                </blockquote>
-                <blockquote
-                  style={{ gridArea: "1 / 1" }}
-                  className={`text-base leading-relaxed text-zinc-700 transition-opacity duration-300 ${
-                    isPastMidpoint ? "opacity-100" : "opacity-0 pointer-events-none"
-                  }`}
-                >
-                  <span className="mr-0.5 text-2xl leading-none text-zinc-200">&ldquo;</span>
-                  My advice to people would be critical thinking, learn skills, learn your EQ, learn
-                  how to be good in a meeting,{" "}
-                  <strong className="font-semibold text-zinc-900">
-                    how to communicate, how to write. You&rsquo;ll have plenty of jobs.
-                  </strong>
-                </blockquote>
-              </div>
+          {/* Crossfading quotes */}
+          <div style={{ display: "grid" }}>
 
-              <figcaption className="mt-6 flex items-center gap-3">
-                <div className="h-px flex-1 bg-zinc-100" />
-                <div style={{ display: "grid" }}>
-                  <p
-                    style={{ gridArea: "1 / 1" }}
-                    className={`text-xs font-medium text-zinc-500 transition-opacity duration-300 ${
-                      isPastMidpoint ? "opacity-0" : "opacity-100"
-                    }`}
-                  >
-                    Daniela Amodei, President of Anthropic
-                  </p>
-                  <p
-                    style={{ gridArea: "1 / 1" }}
-                    className={`text-xs font-medium text-zinc-500 transition-opacity duration-300 ${
-                      isPastMidpoint ? "opacity-100" : "opacity-0"
-                    }`}
-                  >
-                    Jamie Dimon, CEO of JPMorgan Chase
-                  </p>
-                </div>
-              </figcaption>
-            </figure>
+            {/* Step 0: Amodei */}
+            <div
+              style={{ gridArea: "1 / 1" }}
+              className={`transition-all duration-[250ms] ease-out ${
+                step === 0
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 -translate-y-2 pointer-events-none"
+              }`}
+            >
+              <blockquote className="text-2xl italic leading-relaxed text-zinc-700">
+                <strong className="not-italic font-semibold text-zinc-900">
+                  I actually think studying the humanities is going to be more important than ever.
+                </strong>{" "}
+                A lot of these [AI] models are actually very good at STEM. But I think this idea
+                that there are things that make us uniquely human — understanding ourselves,
+                understanding history, understanding what makes us tick — I think that will always
+                be really, really important.
+              </blockquote>
+              <div className="mt-6 flex items-center gap-3">
+                <div className="h-px w-10 bg-zinc-300" />
+                <p className="text-xs text-zinc-400">Daniela Amodei, President of Anthropic</p>
+              </div>
+            </div>
+
+            {/* Step 1: Dimon */}
+            <div
+              style={{ gridArea: "1 / 1" }}
+              className={`transition-all duration-[250ms] ease-out ${
+                step === 1
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-2 pointer-events-none"
+              }`}
+            >
+              <blockquote className="text-2xl italic leading-relaxed text-zinc-700">
+                My advice to people would be critical thinking, learn skills, learn your EQ, learn
+                how to be good in a meeting,{" "}
+                <strong className="not-italic font-semibold text-zinc-900">
+                  how to communicate, how to write. You&rsquo;ll have plenty of jobs.
+                </strong>
+              </blockquote>
+              <div className="mt-6 flex items-center gap-3">
+                <div className="h-px w-10 bg-zinc-300" />
+                <p className="text-xs text-zinc-400">Jamie Dimon, CEO of JPMorgan Chase</p>
+              </div>
+            </div>
+
           </div>
 
-          {/* Progress indicator */}
-          <div className="mt-6 flex items-center gap-3">
-            <span
-              className={`text-xs font-medium transition-colors duration-300 ${
-                !isPastMidpoint ? "text-zinc-700" : "text-zinc-300"
+          {/* Progress dots */}
+          <div className="mt-10 flex justify-center gap-2">
+            <div
+              className={`h-2 w-2 rounded-full transition-colors duration-[250ms] ${
+                step === 0 ? "bg-zinc-900" : "bg-zinc-200"
               }`}
-            >
-              Daniela Amodei
-            </span>
-            <div className="flex gap-1.5">
-              <div
-                className={`h-1 rounded-full transition-all duration-300 ${
-                  !isPastMidpoint ? "w-6 bg-zinc-900" : "w-3 bg-zinc-200"
-                }`}
-              />
-              <div
-                className={`h-1 rounded-full transition-all duration-300 ${
-                  isPastMidpoint ? "w-6 bg-zinc-900" : "w-3 bg-zinc-200"
-                }`}
-              />
-            </div>
-            <span
-              className={`text-xs font-medium transition-colors duration-300 ${
-                isPastMidpoint ? "text-zinc-700" : "text-zinc-300"
+            />
+            <div
+              className={`h-2 w-2 rounded-full transition-colors duration-[250ms] ${
+                step === 1 ? "bg-zinc-900" : "bg-zinc-200"
               }`}
-            >
-              Jamie Dimon
-            </span>
+            />
           </div>
 
         </div>
