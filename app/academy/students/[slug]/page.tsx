@@ -213,12 +213,6 @@ export default async function StudentPage({
           </blockquote>
         </figure>
 
-        {/* Disclaimer */}
-        <p className="mt-8 text-xs text-zinc-400">
-          Names and identifying details have been changed.{" "}
-          <em>The essays — and the moments that produced them — are real.</em>
-        </p>
-
         {/* CTA */}
         <div className="mt-14 rounded-3xl border border-zinc-200 bg-white p-8 text-center sm:p-10">
           <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">

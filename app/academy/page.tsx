@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { TutorStickySection, type Tutor } from "@/components/TutorCard";
@@ -44,34 +44,80 @@ const caseStudySummaries = [
   },
 ];
 
-const philosophy = [
+const philosophy: {
+  number: string;
+  belief: React.ReactNode;
+  difference: React.ReactNode;
+}[] = [
   {
     number: "01",
-    belief:
-      "Admissions officers are humanists at heart and value humanities-oriented thinking in the application.",
-    difference:
-      "We train students, even those with STEM backgrounds, to infuse humanistic thinking and reflection in their applications.",
+    belief: (
+      <>
+        Admissions officers are{" "}
+        <strong className="font-semibold text-zinc-900">humanists at heart</strong>{" "}
+        and value humanities-oriented thinking in the application.
+      </>
+    ),
+    difference: (
+      <>
+        We train students, even those with STEM backgrounds, to infuse{" "}
+        <strong className="font-semibold text-emerald-800">humanistic thinking and reflection</strong>{" "}
+        in their applications.
+      </>
+    ),
   },
   {
     number: "02",
-    belief:
-      "Achievements get you in the running. Writing that dares to be emotional and vulnerable gets you admitted.",
-    difference:
-      "We push students beyond surface-level \"I-learned-x\" sentences to write radically vulnerable narratives admissions officers can't forget.",
+    belief: (
+      <>
+        Achievements get you in the running. Writing that dares to be{" "}
+        <strong className="font-semibold text-zinc-900">emotional and vulnerable</strong>{" "}
+        gets you admitted.
+      </>
+    ),
+    difference: (
+      <>
+        We push students beyond surface-level &ldquo;I-learned-x&rdquo; sentences to write{" "}
+        <strong className="font-semibold text-emerald-800">radically vulnerable narratives</strong>{" "}
+        admissions officers can&rsquo;t forget.
+      </>
+    ),
   },
   {
     number: "03",
-    belief:
-      "Writing is an opaque and difficult process that takes months, if not years, to see results. AI tools only make you less distinguishable.",
-    difference:
-      "We teach students the process of writing itself, which sets them up for success long after the admissions process is over.",
+    belief: (
+      <>
+        Writing is an opaque and difficult process that takes{" "}
+        <strong className="font-semibold text-zinc-900">months, if not years</strong>, to see results.
+        AI tools only make you{" "}
+        <strong className="font-semibold text-zinc-900">less distinguishable</strong>.
+      </>
+    ),
+    difference: (
+      <>
+        We teach students{" "}
+        <strong className="font-semibold text-emerald-800">the process of writing itself</strong>,
+        which sets them up for success long after the admissions process is over.
+      </>
+    ),
   },
   {
     number: "04",
-    belief:
-      "By 12th grade, many parts of the application are too late to change. Starting as early as possible to craft a unique narrative is a must.",
-    difference:
-      "Long before 12th grade, we push students away from cliché narratives and coach them to build strong relationships with teachers.",
+    belief: (
+      <>
+        By 12th grade, many parts of the application are too late to change. Starting{" "}
+        <strong className="font-semibold text-zinc-900">as early as possible</strong> to craft a{" "}
+        <strong className="font-semibold text-zinc-900">unique narrative</strong> is a must.
+      </>
+    ),
+    difference: (
+      <>
+        Long before 12th grade, we push students away from{" "}
+        <strong className="font-semibold text-emerald-800">cliché narratives</strong> and coach them
+        to build{" "}
+        <strong className="font-semibold text-emerald-800">strong relationships with teachers</strong>.
+      </>
+    ),
   },
 ];
 
@@ -159,13 +205,13 @@ function PhilosophyToggle() {
   return (
     <div>
       {/* Toggle */}
-      <div className="flex w-fit rounded-full border border-zinc-200 bg-zinc-100 p-1">
+      <div className="flex w-fit rounded-full border border-zinc-200 bg-white p-1">
         <button
           onClick={() => setTab("philosophy")}
           className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${
             tab === "philosophy"
-              ? "bg-white text-zinc-900 shadow-sm"
-              : "text-zinc-500 hover:text-zinc-700"
+              ? "bg-zinc-900 text-white shadow-sm"
+              : "text-zinc-400 hover:text-zinc-600"
           }`}
         >
           Our Philosophy
@@ -174,8 +220,8 @@ function PhilosophyToggle() {
           onClick={() => setTab("difference")}
           className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${
             tab === "difference"
-              ? "bg-white text-zinc-900 shadow-sm"
-              : "text-zinc-500 hover:text-zinc-700"
+              ? "bg-zinc-900 text-white shadow-sm"
+              : "text-zinc-400 hover:text-zinc-600"
           }`}
         >
           The StoryLab Difference
@@ -187,25 +233,23 @@ function PhilosophyToggle() {
         {philosophy.map((item) => (
           <div
             key={item.number}
-            className={`overflow-hidden rounded-2xl border p-6 transition-colors ${
+            className={`relative overflow-hidden rounded-2xl border bg-white px-8 py-10 transition-all ${
               tab === "difference"
-                ? "border-emerald-200 bg-emerald-50/60"
-                : "border-zinc-200 bg-white"
+                ? "border-zinc-200 border-l-4 border-l-emerald-400"
+                : "border-zinc-200"
             }`}
           >
-            <div className="flex gap-5">
-              <span
-                className={`mt-0.5 flex-shrink-0 text-xs font-bold ${
-                  tab === "difference" ? "text-emerald-400" : "text-zinc-300"
-                }`}
-              >
-                {item.number}
-              </span>
-              <p
-                className={`text-sm leading-relaxed ${
-                  tab === "difference" ? "text-emerald-900" : "text-zinc-600"
-                }`}
-              >
+            {/* Ghosted number */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute right-6 top-1/2 -translate-y-1/2 select-none text-8xl font-bold leading-none text-zinc-900 opacity-[0.05]"
+            >
+              {item.number}
+            </span>
+
+            {/* Content */}
+            <div className="relative">
+              <p className="text-sm leading-relaxed text-zinc-600">
                 {tab === "philosophy" ? item.belief : item.difference}
               </p>
             </div>
@@ -460,10 +504,6 @@ export default function AcademyPage() {
               ))}
             </div>
 
-            <p className="mt-8 text-xs text-zinc-400">
-              Names and identifying details have been changed.{" "}
-              <em>The essays — and the moments that produced them — are real.</em>
-            </p>
           </div>
         </section>
 
