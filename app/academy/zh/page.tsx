@@ -13,34 +13,34 @@ const caseStudySummaries = [
     slug: "jason",
     initial: "J",
     name: "Jason",
-    grade: "Senior",
+    grade: "12年级",
     applying: "Yale, Columbia, Dartmouth",
-    outcome: "Accepted — Dartmouth",
+    outcome: "录取 — 达特茅斯",
     color: "bg-[#2C4A3E]",
     teaser:
-      "His first essay hit every note: leadership, service, resilience. By the second paragraph, you could predict every sentence coming. That was the problem.",
+      "他的第一篇文章面面俱到：领导力、服务精神、坚韧不拔。读到第二段，你就能预测出每一句话的走向。这就是问题所在。",
   },
   {
     slug: "sarah",
     initial: "S",
     name: "Sarah",
-    grade: "Senior",
+    grade: "12年级",
     applying: "Stanford, Yale, Northwestern, Columbia",
-    outcome: "Accepted — Princeton",
+    outcome: "录取 — 普林斯顿",
     color: "bg-[#2A3F5A]",
     teaser:
-      "Her essay was beautifully written — clean, controlled, and emotionally distant. After 600 words, you didn't know her any better than at the top of the page.",
+      "她的文章写得很漂亮——干净、克制，情感却很疏远。读完600个字，你对她的了解并不比第一行多。",
   },
   {
     slug: "mia",
     initial: "M",
     name: "Mia",
-    grade: "Senior",
+    grade: "12年级",
     applying: "Emory, Georgetown, UVA, Boston University",
-    outcome: "Accepted — Northwestern",
+    outcome: "录取 — 西北大学",
     color: "bg-[#3A4A2A]",
     teaser:
-      "Her counselor told her not to write about filmmaking. So she wrote about everything else — and none of it was the thing that actually made her, her.",
+      "她的辅导员告诉她不要写电影创作。于是她写了其他一切——但没有一件事真正能呈现出她是谁。",
   },
 ];
 
@@ -53,16 +53,15 @@ const philosophy: {
     number: "01",
     belief: (
       <>
-        Admissions officers are{" "}
-        <strong className="font-semibold text-zinc-900">humanists at heart</strong>{" "}
-        and value humanities-oriented thinking in the application.
+        招生官{" "}
+        <strong className="font-semibold text-zinc-900">本质上是人文主义者</strong>，
+        他们在申请材料中看重人文思维与情感深度。
       </>
     ),
     difference: (
       <>
-        We train students, even those with STEM backgrounds, to infuse{" "}
-        <strong className="font-semibold text-emerald-800">humanistic thinking and reflection</strong>{" "}
-        in their applications.
+        我们训练学生——包括理工科背景的学生——在申请材料中融入{" "}
+        <strong className="font-semibold text-emerald-800">人文思维与深度反思</strong>。
       </>
     ),
   },
@@ -70,16 +69,15 @@ const philosophy: {
     number: "02",
     belief: (
       <>
-        Achievements get you in the running. Writing that dares to be{" "}
-        <strong className="font-semibold text-zinc-900">emotional and vulnerable</strong>{" "}
-        gets you admitted.
+        成就让你进入候选名单。敢于展现{" "}
+        <strong className="font-semibold text-zinc-900">情感与脆弱</strong>{" "}
+        的文章，才能让你被录取。
       </>
     ),
     difference: (
       <>
-        We push students beyond surface-level &ldquo;I-learned-x&rdquo; sentences to write{" "}
-        <strong className="font-semibold text-emerald-800">radically vulnerable narratives</strong>{" "}
-        admissions officers can&rsquo;t forget.
+        我们推动学生超越表层的"我学到了X"式写作，创作出令招生官难以忘怀的{" "}
+        <strong className="font-semibold text-emerald-800">真正袒露内心的叙述</strong>。
       </>
     ),
   },
@@ -87,17 +85,17 @@ const philosophy: {
     number: "03",
     belief: (
       <>
-        Writing is an opaque and difficult process that takes{" "}
-        <strong className="font-semibold text-zinc-900">months, if not years</strong>, to see results.
-        AI tools only make you{" "}
-        <strong className="font-semibold text-zinc-900">less distinguishable</strong>.
+        写作是一个不透明且困难的过程，往往需要{" "}
+        <strong className="font-semibold text-zinc-900">数月乃至数年</strong>{" "}
+        才能见到成效。AI工具只会让你{" "}
+        <strong className="font-semibold text-zinc-900">更难脱颖而出</strong>。
       </>
     ),
     difference: (
       <>
-        We teach students{" "}
-        <strong className="font-semibold text-emerald-800">the process of writing itself</strong>,
-        which sets them up for success long after the admissions process is over.
+        我们教导学生{" "}
+        <strong className="font-semibold text-emerald-800">写作本身的过程</strong>，
+        这将在申请结束很久之后继续为他们的成功奠定基础。
       </>
     ),
   },
@@ -105,17 +103,18 @@ const philosophy: {
     number: "04",
     belief: (
       <>
-        By 12th grade, many parts of the application are too late to change. Starting{" "}
-        <strong className="font-semibold text-zinc-900">as early as possible</strong> to craft a{" "}
-        <strong className="font-semibold text-zinc-900">unique narrative</strong> is a must.
+        到了12年级，申请的许多部分已经无法改变。{" "}
+        <strong className="font-semibold text-zinc-900">尽早开始</strong>{" "}
+        构建{" "}
+        <strong className="font-semibold text-zinc-900">独特叙事</strong>，是必须的。
       </>
     ),
     difference: (
       <>
-        Long before 12th grade, we push students away from{" "}
-        <strong className="font-semibold text-emerald-800">cliché narratives</strong> and coach them
-        to build{" "}
-        <strong className="font-semibold text-emerald-800">strong relationships with teachers</strong>.
+        在12年级之前很久，我们就引导学生远离{" "}
+        <strong className="font-semibold text-emerald-800">陈腐叙事</strong>，
+        并帮助他们{" "}
+        <strong className="font-semibold text-emerald-800">与老师建立深厚的关系</strong>。
       </>
     ),
   },
@@ -124,26 +123,26 @@ const philosophy: {
 const testimonials = [
   {
     quote:
-      "He didn't just comment on my ideas broadly; he engaged with individual sentences, pushing me to sharpen my thinking and present myself as clearly and authentically as possible.",
-    attribution: "Student attending University of Chicago",
+      "他不只是对我的想法泛泛而谈；他深入到每一个句子，推动我打磨思维，尽可能清晰而真实地呈现自己。",
+    attribution: "就读于芝加哥大学的学生",
     type: "student",
   },
   {
     quote:
-      "Your activities list already speaks for itself — your essays should reveal who you actually are. Sam helped me figure out what made my story genuinely mine.",
-    attribution: "Student attending Northwestern",
+      "你的活动列表已经能说明问题——文章应该揭示你真正是谁。Sam帮我搞清楚了是什么让我的故事真正属于我自己。",
+    attribution: "就读于西北大学的学生",
     type: "student",
   },
   {
     quote:
-      "What I want to emphasize most is Sam's genuine sense of care. He communicated consistently, gave thoughtful feedback, and made the whole process feel less like a grind and more like something I could actually be proud of. My mom noticed it too — his warm, encouraging messages meant a lot to her throughout the process. If anything, the application season was harder on her than it was on me, and Sam made sure she felt supported as well.",
-    attribution: "Student attending Vanderbilt",
+      "我最想强调的是Sam真诚的关怀。他保持着持续的沟通，给出深思熟虑的反馈，让整个过程不再像是煎熬，而是一件值得骄傲的事。我妈妈也注意到了——他温暖鼓励的消息在整个过程中对她意义重大。某种程度上，申请季对她的压力比对我还大，而Sam确保她同样感受到了支持。",
+    attribution: "就读于范德堡大学的学生",
     type: "student",
   },
   {
     quote:
-      "Sam is a teacher who truly listens to what a student is wrestling with and draws out exactly what they need. I'm certain that any family who works with him will find their child going through the college process with a healthy, grounded, and even happy mindset.",
-    attribution: "Parent of a Washington University in St Louis student",
+      "Sam是一位真正倾听学生困境并能精准引导他们找到所需的老师。我确信，任何与他合作的家庭都会发现，孩子在大学申请过程中保持着健康、踏实甚至愉快的心态。",
+    attribution: "圣路易斯华盛顿大学学生的家长",
     type: "parent",
   },
 ];
@@ -152,7 +151,7 @@ const tutors: Tutor[] = [
   {
     id: "sam",
     name: "Sam Ahn",
-    title: "Founder & Lead Coach",
+    title: "创始人兼首席导师",
     headshotSrc: "/tutor%20photos/sam/sam_headshot.jpg",
     actionSrc: "/tutor%20photos/sam/sam_action.jpg.jpg",
     shortBio:
@@ -163,7 +162,7 @@ const tutors: Tutor[] = [
   {
     id: "olivia",
     name: "Olivia O'Connor",
-    title: "Senior Writing Coach",
+    title: "高级写作导师",
     headshotSrc: "/tutor%20photos/olivia/olivia_headshot.JPG",
     actionSrc: "/tutor%20photos/olivia/olivia_headshot.JPG",
     shortBio:
@@ -174,7 +173,7 @@ const tutors: Tutor[] = [
   {
     id: "maren",
     name: "Maren Wong",
-    title: "Applications Strategist",
+    title: "申请策略师",
     headshotSrc: "/tutor%20photos/maren/maren_headshot.jpeg",
     actionSrc: "/tutor%20photos/maren/maren_headshot.jpeg",
     shortBio:
@@ -185,17 +184,17 @@ const tutors: Tutor[] = [
 ];
 
 const sections = [
-  { id: "hero", label: "Welcome" },
-  { id: "founder", label: "Our Story" },
-  { id: "thesis", label: "Our Mission" },
-  { id: "philosophy", label: "Philosophy" },
-  { id: "why", label: "Why It Matters" },
-  { id: "cases", label: "Student Stories" },
-  { id: "paths", label: "Programs" },
-  { id: "tutors", label: "Our Team" },
-  { id: "acceptances", label: "Acceptances" },
-  { id: "testimonials", label: "Results" },
-  { id: "cta", label: "Get Started" },
+  { id: "hero", label: "首页" },
+  { id: "founder", label: "创始人故事" },
+  { id: "thesis", label: "我们的使命" },
+  { id: "philosophy", label: "理念" },
+  { id: "why", label: "为什么重要" },
+  { id: "cases", label: "学生故事" },
+  { id: "paths", label: "项目" },
+  { id: "tutors", label: "我们的团队" },
+  { id: "acceptances", label: "录取学校" },
+  { id: "testimonials", label: "成果" },
+  { id: "cta", label: "开始" },
 ];
 
 // ─── Philosophy item ──────────────────────────────────────────────────────────
@@ -267,11 +266,11 @@ function PhilosophyScrollSection({
       <div className="md:hidden px-6 py-16">
         <div className="mx-auto max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-            Our Approach
+            我们的方法
           </p>
 
           <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
-            Our Philosophy
+            我们的理念
           </p>
           <div className="relative mt-4 mb-4 h-80 overflow-hidden rounded-xl">
             <Image src="/in%20the%20crowd.png" alt="" fill className="object-contain" />
@@ -285,7 +284,7 @@ function PhilosophyScrollSection({
           <div className="my-10 border-t border-zinc-200" />
 
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
-            The StoryLab Difference
+            StoryLab 的不同之处
           </p>
           <div className="relative mt-4 mb-4 h-80 overflow-hidden rounded-xl">
             <Image src="/photo-1.png" alt="" fill className="object-contain" />
@@ -311,7 +310,7 @@ function PhilosophyScrollSection({
             {/* Left: label + crossfading title + crossfading photo + dots */}
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-                Our Approach
+                我们的方法
               </p>
 
               {/* Step title (crossfades) */}
@@ -322,7 +321,7 @@ function PhilosophyScrollSection({
                     step === 0 ? "opacity-100" : "opacity-0"
                   }`}
                 >
-                  Our Philosophy
+                  我们的理念
                 </h2>
                 <h2
                   style={{ gridArea: "1 / 1" }}
@@ -330,7 +329,7 @@ function PhilosophyScrollSection({
                     step === 1 ? "opacity-100" : "opacity-0"
                   }`}
                 >
-                  The StoryLab Difference
+                  StoryLab 的不同之处
                 </h2>
               </div>
 
@@ -451,14 +450,13 @@ function WhyItMattersScrollSection({
       <div className="md:hidden px-6 py-16">
         <div className="mx-auto max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-            Why It Matters
+            为什么重要
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950">
-            Preparing for college is preparing for the real world.
+            备战大学，就是为真实世界做准备。
           </h2>
           <p className="mt-4 text-base leading-relaxed text-zinc-500">
-            In an era where AI can perform most technical skills, the people who succeed are the
-            ones who can think clearly, write persuasively, and make meaning. We train that.
+            许多中国家庭将全部精力投入到成绩、奖项和考试分数上——这套逻辑在国内行得通，却在美国申请中失效。真正决定结果的，是更难量化的东西：你是谁，你如何思考，你的故事是否真实动人。
           </p>
         </div>
 
@@ -470,16 +468,15 @@ function WhyItMattersScrollSection({
             </div>
             <blockquote className="text-xl italic leading-relaxed text-zinc-700">
               <strong className="not-italic font-semibold text-zinc-900">
-                I actually think studying the humanities is going to be more important than ever.
+                我确实认为，人文学科的学习将比以往任何时候都更加重要。
               </strong>{" "}
-              A lot of these [AI] models are actually very good at STEM. But I think this idea
-              that there are things that make us uniquely human — understanding ourselves,
-              understanding history, understanding what makes us tick — I think that will always
-              be really, really important.
+              这些[AI]模型在理工科方面表现得非常出色。但我认为，那些让我们独特为人的东西——理解自我、理解历史、理解是什么驱动着我们——我认为这些将永远非常、非常重要。
             </blockquote>
             <div className="mt-5 flex items-center gap-3">
               <div className="h-px w-8 bg-zinc-300" />
-              <p className="text-xs text-zinc-400">Daniela Amodei, President of Anthropic</p>
+              <p className="text-xs text-zinc-400">
+                Daniela Amodei，Anthropic总裁（Anthropic为全球领先的人工智能研究公司，Claude AI的开发者）
+              </p>
             </div>
           </div>
 
@@ -489,15 +486,14 @@ function WhyItMattersScrollSection({
               <Image src="/jamie%20dimon.png" alt="Jamie Dimon" fill className="object-cover" />
             </div>
             <blockquote className="text-xl italic leading-relaxed text-zinc-700">
-              My advice to people would be critical thinking, learn skills, learn your EQ, learn
-              how to be good in a meeting,{" "}
+              我对人们的建议是：批判性思维，学习技能，培养情商，学会在会议中表现出色，{" "}
               <strong className="not-italic font-semibold text-zinc-900">
-                how to communicate, how to write. You&rsquo;ll have plenty of jobs.
+                学会沟通，学会写作。这样你就不愁找不到工作。
               </strong>
             </blockquote>
             <div className="mt-5 flex items-center gap-3">
               <div className="h-px w-8 bg-zinc-300" />
-              <p className="text-xs text-zinc-400">Jamie Dimon, CEO of JPMorgan Chase</p>
+              <p className="text-xs text-zinc-400">Jamie Dimon，摩根大通首席执行官</p>
             </div>
           </div>
         </div>
@@ -510,14 +506,13 @@ function WhyItMattersScrollSection({
           {/* Section header */}
           <div className="mb-10">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-              Why It Matters
+              为什么重要
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-              Preparing for college is preparing for the real world.
+              备战大学，就是为真实世界做准备。
             </h2>
             <p className="mt-4 text-base leading-relaxed text-zinc-500">
-              In an era where AI can perform most technical skills, the people who succeed are the
-              ones who can think clearly, write persuasively, and make meaning. We train that.
+              许多中国家庭将全部精力投入到成绩、奖项和考试分数上——这套逻辑在国内行得通，却在美国申请中失效。真正决定结果的，是更难量化的东西：你是谁，你如何思考，你的故事是否真实动人。
             </p>
           </div>
 
@@ -540,16 +535,15 @@ function WhyItMattersScrollSection({
                 <div>
                   <blockquote className="text-2xl italic leading-relaxed text-zinc-700">
                     <strong className="not-italic font-semibold text-zinc-900">
-                      I actually think studying the humanities is going to be more important than ever.
+                      我确实认为，人文学科的学习将比以往任何时候都更加重要。
                     </strong>{" "}
-                    A lot of these [AI] models are actually very good at STEM. But I think this idea
-                    that there are things that make us uniquely human — understanding ourselves,
-                    understanding history, understanding what makes us tick — I think that will always
-                    be really, really important.
+                    这些[AI]模型在理工科方面表现得非常出色。但我认为，那些让我们独特为人的东西——理解自我、理解历史、理解是什么驱动着我们——我认为这些将永远非常、非常重要。
                   </blockquote>
                   <div className="mt-6 flex items-center gap-3">
                     <div className="h-px w-10 bg-zinc-300" />
-                    <p className="text-xs text-zinc-400">Daniela Amodei, President of Anthropic</p>
+                    <p className="text-xs text-zinc-400">
+                      Daniela Amodei，Anthropic总裁（Anthropic为全球领先的人工智能研究公司，Claude AI的开发者）
+                    </p>
                   </div>
                 </div>
               </div>
@@ -567,15 +561,14 @@ function WhyItMattersScrollSection({
               <div className="grid grid-cols-2 gap-12 items-center">
                 <div>
                   <blockquote className="text-2xl italic leading-relaxed text-zinc-700">
-                    My advice to people would be critical thinking, learn skills, learn your EQ, learn
-                    how to be good in a meeting,{" "}
+                    我对人们的建议是：批判性思维，学习技能，培养情商，学会在会议中表现出色，{" "}
                     <strong className="not-italic font-semibold text-zinc-900">
-                      how to communicate, how to write. You&rsquo;ll have plenty of jobs.
+                      学会沟通，学会写作。这样你就不愁找不到工作。
                     </strong>
                   </blockquote>
                   <div className="mt-6 flex items-center gap-3">
                     <div className="h-px w-10 bg-zinc-300" />
-                    <p className="text-xs text-zinc-400">Jamie Dimon, CEO of JPMorgan Chase</p>
+                    <p className="text-xs text-zinc-400">Jamie Dimon，摩根大通首席执行官</p>
                   </div>
                 </div>
                 <div className="relative overflow-hidden rounded-xl min-h-[360px]">
@@ -650,7 +643,7 @@ function ProgressDots({
   return (
     <nav
       className="fixed right-6 top-1/2 z-50 hidden -translate-y-1/2 flex-col gap-3 md:flex"
-      aria-label="Section navigation"
+      aria-label="页面导航"
     >
       {sections.map((s, i) => (
         <button
@@ -661,7 +654,7 @@ function ProgressDots({
               ? "scale-110 bg-zinc-900"
               : "bg-zinc-300 hover:bg-zinc-400"
           }`}
-          aria-label={`Go to ${s.label}`}
+          aria-label={`前往 ${s.label}`}
           aria-current={i === activeIndex ? "true" : undefined}
         >
           <span className="pointer-events-none absolute right-6 top-1/2 -translate-y-1/2 whitespace-nowrap rounded bg-zinc-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
@@ -675,7 +668,7 @@ function ProgressDots({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function AcademyPage() {
+export default function AcademyPageZh() {
   const sectionRefs = useRef<(HTMLElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -710,7 +703,7 @@ export default function AcademyPage() {
 
       <div>
 
-        <LanguageSwitcher currentLang="en" />
+        <LanguageSwitcher currentLang="zh" />
 
         {/* ── 0. HERO ─────────────────────────────────────────────────── */}
         <section
@@ -722,23 +715,23 @@ export default function AcademyPage() {
             <div className="grid items-center gap-12 md:grid-cols-2">
               <div className="max-w-xl">
                 <h1 className="text-4xl font-semibold leading-[1.15] tracking-tight text-zinc-950 sm:text-5xl">
-                  Admissions officers are humanists at heart. We train students to write for them.
+                  招生官本质上是人文主义者。我们训练学生为他们而写作。
                 </h1>
                 <p className="mt-6 text-lg leading-relaxed text-zinc-600">
-                  Our students have been admitted to Harvard, Yale, Princeton, Stanford, and other top universities.
+                  我们的学生已被哈佛、耶鲁、普林斯顿、斯坦福及其他顶尖大学录取。
                 </p>
                 <div className="mt-8 flex flex-col gap-4 sm:flex-row">
                   <Link
                     href="/results"
                     className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white hover:bg-zinc-800"
                   >
-                    See results
+                    查看成果
                   </Link>
                   <Link
                     href="/contact"
                     className="inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
                   >
-                    Schedule a consultation
+                    预约咨询
                   </Link>
                 </div>
               </div>
@@ -773,34 +766,26 @@ export default function AcademyPage() {
               </div>
               <div className="md:order-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-                  Founder&rsquo;s Story
+                  创始人故事
                 </p>
                 <h2 className="mt-5 text-3xl font-semibold leading-[1.2] tracking-tight text-zinc-950 sm:text-4xl">
-                  Hi, I&rsquo;m Sam.
+                  你好，我是Sam。
                 </h2>
                 <div className="mt-6 space-y-4 text-base leading-relaxed text-zinc-600">
                   <p>
-                    By application season, I hadn&rsquo;t won any national awards, nor had I founded
-                    an organization that made a huge social impact. I wasn&rsquo;t mobilizing
-                    movements; I was nowhere to be found in online media or press.
+                    到了申请季，我没有赢得任何全国性奖项，也没有创办过一个产生巨大社会影响的组织。我没有发起什么运动，也在网络媒体和新闻报道中毫无踪迹。
                   </p>
                   <p>
-                    By the standards of high-achieving students aiming for top schools, I was not
-                    an &ldquo;impressive&rdquo; student. All I had done was get good grades and
-                    participate in school activities.
+                    按照那些志向顶尖学校的优秀学生的标准，我并不是一个"令人印象深刻"的学生。我所做的，不过是取得好成绩、参与学校活动。
                   </p>
                   <p>
-                    And yet, come March my senior year, I got into Harvard, Yale, Stanford, and
-                    Princeton — the only schools I had applied to.
+                    然而，到了高四那年三月，我收到了哈佛、耶鲁、斯坦福和普林斯顿的录取通知——那是我申请的全部学校。
                   </p>
                   <p>
-                    I started StoryLab to teach students the philosophy that got me in.
+                    我创立StoryLab，就是为了将让我获录取的那套理念传授给学生。
                   </p>
                   <p>
-                    At Yale, I graduated <em>magna cum laude</em> and Phi Beta Kappa with a B.A. in
-                    Comparative Literature. In college, I wrote for some of the world&rsquo;s biggest
-                    companies alongside former White House speechwriters, and evaluated high school
-                    seniors for the Yale admissions office.
+                    在耶鲁，我以最优等成绩荣誉毕业，加入Phi Beta Kappa学术荣誉学会，获得比较文学学士学位。在大学期间，我曾与前白宫演讲稿撰写人共同为全球最大的一些公司撰稿，并为耶鲁招生办公室评估高中毕业生的申请。
                   </p>
                 </div>
               </div>
@@ -818,16 +803,13 @@ export default function AcademyPage() {
             {/* Left: bold statement */}
             <div className="flex items-center px-8 py-6 md:px-16">
               <p className="text-4xl font-bold leading-tight tracking-tight text-zinc-950 sm:text-5xl">
-                In an application field where it&rsquo;s harder to stand out than ever, we give
-                students the tools to tell a killer story.
+                在竞争比以往任何时候都更激烈的申请战场上，我们赋予学生讲述一个出色故事的能力。
               </p>
             </div>
             {/* Right: supporting copy */}
             <div className="flex items-center justify-center bg-white/60 px-8 py-6 md:px-16">
               <p className="text-center text-xl leading-relaxed text-zinc-600 sm:text-2xl">
-                Many families make the mistake of pouring all their energy into hard parts of the
-                application like test scores and awards, when it&rsquo;s the softer parts of an
-                application that get students admitted.
+                许多家庭犯了一个错误——将所有精力投入到申请的"硬"指标上，如考试成绩和奖项，而真正让学生被录取的，往往是那些"软"的部分。
               </p>
             </div>
           </div>
@@ -852,13 +834,13 @@ export default function AcademyPage() {
           <div className="mx-auto w-full max-w-6xl px-6">
             <div className="max-w-2xl">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-                Student Stories
+                学生故事
               </p>
               <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-                Meet some of our students.
+                认识我们的部分学生。
               </h2>
               <p className="mt-4 text-base leading-relaxed text-zinc-500">
-                Every student who arrives at StoryLab has something real to say. They just haven&rsquo;t found it&nbsp;yet.
+                每一个来到StoryLab的学生都有真实的故事要讲。他们只是还没有找到而已。
               </p>
             </div>
 
@@ -902,24 +884,24 @@ export default function AcademyPage() {
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
             <h2 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-              Three paths. One foundation.
+              三条路径。一个根基。
             </h2>
             <div className="mt-10 grid gap-6 md:grid-cols-3">
               {[
                 {
                   href: "/academy/humanities",
-                  title: "Humanities Foundations",
-                  desc: "Grades 7–11. Build the skills before you need them.",
+                  title: "人文基础",
+                  desc: "7–11年级。在你需要之前打好基础。",
                 },
                 {
                   href: "/academy/applications",
-                  title: "College Applications",
-                  desc: "Grades 11–12. Position and apply with a voice that's already developed.",
+                  title: "大学申请",
+                  desc: "11–12年级。以一个已经成型的声音定位并申请。",
                 },
                 {
                   href: "/academy/transfer",
-                  title: "Transfer Applications",
-                  desc: "College students. A second chance to get the story right.",
+                  title: "转学申请",
+                  desc: "大学生。第二次讲好故事的机会。",
                 },
               ].map((p) => (
                 <Link
@@ -932,7 +914,7 @@ export default function AcademyPage() {
                   </h3>
                   <p className="mt-3 text-base leading-relaxed text-zinc-600">{p.desc}</p>
                   <p className="mt-4 text-sm font-medium text-zinc-400 group-hover:text-zinc-700">
-                    Learn more →
+                    了解更多 →
                   </p>
                 </Link>
               ))}
@@ -948,10 +930,10 @@ export default function AcademyPage() {
         >
           <TutorStickySection
             tutors={tutors}
-            headline="Not just Ivy graduates, but Ivy admissions insiders."
-            body="Nationally awarded, published writers trained at Harvard and Yale, with multiple offers from top schools and experience in Ivy admissions offices."
+            headline="不仅是藤校毕业生，更是藤校招生内部人士。"
+            body="在哈佛和耶鲁受过培训的获奖出版作家，持有多所顶尖学校的录取通知书，并有藤校招生办公室的工作经验。"
             ctaHref="/team"
-            ctaLabel="Meet the full team"
+            ctaLabel="了解完整团队"
           />
         </section>
 
@@ -963,7 +945,7 @@ export default function AcademyPage() {
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
             <h2 className="text-center text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-              Our students&rsquo; acceptances
+              我们学生的录取院校
             </h2>
             <div className="mt-12">
               <LogoMarquee />
@@ -980,10 +962,10 @@ export default function AcademyPage() {
           <div className="mx-auto w-full max-w-6xl px-6">
             <div className="max-w-xl">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-                What Families Say
+                家庭的心声
               </p>
               <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-                In their own words.
+                用他们自己的话说。
               </h2>
             </div>
 
@@ -1015,7 +997,7 @@ export default function AcademyPage() {
                 href="/results"
                 className="inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
               >
-                Read full testimonials
+                阅读完整评价
               </Link>
             </div>
           </div>
@@ -1030,18 +1012,17 @@ export default function AcademyPage() {
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
             <div className="mx-auto max-w-3xl rounded-3xl border border-zinc-200 bg-white p-10 text-center sm:p-14">
               <h2 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-                We take limited students each cycle.
+                每个申请季我们只接受有限数量的学生。
               </h2>
               <p className="mt-6 text-lg leading-relaxed text-zinc-600">
-                Writing develops slowly. The earlier you start, the more options you have. Schedule a
-                consultation to discuss fit and timing.
+                写作需要时间积累。越早开始，选择越多。预约咨询，讨论适合度与时机。
               </p>
               <div className="mt-10">
                 <Link
                   href="/contact"
                   className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-8 py-4 text-base font-medium text-white hover:bg-zinc-800"
                 >
-                  Schedule a consultation
+                  预约咨询
                 </Link>
               </div>
             </div>
