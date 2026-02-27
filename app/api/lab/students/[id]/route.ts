@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("students")
     .select("*")
     .eq("id", id)
@@ -23,7 +23,7 @@ export async function PATCH(
   const { id } = await params;
   const body = await req.json();
 
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("students")
     .update(body)
     .eq("id", id)

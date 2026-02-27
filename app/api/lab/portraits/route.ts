@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Return latest portrait for the student
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("portraits")
     .select("*")
     .eq("student_id", studentId)

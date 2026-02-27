@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import type { Student, Session, Portrait, PortraitContent } from "@/lib/supabase";
 
 const PORTRAIT_SYSTEM_PROMPT = `You are a developmental educator tracking a student's intellectual and personal growth over a long time horizon. Your portraits are NOT college application profiles — many students are in middle school or early high school. You track how someone thinks, not just what they produce.
@@ -70,14 +70,14 @@ export async function POST(req: NextRequest) {
 
   // Fetch student, sessions, and latest portrait in parallel
   const [studentRes, sessionsRes, portraitRes] = await Promise.all([
-    supabase.from("students").select("*").eq("id", student_id).single(),
-    supabase
+    getSupabase().from("students").select("*").eq("id", student_id).single(),
+    getSupabase()
       .from("sessions")
       .select("*")
       .eq("student_id", student_id)
       .order("date", { ascending: false })
       .order("created_at", { ascending: false }),
-    supabase
+    getSupabase()
       .from("portraits")
       .select("*")
       .eq("student_id", student_id)
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Store new portrait
-  const { data: newPortrait, error: insertError } = await supabase
+  const { data: newPortrait, error: insertError } = await getSupabase()
     .from("portraits")
     .insert({ student_id, content_json })
     .select()

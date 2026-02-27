@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "student_id required" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("essays")
     .select("*")
     .eq("student_id", studentId)
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "student_id required" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("essays")
     .insert({
       student_id,
