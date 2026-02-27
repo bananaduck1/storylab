@@ -1,11 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 
-let _supabase: ReturnType<typeof createClient> | null = null;
+let _supabase: ReturnType<typeof createClient<any>> | null = null;
 
 // Server-side client with service role key — use only in API routes / server code
 export function getSupabase() {
   if (!_supabase) {
-    _supabase = createClient(
+    _supabase = createClient<any>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
