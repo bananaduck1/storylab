@@ -5,7 +5,7 @@ export default function LabLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-dvh bg-white text-zinc-900 font-mono">
+    <div className="min-h-dvh text-zinc-900">
       {children}
     </div>
   );
