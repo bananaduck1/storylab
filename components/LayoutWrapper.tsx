@@ -23,7 +23,7 @@ export function LayoutWrapper({ children }: { children: ReactNode }) {
         <div className="[&_header]:static [&_header]:border-b-0">
           <Navbar />
         </div>
-        <main id="content" className="flex-1">
+        <main id="content" className="flex-1" style={{ transform: 'translateY(0)' }}>
           {children}
         </main>
       </div>
