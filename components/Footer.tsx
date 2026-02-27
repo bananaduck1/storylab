@@ -11,10 +11,6 @@ export function Footer() {
             <p className="text-sm font-semibold tracking-wide text-zinc-950">
               StoryLab
             </p>
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-zinc-600">
-              Elite humanities training and college applications support—reading, writing, and
-              thinking skills taught by trained humanities graduates.
-            </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href="/contact"
@@ -32,21 +28,6 @@ export function Footer() {
                   Explore
                 </p>
                 <ul className="mt-4 space-y-3 text-sm">
-                  <li>
-                    <Link className="text-zinc-700 hover:text-zinc-950" href="/services">
-                      Programs
-                    </Link>
-                  </li>
-                  <li>
-                    <Link className="text-zinc-700 hover:text-zinc-950" href="/about">
-                      Our Approach
-                    </Link>
-                  </li>
-                  <li>
-                    <Link className="text-zinc-700 hover:text-zinc-950" href="/results">
-                      Results
-                    </Link>
-                  </li>
                   <li>
                     <Link className="text-zinc-700 hover:text-zinc-950" href="/faq">
                       FAQ
