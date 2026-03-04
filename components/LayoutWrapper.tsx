@@ -11,6 +11,15 @@ export function LayoutWrapper({ children }: { children: ReactNode }) {
   const isHomepage = pathname === "/";
   const isAcademyOverview = pathname === "/academy";
 
+  // Admin, login, and auth routes manage their own layout
+  if (
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/auth/")
+  ) {
+    return <>{children}</>;
+  }
+
   // Homepage: no navbar/footer, just page transition
   if (isHomepage) {
     return <PageTransition>{children}</PageTransition>;
