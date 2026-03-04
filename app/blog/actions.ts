@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/server";
 
 type SubscribeState = { success: true } | { error: string } | null;
 
@@ -14,7 +14,7 @@ export async function subscribeEmail(
   }
 
   const email = raw.toLowerCase().trim();
-  const supabase = await createClient();
+  const supabase = createStaticClient();
 
   const { error } = await supabase
     .from("email_subscribers")

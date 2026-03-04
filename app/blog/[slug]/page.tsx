@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { createClient, createStaticClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/server";
 import styles from "../blog.module.css";
 
 interface Props {
@@ -18,9 +18,11 @@ export async function generateStaticParams() {
   return (data ?? []).map((post) => ({ slug: post.slug as string }));
 }
 
+export const revalidate = 60;
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createStaticClient();
 
   const { data: post } = await supabase
     .from("posts")
@@ -48,7 +50,7 @@ function formatDate(dateString: string | null) {
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createStaticClient();
 
   const { data: post } = await supabase
     .from("posts")
