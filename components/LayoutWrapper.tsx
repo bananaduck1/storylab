@@ -11,8 +11,9 @@ export function LayoutWrapper({ children }: { children: ReactNode }) {
   const isHomepage = pathname === "/";
   const isAcademyOverview = pathname === "/academy";
 
-  // Admin, login, and auth routes manage their own layout
+  // Lab, admin, login, and auth routes manage their own layout
   if (
+    pathname.startsWith("/lab") ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/auth/")

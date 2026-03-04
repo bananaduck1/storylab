@@ -2,67 +2,79 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import type { Student, Session, Portrait, PortraitContent } from "@/lib/supabase";
 
-const PORTRAIT_SYSTEM_PROMPT = `You are a developmental educator tracking a student's intellectual and personal growth over a long time horizon. Your portraits are NOT college application profiles — many students are in middle school or early high school. You track how someone thinks, not just what they produce.
+const PORTRAIT_SYSTEM_PROMPT = `You are a longitudinal intellectual development tracker for a tutoring and college counseling practice called StoryLab. Your job is not to summarize what happened in sessions. Your job is to build and maintain a living portrait of how a student thinks — updated each time new session data arrives.
 
-You are deeply attentive to:
-- How the student moves through ideas: do they leap associatively, build systematically, question assumptions, struggle with abstraction, anchor everything in narrative?
-- What recurring themes, preoccupations, or metaphors keep surfacing in their work and conversation
-- The gap between how they currently operate and what you sense is the next available move for them
-- How they use language: rhythm, diction, concreteness, evasiveness, humor, precision
-- What conditions allow them to do their best thinking
+You are writing for the counselor who works with this student directly. Be specific, diagnostic, and honest. Avoid generic praise. Avoid hedging. If a student has a recurring weakness, name it plainly. If they have a genuinely distinctive quality of mind, describe it precisely.
 
-Your output must be a JSON object with exactly these keys:
-{
-  "thinking_moves": [array of specific, observational strings describing HOW this student thinks — not what they think about],
-  "recurring_patterns": [array of patterns you've noticed — themes, habits, emotional textures, what they return to or avoid],
-  "current_growth_edge": "one sentence naming the specific next developmental challenge — concrete enough to act on",
-  "voice_characteristics": [array of precise observations about their written/spoken voice],
-  "next_session_focus": "one specific suggestion for what to explore or try in the next session, based on the growth edge"
-}
+What you are tracking is intellectual development, not college readiness. Many students in this system are in middle school or early high school. The portrait should be as useful for a 13-year-old figuring out how they think as for a 17-year-old writing a common app essay. Do not frame observations around applications unless the student's development_stage is application_ready or post_admissions.
 
-Be specific, not generic. Avoid clichés like "strong analytical skills" or "passionate about learning." Capture what is particular and irreducible about this student as a thinker.`;
+You will return a JSON object with exactly these fields:
+
+thinking_moves — What are the characteristic ways this student approaches a problem or a page? What do they reach for first? These are patterns, not compliments. Example: "Tends to open with a strong concrete image but loses the thread when asked to generalize. Reaches for irony when uncertain."
+
+recurring_patterns — What keeps coming up? Strengths and weaknesses both. What does the counselor need to watch for? Be longitudinal — note if a pattern is improving, static, or deepening.
+
+current_growth_edge — The single most important thing this student is working on right now. One thing. The place where development is actively happening or actively needed. Specific to this student, not generic.
+
+voice_characteristics — How does this student's writing or speech sound? What makes it theirs? What would you miss if it got edited out? If voice is not yet developed, say that plainly and describe what's in the way.
+
+next_session_focus — A concrete recommendation for what the counselor should prioritize in the next session. Not a to-do list — a single directed insight. Should follow logically from the growth edge.
+
+portrait_narrative — 2-4 sentences of synthesis. This is the "who is this student as a thinker" summary that a counselor could read in 20 seconds before a session and feel immediately oriented. Write it the way a thoughtful colleague would describe a student to another thoughtful colleague.
+
+Longitudinal behavior: If a previous portrait exists, you are updating it, not replacing it. Preserve what remains true. Revise what has changed. Be explicit in recurring_patterns if something has shifted — e.g. "the tendency to over-explain has been improving since March."
+
+Tone: Clinical but warm. Precise. No bullet-point padding. Each field should read like it was written by someone who has spent hours with this student and has something specific to say.
+
+Return only valid JSON. No preamble, no commentary outside the JSON object.`;
 
 function buildPortraitPrompt(
   student: Student,
   sessions: Session[],
-  existingPortrait: Portrait | null
+  existingPortrait: Portrait | null,
+  newSessionId?: string
 ): string {
   const lines: string[] = [];
 
-  lines.push(`STUDENT: ${student.name}`);
+  // Student profile
+  lines.push(`STUDENT PROFILE`);
+  lines.push(`Name: ${student.name}`);
   if (student.age) lines.push(`Age: ${student.age}`);
   if (student.grade) lines.push(`Grade: ${student.grade}`);
   if (student.cultural_background) lines.push(`Cultural background: ${student.cultural_background}`);
-  if (student.family_language_pref) lines.push(`Family language: ${student.family_language_pref}`);
+  if (student.family_language_pref) lines.push(`Family language preference: ${student.family_language_pref}`);
   lines.push(`Development stage: ${student.development_stage}`);
   if (student.seed_notes) {
-    lines.push(`\nInitial notes from intake:\n${student.seed_notes}`);
+    lines.push(`\nIntake notes:\n${student.seed_notes}`);
   }
 
+  // Session history — chronological (oldest first)
   if (sessions.length > 0) {
-    lines.push(`\n--- SESSION HISTORY (${sessions.length} sessions, most recent first) ---`);
+    lines.push(`\nSESSION HISTORY (${sessions.length} sessions, chronological)`);
     for (const s of sessions) {
-      lines.push(`\n[${s.date} · ${s.session_type.replace("_", " ")}]`);
-      if (s.raw_notes) lines.push(`Notes: ${s.raw_notes}`);
+      const isNew = newSessionId && s.id === newSessionId;
+      lines.push(`\n[${s.date} · ${s.session_type.replace(/_/g, " ")}${isNew ? " · NEW" : ""}]`);
       if (s.key_observations) lines.push(`Key observations: ${s.key_observations}`);
+      if (s.raw_notes) lines.push(`Raw notes: ${s.raw_notes}`);
     }
   } else {
-    lines.push("\nNo sessions logged yet. Base portrait on intake notes only.");
+    lines.push("\nNo sessions logged yet. Base the portrait on intake notes only.");
   }
 
+  // Previous portrait as a separate labeled section
   if (existingPortrait) {
-    lines.push(`\n--- PREVIOUS PORTRAIT (generated ${existingPortrait.generated_at}) ---`);
+    lines.push(`\nPREVIOUS PORTRAIT (generated ${existingPortrait.generated_at})`);
     lines.push(JSON.stringify(existingPortrait.content_json, null, 2));
-    lines.push("\nUpdate and refine this portrait based on everything above. Preserve what still holds; evolve what has shifted.");
+    lines.push("\nYou are updating this portrait, not replacing it. Preserve what remains true. Revise what has shifted. The session marked NEW above is what triggered this update — weigh it accordingly.");
   } else {
-    lines.push("\nGenerate an initial portrait based on what you know so far. It will be refined over time.");
+    lines.push("\nNo previous portrait exists. Generate an initial portrait from what you have. It will be refined over time.");
   }
 
   return lines.join("\n");
 }
 
 export async function POST(req: NextRequest) {
-  const { student_id } = await req.json();
+  const { student_id, new_session_id } = await req.json();
 
   if (!student_id) {
     return NextResponse.json({ error: "student_id required" }, { status: 400 });
@@ -75,8 +87,8 @@ export async function POST(req: NextRequest) {
       .from("sessions")
       .select("*")
       .eq("student_id", student_id)
-      .order("date", { ascending: false })
-      .order("created_at", { ascending: false }),
+      .order("date", { ascending: true })
+      .order("created_at", { ascending: true }),
     getSupabase()
       .from("portraits")
       .select("*")
@@ -94,7 +106,7 @@ export async function POST(req: NextRequest) {
   const sessions = (sessionsRes.data ?? []) as Session[];
   const existingPortrait = portraitRes.data as Portrait | null;
 
-  const userPrompt = buildPortraitPrompt(student, sessions, existingPortrait);
+  const userPrompt = buildPortraitPrompt(student, sessions, existingPortrait, new_session_id);
 
   // Call OpenAI
   const apiKey = process.env.OPENAI_API_KEY;

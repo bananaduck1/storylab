@@ -58,6 +58,7 @@ export interface PortraitContent {
   current_growth_edge: string;
   voice_characteristics: string[];
   next_session_focus: string;
+  portrait_narrative: string;
 }
 
 export interface Essay {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase-browser";
 import type {
   Student,
@@ -191,9 +191,11 @@ function AddStudentModal({
 function AddSessionForm({
   studentId,
   onAdded,
+  onPortraitUpdated,
 }: {
   studentId: string;
   onAdded: (session: Session) => void;
+  onPortraitUpdated: (portrait: Portrait) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
@@ -234,11 +236,15 @@ function AddSessionForm({
     // Auto-regenerate portrait after each new session
     setGenerating(true);
     try {
-      await fetch("/api/lab/generate-portrait", {
+      const portraitRes = await fetch("/api/lab/generate-portrait", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ student_id: studentId }),
+        body: JSON.stringify({ student_id: studentId, new_session_id: session.id }),
       });
+      if (portraitRes.ok) {
+        const newPortrait = await portraitRes.json();
+        onPortraitUpdated(newPortrait);
+      }
     } catch {
       // non-fatal — portrait regeneration failure shouldn't block session save
     }
@@ -412,6 +418,12 @@ function PortraitCard({
       </div>
 
       <div className="space-y-5">
+        {c.portrait_narrative && (
+          <p className="border-b border-zinc-100 pb-5 text-sm leading-relaxed text-zinc-700 italic">
+            {c.portrait_narrative}
+          </p>
+        )}
+
         {c.current_growth_edge && (
           <PortraitSection label="Current Growth Edge">
             <p className="text-sm leading-relaxed text-zinc-800">
@@ -535,9 +547,243 @@ function SessionList({ sessions }: { sessions: Session[] }) {
   );
 }
 
+// ── markdown renderer (minimal: bold, italic, line breaks) ───────────────────
+
+function Markdown({ text }: { text: string }) {
+  // Convert **bold**, *italic*, and newlines to JSX
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|\n)/g);
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part.startsWith("**") && part.endsWith("**"))
+          return <strong key={i}>{part.slice(2, -2)}</strong>;
+        if (part.startsWith("*") && part.endsWith("*"))
+          return <em key={i}>{part.slice(1, -1)}</em>;
+        if (part === "\n") return <br key={i} />;
+        return <span key={i}>{part}</span>;
+      })}
+    </>
+  );
+}
+
+// ── agent session tab ─────────────────────────────────────────────────────────
+
+interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+function AgentSessionTab({ student }: { student: Student }) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [isActive, setIsActive] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  async function sendToAgent(msgs: ChatMessage[]) {
+    setIsStreaming(true);
+    // Add empty assistant bubble to stream into
+    setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+    try {
+      const res = await fetch("/api/agent-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ studentId: student.id, messages: msgs }),
+      });
+
+      if (!res.ok || !res.body) {
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            role: "assistant",
+            content: "Something went wrong. Please try again.",
+          };
+          return updated;
+        });
+        setIsStreaming(false);
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        // Parse SSE lines
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6).trim();
+          if (data === "[DONE]") break;
+          try {
+            const json = JSON.parse(data);
+            const delta = json.choices?.[0]?.delta?.content;
+            if (delta) {
+              setMessages((prev) => {
+                const updated = [...prev];
+                updated[updated.length - 1] = {
+                  role: "assistant",
+                  content: updated[updated.length - 1].content + delta,
+                };
+                return updated;
+              });
+            }
+          } catch {
+            // skip malformed SSE lines
+          }
+        }
+      }
+    } catch {
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[updated.length - 1] = {
+          role: "assistant",
+          content: "Connection error. Please try again.",
+        };
+        return updated;
+      });
+    }
+
+    setIsStreaming(false);
+  }
+
+  async function startSession() {
+    setIsActive(true);
+    setSaved(false);
+    const openingInstruction: ChatMessage = {
+      role: "user",
+      content:
+        "__system: Open the session. Check in with the student — ask where they are and what they want to work on today.",
+    };
+    await sendToAgent([openingInstruction]);
+    // Don't expose the system instruction in the thread
+    setMessages((prev) => prev.filter((m) => m.role === "assistant"));
+  }
+
+  async function sendMessage() {
+    const text = input.trim();
+    if (!text || isStreaming) return;
+    setInput("");
+    const updated: ChatMessage[] = [...messages, { role: "user", content: text }];
+    setMessages(updated);
+    await sendToAgent(updated);
+  }
+
+  async function endSession() {
+    if (messages.length === 0) {
+      setIsActive(false);
+      return;
+    }
+
+    const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
+
+    await fetch("/api/lab/sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        student_id: student.id,
+        date: new Date().toISOString().split("T")[0],
+        session_type: "agent_session",
+        raw_notes: JSON.stringify(messages),
+        key_observations: lastAssistant?.content ?? "",
+      }),
+    });
+
+    setSaved(true);
+    setIsActive(false);
+    setMessages([]);
+  }
+
+  if (!isActive) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-4">
+        {saved && (
+          <p className="text-xs text-zinc-400">Session saved.</p>
+        )}
+        <button
+          onClick={startSession}
+          className="rounded bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors"
+        >
+          Start Session
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-full flex-col">
+      {/* Thread */}
+      <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+        {messages.map((msg, i) => (
+          <div
+            key={i}
+            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+          >
+            <div
+              className={`max-w-[72%] rounded-xl px-4 py-2.5 text-sm leading-relaxed ${
+                msg.role === "user"
+                  ? "bg-zinc-900 text-white"
+                  : "bg-zinc-100 text-zinc-800"
+              }`}
+            >
+              {msg.role === "assistant" ? (
+                <Markdown text={msg.content || "…"} />
+              ) : (
+                msg.content
+              )}
+            </div>
+          </div>
+        ))}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input bar */}
+      <div className="flex-none border-t border-zinc-200 px-4 py-3 flex items-center gap-2">
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+          disabled={isStreaming}
+          placeholder="Type a message…"
+          className="flex-1 rounded border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 disabled:opacity-50"
+        />
+        <button
+          onClick={sendMessage}
+          disabled={isStreaming || !input.trim()}
+          className="rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+        >
+          Send
+        </button>
+        <button
+          onClick={endSession}
+          disabled={isStreaming}
+          className="rounded border border-zinc-200 px-3 py-2 text-xs text-zinc-500 hover:bg-zinc-50 disabled:opacity-40"
+        >
+          End
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── student view ──────────────────────────────────────────────────────────────
 
+type Tab = "portrait" | "log" | "session";
+
 function StudentView({ student }: { student: Student }) {
+  const [tab, setTab] = useState<Tab>("portrait");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [portrait, setPortrait] = useState<Portrait | null>(null);
   const [loading, setLoading] = useState(true);
@@ -559,12 +805,6 @@ function StudentView({ student }: { student: Student }) {
 
   function handleSessionAdded(session: Session) {
     setSessions((prev) => [session, ...prev]);
-    // Refresh portrait after brief delay (regeneration is async)
-    setTimeout(() => {
-      fetch(`/api/lab/portraits?student_id=${student.id}`)
-        .then((r) => r.json())
-        .then((p) => p && setPortrait(p));
-    }, 3000);
   }
 
   if (loading) {
@@ -575,11 +815,17 @@ function StudentView({ student }: { student: Student }) {
     );
   }
 
+  const tabs: { id: Tab; label: string }[] = [
+    { id: "portrait", label: "Portrait" },
+    { id: "log", label: "Session Log" },
+    { id: "session", label: "Session" },
+  ];
+
   return (
-    <div className="flex h-full flex-col gap-0 overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden">
       {/* Student header */}
-      <div className="flex-none border-b border-zinc-200 px-6 py-4">
-        <div className="flex items-baseline gap-3">
+      <div className="flex-none border-b border-zinc-200 px-6 pt-4 pb-0">
+        <div className="flex items-baseline gap-3 mb-3">
           <h1 className="text-lg font-semibold text-zinc-900">{student.name}</h1>
           {student.grade && (
             <span className="text-sm text-zinc-400">{student.grade}</span>
@@ -589,41 +835,61 @@ function StudentView({ student }: { student: Student }) {
           </span>
         </div>
         {student.cultural_background && (
-          <p className="mt-0.5 text-xs text-zinc-400">
+          <p className="mb-3 text-xs text-zinc-400">
             {student.cultural_background}
-            {student.family_language_pref
-              ? ` · ${student.family_language_pref}`
-              : ""}
+            {student.family_language_pref ? ` · ${student.family_language_pref}` : ""}
           </p>
         )}
+        {/* Tabs */}
+        <div className="flex gap-0">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`px-4 py-2 text-xs font-medium border-b-2 transition-colors ${
+                tab === t.id
+                  ? "border-zinc-900 text-zinc-900"
+                  : "border-transparent text-zinc-400 hover:text-zinc-600"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto px-6 py-5">
-        <div className="mx-auto max-w-2xl space-y-6">
-          {/* Portrait */}
-          <PortraitCard
-            portrait={portrait}
-            studentId={student.id}
-            onRegenerated={setPortrait}
-          />
-
-          {/* Sessions */}
-          <div>
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
-                Sessions ({sessions.length})
-              </h2>
-            </div>
-            <AddSessionForm
-              studentId={student.id}
-              onAdded={handleSessionAdded}
-            />
-            <div className="mt-4">
-              <SessionList sessions={sessions} />
+      {/* Tab content */}
+      <div className="flex-1 overflow-hidden">
+        {tab === "portrait" && (
+          <div className="h-full overflow-y-auto px-6 py-5">
+            <div className="mx-auto max-w-2xl">
+              <PortraitCard
+                portrait={portrait}
+                studentId={student.id}
+                onRegenerated={setPortrait}
+              />
             </div>
           </div>
-        </div>
+        )}
+
+        {tab === "log" && (
+          <div className="h-full overflow-y-auto px-6 py-5">
+            <div className="mx-auto max-w-2xl space-y-4">
+              <AddSessionForm
+                studentId={student.id}
+                onAdded={handleSessionAdded}
+                onPortraitUpdated={setPortrait}
+              />
+              <div className="mt-2">
+                <SessionList sessions={sessions} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === "session" && (
+          <AgentSessionTab student={student} />
+        )}
       </div>
     </div>
   );
@@ -740,7 +1006,7 @@ export default function LabPage() {
             onClick={async () => {
               const supabase = createClient();
               await supabase.auth.signOut();
-              window.location.href = "/lab/login";
+              window.location.href = "/login";
             }}
             className="text-xs text-zinc-400 hover:text-zinc-600"
           >
