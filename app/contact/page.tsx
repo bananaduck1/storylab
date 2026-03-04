@@ -34,10 +34,10 @@ export default function ContactPage() {
           <p className="text-sm text-zinc-600">
             Prefer email?{" "}
             <a
-              href="mailto:storylab.ivy@gmail.com"
+              href="mailto:sam@ivystorylab.com"
               className="text-zinc-900 underline underline-offset-4 hover:text-zinc-700"
             >
-              storylab.ivy@gmail.com
+              sam@ivystorylab.com
             </a>
           </p>
         </section>

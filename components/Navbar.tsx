@@ -42,12 +42,6 @@ export function Navbar() {
                 Academy
               </Link>
               <Link
-                href="/lab"
-                className="text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
-              >
-                Lab
-              </Link>
-              <Link
                 href="/blog"
                 className="text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
               >
@@ -72,12 +66,6 @@ export function Navbar() {
             className="text-sm font-medium text-zinc-900 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
           >
             Academy
-          </Link>
-          <Link
-            href="/lab"
-            className="text-sm font-medium text-zinc-900 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
-          >
-            Lab
           </Link>
           <Link
             href="/blog"

@@ -19,7 +19,7 @@ function PostCard({ post }: { post: Post }) {
   return (
     <Link
       href={`/blog/${post.slug}`}
-      className="group flex flex-col bg-white border border-zinc-200 rounded-xl p-7 hover:border-zinc-400 hover:shadow-md transition-all duration-200"
+      className="group flex flex-col border border-zinc-200 rounded-xl p-7 hover:border-zinc-400 hover:shadow-sm transition-all duration-200"
     >
       {post.tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-4">

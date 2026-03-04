@@ -27,7 +27,7 @@ export default async function BlogPage() {
   return (
     <main className="min-h-screen">
       {/* Editorial hero */}
-      <section className="border-b border-zinc-200 bg-zinc-50 py-24 px-6 text-center">
+      <section className="border-b border-zinc-200 py-24 px-6 text-center">
         <p className="text-sm uppercase tracking-widest text-emerald-800 mb-5">
           StoryLab
         </p>
@@ -44,7 +44,7 @@ export default async function BlogPage() {
       <PostGrid posts={posts ?? []} allTags={allTags} />
 
       {/* Subscribe CTA */}
-      <section className="border-t border-zinc-200 bg-zinc-50 py-24 px-6">
+      <section className="border-t border-zinc-200 py-24 px-6">
         <div className="max-w-xl mx-auto text-center">
           <p className="text-sm uppercase tracking-widest text-emerald-800 mb-4">
             Stay current
