@@ -47,6 +47,12 @@ export function Navbar() {
               >
                 Lab
               </Link>
+              <Link
+                href="/blog"
+                className="text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
+              >
+                Blog
+              </Link>
             </nav>
           </div>
         </div>
@@ -72,6 +78,12 @@ export function Navbar() {
             className="text-sm font-medium text-zinc-900 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
           >
             Lab
+          </Link>
+          <Link
+            href="/blog"
+            className="text-sm font-medium text-zinc-900 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
+          >
+            Blog
           </Link>
         </div>
       </nav>
