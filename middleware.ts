@@ -9,7 +9,6 @@ export async function middleware(request: NextRequest) {
 
   // Allow auth callback and login through unconditionally
   if (
-    pathname === "/lab/login" ||
     pathname === "/login" ||
     pathname.startsWith("/auth/")
   ) {
@@ -59,7 +58,7 @@ export async function middleware(request: NextRequest) {
       if (pathname.startsWith("/api/")) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
-      return NextResponse.redirect(new URL("/lab/login", request.url));
+      return NextResponse.redirect(new URL("/login", request.url));
     }
     return response;
   }
