@@ -67,7 +67,7 @@ export default async function BlogPostPage({ params }: Props) {
         {/* Back link */}
         <Link
           href="/blog"
-          className="inline-flex items-center gap-2 text-sage text-sm hover:text-forest transition-colors mb-14"
+          className="inline-flex items-center gap-2 text-zinc-500 text-sm hover:text-zinc-900 transition-colors mb-14"
         >
           <span aria-hidden="true">←</span> All perspectives
         </Link>
@@ -78,7 +78,7 @@ export default async function BlogPostPage({ params }: Props) {
             {(post.tags as string[]).map((tag) => (
               <span
                 key={tag}
-                className="text-xs px-2.5 py-1 rounded-full bg-soft text-muted uppercase tracking-wider"
+                className="text-xs px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-600 uppercase tracking-wider"
               >
                 {tag}
               </span>
@@ -87,19 +87,19 @@ export default async function BlogPostPage({ params }: Props) {
         )}
 
         {/* Title */}
-        <h1 className="text-4xl md:text-5xl text-forest leading-tight tracking-tight mb-6">
+        <h1 className="text-4xl md:text-5xl text-zinc-950 leading-tight tracking-tight mb-6">
           {post.title}
         </h1>
 
         {/* Excerpt / standfirst */}
         {post.excerpt && (
-          <p className="text-xl text-muted leading-relaxed mb-8">
+          <p className="text-xl text-zinc-600 leading-relaxed mb-8">
             {post.excerpt}
           </p>
         )}
 
         {/* Date + divider */}
-        <p className="text-sm text-sage pb-12 mb-12 border-b border-line">
+        <p className="text-sm text-zinc-500 pb-12 mb-12 border-b border-zinc-200">
           {date ?? ""}
         </p>
 
@@ -110,10 +110,10 @@ export default async function BlogPostPage({ params }: Props) {
         />
 
         {/* Footer nav */}
-        <div className="mt-20 pt-10 border-t border-line">
+        <div className="mt-20 pt-10 border-t border-zinc-200">
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 text-sage text-sm hover:text-forest transition-colors"
+            className="inline-flex items-center gap-2 text-zinc-500 text-sm hover:text-zinc-900 transition-colors"
           >
             <span aria-hidden="true">←</span> Back to all perspectives
           </Link>

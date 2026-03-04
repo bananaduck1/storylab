@@ -19,14 +19,14 @@ function PostCard({ post }: { post: Post }) {
   return (
     <Link
       href={`/blog/${post.slug}`}
-      className="group flex flex-col bg-white border border-line rounded-xl p-7 hover:border-sage hover:shadow-md transition-all duration-200"
+      className="group flex flex-col bg-white border border-zinc-200 rounded-xl p-7 hover:border-zinc-400 hover:shadow-md transition-all duration-200"
     >
       {post.tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-4">
           {post.tags.map((tag) => (
             <span
               key={tag}
-              className="text-xs px-2.5 py-1 rounded-full bg-soft text-muted uppercase tracking-wider"
+              className="text-xs px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-600 uppercase tracking-wider"
             >
               {tag}
             </span>
@@ -34,18 +34,18 @@ function PostCard({ post }: { post: Post }) {
         </div>
       )}
 
-      <h2 className="text-xl text-forest font-medium leading-snug mb-3 group-hover:text-ink transition-colors">
+      <h2 className="text-xl text-zinc-900 font-medium leading-snug mb-3 group-hover:text-zinc-950 transition-colors">
         {post.title}
       </h2>
 
       {post.excerpt && (
-        <p className="text-muted text-base leading-relaxed mb-4 line-clamp-3 flex-1">
+        <p className="text-zinc-600 text-base leading-relaxed mb-4 line-clamp-3 flex-1">
           {post.excerpt}
         </p>
       )}
 
       {date && (
-        <p className="text-sm text-sage mt-auto">{date}</p>
+        <p className="text-sm text-zinc-500 mt-auto">{date}</p>
       )}
     </Link>
   );
@@ -64,15 +64,14 @@ export default function PostGrid({ posts, allTags }: PostGridProps) {
 
   return (
     <section className="max-w-5xl mx-auto px-6 py-16">
-      {/* Tag filter bar */}
       {allTags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-12">
           <button
             onClick={() => setActiveTag(null)}
             className={`text-sm px-4 py-1.5 rounded-full border transition-colors ${
               activeTag === null
-                ? "bg-forest text-white border-forest"
-                : "border-line text-muted hover:border-sage hover:text-forest"
+                ? "bg-zinc-900 text-white border-zinc-900"
+                : "border-zinc-200 text-zinc-600 hover:border-zinc-400 hover:text-zinc-900"
             }`}
           >
             All
@@ -83,8 +82,8 @@ export default function PostGrid({ posts, allTags }: PostGridProps) {
               onClick={() => setActiveTag(activeTag === tag ? null : tag)}
               className={`text-sm px-4 py-1.5 rounded-full border transition-colors ${
                 activeTag === tag
-                  ? "bg-forest text-white border-forest"
-                  : "border-line text-muted hover:border-sage hover:text-forest"
+                  ? "bg-zinc-900 text-white border-zinc-900"
+                  : "border-zinc-200 text-zinc-600 hover:border-zinc-400 hover:text-zinc-900"
               }`}
             >
               {tag}
@@ -93,9 +92,8 @@ export default function PostGrid({ posts, allTags }: PostGridProps) {
         </div>
       )}
 
-      {/* Grid */}
       {filtered.length === 0 ? (
-        <p className="text-muted text-center py-16 text-lg">
+        <p className="text-zinc-500 text-center py-16 text-lg">
           No posts yet — check back soon.
         </p>
       ) : (

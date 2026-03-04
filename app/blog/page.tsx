@@ -25,14 +25,14 @@ export default async function BlogPage() {
   return (
     <main className="min-h-screen">
       {/* Editorial hero */}
-      <section className="border-b border-line bg-paper py-24 px-6 text-center">
-        <p className="text-sm uppercase tracking-widest text-sage mb-5">
+      <section className="border-b border-zinc-200 bg-zinc-50 py-24 px-6 text-center">
+        <p className="text-sm uppercase tracking-widest text-emerald-800 mb-5">
           StoryLab
         </p>
-        <h1 className="text-5xl md:text-6xl text-forest leading-tight tracking-tight mb-5">
+        <h1 className="text-5xl md:text-6xl text-zinc-950 leading-tight tracking-tight mb-5">
           Perspectives
         </h1>
-        <p className="max-w-md mx-auto text-muted leading-relaxed">
+        <p className="max-w-md mx-auto text-zinc-600 leading-relaxed">
           Essays on storytelling, the humanities, and the college experience —
           for students who think in depth.
         </p>
@@ -42,15 +42,15 @@ export default async function BlogPage() {
       <PostGrid posts={posts ?? []} allTags={allTags} />
 
       {/* Subscribe CTA */}
-      <section className="border-t border-line bg-paper py-24 px-6">
+      <section className="border-t border-zinc-200 bg-zinc-50 py-24 px-6">
         <div className="max-w-xl mx-auto text-center">
-          <p className="text-sm uppercase tracking-widest text-sage mb-4">
+          <p className="text-sm uppercase tracking-widest text-emerald-800 mb-4">
             Stay current
           </p>
-          <h2 className="text-3xl md:text-4xl text-forest tracking-tight mb-4">
+          <h2 className="text-3xl md:text-4xl text-zinc-950 tracking-tight mb-4">
             Stay in the conversation.
           </h2>
-          <p className="text-muted leading-relaxed mb-10">
+          <p className="text-zinc-600 leading-relaxed mb-10">
             New essays and perspectives delivered to your inbox — no noise, just
             thought.
           </p>
