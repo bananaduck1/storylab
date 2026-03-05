@@ -42,5 +42,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/admin/dashboard`);
   }
 
-  return NextResponse.redirect(`${origin}/?confirmed=true`);
+  // Link student account to their student record if invite metadata is present
+  const studentId = data.user.user_metadata?.student_id;
+  if (studentId) {
+    const { createClient } = await import("@supabase/supabase-js");
+    const adminClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    await adminClient
+      .from("students")
+      .update({ user_id: data.user.id })
+      .eq("id", studentId)
+      .is("user_id", null); // only link if not already linked
+  }
+
+  return NextResponse.redirect(`${origin}/lab`);
 }

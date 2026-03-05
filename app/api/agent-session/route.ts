@@ -10,10 +10,13 @@ interface Message {
   content: string;
 }
 
+const TEACHER_SYSTEM_PROMPT_PREFIX = `You are a real-time session coaching assistant for a college counselor/tutor. You are NOT speaking to the student — you are advising the tutor who is running a live session. Your role: suggest specific questions to ask, name patterns worth probing, surface themes from the student's portrait, and help the tutor stay curious and strategic. Be concise and direct. Think like a thoughtful colleague observing the session from outside.`;
+
 export async function POST(req: NextRequest) {
-  const { studentId, messages } = (await req.json()) as {
+  const { studentId, messages, mode = "student" } = (await req.json()) as {
     studentId: string;
     messages: Message[];
+    mode?: "teacher" | "student";
   };
 
   if (!studentId) {
@@ -90,7 +93,11 @@ export async function POST(req: NextRequest) {
 
   contextBlocks.push(`---`);
 
-  const finalSystemPrompt = SYSTEM_PROMPT + "\n\n" + contextBlocks.join("\n");
+  const basePrompt = mode === "teacher"
+    ? TEACHER_SYSTEM_PROMPT_PREFIX
+    : SYSTEM_PROMPT;
+
+  const finalSystemPrompt = basePrompt + "\n\n" + contextBlocks.join("\n");
 
   // ── stream OpenAI response ─────────────────────────────────────────────────
 

@@ -1,12 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
+import { getCallerUser, getUserRole, getCallerStudentId } from "@/lib/lab-auth";
 
 export async function GET(req: NextRequest) {
+  const user = await getCallerUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { searchParams } = new URL(req.url);
   const studentId = searchParams.get("student_id");
 
   if (!studentId) {
     return NextResponse.json({ error: "student_id required" }, { status: 400 });
+  }
+
+  // Students can only fetch their own sessions
+  if (getUserRole(user) === "student") {
+    const ownStudentId = await getCallerStudentId(user.id);
+    if (ownStudentId !== studentId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
   }
 
   const { data, error } = await getSupabase()
@@ -21,6 +33,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const user = await getCallerUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const body = await req.json();
   const { student_id, date, session_type, raw_notes, key_observations } = body;
 
@@ -29,6 +44,14 @@ export async function POST(req: NextRequest) {
       { error: "student_id and session_type are required" },
       { status: 400 }
     );
+  }
+
+  // Students can only post sessions for themselves
+  if (getUserRole(user) === "student") {
+    const ownStudentId = await getCallerStudentId(user.id);
+    if (ownStudentId !== student_id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
   }
 
   const { data, error } = await getSupabase()

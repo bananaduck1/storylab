@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
+import { getCallerUser, getUserRole, getCallerStudentId } from "@/lib/lab-auth";
 
 export async function GET(req: NextRequest) {
+  const user = await getCallerUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { searchParams } = new URL(req.url);
   const studentId = searchParams.get("student_id");
 
@@ -9,7 +13,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "student_id required" }, { status: 400 });
   }
 
-  // Return latest portrait for the student
+  // Students can only fetch their own portrait
+  if (getUserRole(user) === "student") {
+    const ownStudentId = await getCallerStudentId(user.id);
+    if (ownStudentId !== studentId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
   const { data, error } = await getSupabase()
     .from("portraits")
     .select("*")
@@ -19,5 +30,5 @@ export async function GET(req: NextRequest) {
     .maybeSingle();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data); // null if no portrait yet
+  return NextResponse.json(data);
 }

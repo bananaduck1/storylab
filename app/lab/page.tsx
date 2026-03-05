@@ -566,6 +566,257 @@ function Markdown({ text }: { text: string }) {
   );
 }
 
+// ── teacher session tab ───────────────────────────────────────────────────────
+
+function TeacherSessionTab({ student, onSessionSaved }: { student: Student; onSessionSaved: (s: Session) => void }) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [isActive, setIsActive] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [showDebrief, setShowDebrief] = useState(false);
+  const [debriefNotes, setDebriefNotes] = useState("");
+  const [debriefType, setDebriefType] = useState<SessionType>("generative");
+  const [debriefDate, setDebriefDate] = useState(new Date().toISOString().split("T")[0]);
+  const [saving, setSaving] = useState(false);
+  const [savingPortrait, setSavingPortrait] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  async function sendToAgent(msgs: ChatMessage[]) {
+    setIsStreaming(true);
+    setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+    try {
+      const res = await fetch("/api/agent-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ studentId: student.id, messages: msgs, mode: "teacher" }),
+      });
+
+      if (!res.ok || !res.body) {
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = { role: "assistant", content: "Something went wrong. Please try again." };
+          return updated;
+        });
+        setIsStreaming(false);
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6).trim();
+          if (data === "[DONE]") break;
+          try {
+            const json = JSON.parse(data);
+            const delta = json.choices?.[0]?.delta?.content;
+            if (delta) {
+              setMessages((prev) => {
+                const updated = [...prev];
+                updated[updated.length - 1] = {
+                  role: "assistant",
+                  content: updated[updated.length - 1].content + delta,
+                };
+                return updated;
+              });
+            }
+          } catch { /* skip */ }
+        }
+      }
+    } catch {
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[updated.length - 1] = { role: "assistant", content: "Connection error. Please try again." };
+        return updated;
+      });
+    }
+
+    setIsStreaming(false);
+  }
+
+  async function startSession() {
+    setIsActive(true);
+    const opening: ChatMessage = {
+      role: "user",
+      content: `__system: Open the teacher session for ${student.name}. Summarize their portrait in 2–3 lines and suggest one or two things to focus on today.`,
+    };
+    await sendToAgent([opening]);
+    setMessages((prev) => prev.filter((m) => m.role === "assistant"));
+  }
+
+  async function sendMessage() {
+    const text = input.trim();
+    if (!text || isStreaming) return;
+    setInput("");
+    const updated: ChatMessage[] = [...messages, { role: "user", content: text }];
+    setMessages(updated);
+    await sendToAgent(updated);
+  }
+
+  function openDebrief() {
+    const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
+    setDebriefNotes(lastAssistant?.content ?? "");
+    setShowDebrief(true);
+  }
+
+  async function saveSession() {
+    setSaving(true);
+    const res = await fetch("/api/lab/sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        student_id: student.id,
+        date: debriefDate,
+        session_type: debriefType,
+        raw_notes: JSON.stringify(messages),
+        key_observations: debriefNotes,
+      }),
+    });
+    if (res.ok) {
+      const session = await res.json();
+      onSessionSaved(session);
+      setSavingPortrait(true);
+      await fetch("/api/lab/generate-portrait", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ student_id: student.id, new_session_id: session.id }),
+      });
+      setSavingPortrait(false);
+    }
+    setSaving(false);
+    setShowDebrief(false);
+    setIsActive(false);
+    setMessages([]);
+  }
+
+  if (!isActive) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-4">
+        <button
+          onClick={startSession}
+          className="rounded bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors"
+        >
+          Start Session
+        </button>
+      </div>
+    );
+  }
+
+  if (showDebrief) {
+    return (
+      <div className="h-full overflow-y-auto px-6 py-6">
+        <div className="mx-auto max-w-lg space-y-4">
+          <h3 className="text-sm font-semibold text-zinc-900">End of Session — Debrief</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1 block text-xs text-zinc-500">Date</label>
+              <input
+                type="date"
+                value={debriefDate}
+                onChange={(e) => setDebriefDate(e.target.value)}
+                className="w-full rounded border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-900 outline-none focus:border-zinc-500"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-zinc-500">Type</label>
+              <select
+                value={debriefType}
+                onChange={(e) => setDebriefType(e.target.value as SessionType)}
+                className="w-full rounded border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-900 outline-none focus:border-zinc-500"
+              >
+                <option value="generative">Generative</option>
+                <option value="essay_work">Essay Work</option>
+                <option value="parent_call">Parent Call</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-zinc-500">Key Observations</label>
+            <textarea
+              value={debriefNotes}
+              onChange={(e) => setDebriefNotes(e.target.value)}
+              rows={8}
+              className="w-full rounded border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 resize-y"
+            />
+          </div>
+          {savingPortrait && (
+            <p className="text-xs text-zinc-400">Regenerating portrait…</p>
+          )}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowDebrief(false)}
+              className="rounded border border-zinc-300 px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-50"
+            >
+              Back
+            </button>
+            <button
+              onClick={saveSession}
+              disabled={saving}
+              className="rounded bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white disabled:opacity-40"
+            >
+              {saving ? "Saving…" : "Save Session + Regenerate Portrait"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-full flex-col">
+      <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+        {messages.map((msg, i) => (
+          <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+            <div className={`max-w-[72%] rounded-xl px-4 py-2.5 text-sm leading-relaxed ${
+              msg.role === "user" ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-800"
+            }`}>
+              {msg.role === "assistant" ? <Markdown text={msg.content || "…"} /> : msg.content}
+            </div>
+          </div>
+        ))}
+        <div ref={bottomRef} />
+      </div>
+      <div className="flex-none border-t border-zinc-200 px-4 py-3 flex items-center gap-2">
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+          disabled={isStreaming}
+          placeholder="Ask for guidance…"
+          className="flex-1 rounded border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 disabled:opacity-50"
+        />
+        <button
+          onClick={sendMessage}
+          disabled={isStreaming || !input.trim()}
+          className="rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+        >
+          Send
+        </button>
+        <button
+          onClick={openDebrief}
+          disabled={isStreaming}
+          className="rounded border border-zinc-200 px-3 py-2 text-xs text-zinc-500 hover:bg-zinc-50 disabled:opacity-40"
+        >
+          End Session
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── agent session tab ─────────────────────────────────────────────────────────
 
 interface ChatMessage {
@@ -787,6 +1038,7 @@ function StudentView({ student }: { student: Student }) {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [portrait, setPortrait] = useState<Portrait | null>(null);
   const [loading, setLoading] = useState(true);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -807,6 +1059,12 @@ function StudentView({ student }: { student: Student }) {
     setSessions((prev) => [session, ...prev]);
   }
 
+  function copyClaimLink() {
+    navigator.clipboard.writeText(`${window.location.origin}/lab/claim/${student.id}`);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  }
+
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -825,7 +1083,7 @@ function StudentView({ student }: { student: Student }) {
     <div className="flex h-full flex-col overflow-hidden">
       {/* Student header */}
       <div className="flex-none border-b border-zinc-200 px-6 pt-4 pb-0">
-        <div className="flex items-baseline gap-3 mb-3">
+        <div className="flex items-center gap-3 mb-3">
           <h1 className="text-lg font-semibold text-zinc-900">{student.name}</h1>
           {student.grade && (
             <span className="text-sm text-zinc-400">{student.grade}</span>
@@ -833,6 +1091,18 @@ function StudentView({ student }: { student: Student }) {
           <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500">
             {STAGE_LABELS[student.development_stage]}
           </span>
+          <div className="ml-auto">
+            {student.user_id ? (
+              <span className="text-xs text-emerald-600">Linked</span>
+            ) : (
+              <button
+                onClick={copyClaimLink}
+                className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
+              >
+                {linkCopied ? "Link copied!" : "Copy claim link"}
+              </button>
+            )}
+          </div>
         </div>
         {student.cultural_background && (
           <p className="mb-3 text-xs text-zinc-400">
@@ -858,38 +1128,120 @@ function StudentView({ student }: { student: Student }) {
         </div>
       </div>
 
-      {/* Tab content */}
+      {/* Tab content — all panes stay mounted to preserve session state */}
       <div className="flex-1 overflow-hidden">
-        {tab === "portrait" && (
-          <div className="h-full overflow-y-auto px-6 py-5">
-            <div className="mx-auto max-w-2xl">
-              <PortraitCard
-                portrait={portrait}
-                studentId={student.id}
-                onRegenerated={setPortrait}
-              />
+        <div className={`h-full overflow-y-auto px-6 py-5 ${tab !== "portrait" ? "hidden" : ""}`}>
+          <div className="mx-auto max-w-2xl">
+            <PortraitCard
+              portrait={portrait}
+              studentId={student.id}
+              onRegenerated={setPortrait}
+            />
+          </div>
+        </div>
+
+        <div className={`h-full overflow-y-auto px-6 py-5 ${tab !== "log" ? "hidden" : ""}`}>
+          <div className="mx-auto max-w-2xl space-y-4">
+            <AddSessionForm
+              studentId={student.id}
+              onAdded={handleSessionAdded}
+              onPortraitUpdated={setPortrait}
+            />
+            <div className="mt-2">
+              <SessionList sessions={sessions} />
             </div>
           </div>
-        )}
+        </div>
 
-        {tab === "log" && (
-          <div className="h-full overflow-y-auto px-6 py-5">
-            <div className="mx-auto max-w-2xl space-y-4">
-              <AddSessionForm
-                studentId={student.id}
-                onAdded={handleSessionAdded}
-                onPortraitUpdated={setPortrait}
-              />
-              <div className="mt-2">
-                <SessionList sessions={sessions} />
+        <div className={`h-full ${tab !== "session" ? "hidden" : ""}`}>
+          <TeacherSessionTab student={student} onSessionSaved={handleSessionAdded} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── student self-view (for student role) ──────────────────────────────────────
+
+function StudentSelfView({ student }: { student: Student }) {
+  const [tab, setTab] = useState<"portrait" | "session">("portrait");
+  const [portrait, setPortrait] = useState<Portrait | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`/api/lab/portraits?student_id=${student.id}`)
+      .then((r) => r.json())
+      .then((data) => {
+        setPortrait(data);
+        setLoading(false);
+      });
+  }, [student.id]);
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <span className="text-xs text-zinc-400">Loading…</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-full flex-col overflow-hidden">
+      <div className="flex-none border-b border-zinc-200 px-6 pt-4 pb-0">
+        <div className="flex items-baseline gap-3 mb-3">
+          <h1 className="text-lg font-semibold text-zinc-900">{student.name}</h1>
+          {student.grade && <span className="text-sm text-zinc-400">{student.grade}</span>}
+        </div>
+        <div className="flex gap-0">
+          {(["portrait", "session"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-4 py-2 text-xs font-medium border-b-2 transition-colors capitalize ${
+                tab === t
+                  ? "border-zinc-900 text-zinc-900"
+                  : "border-transparent text-zinc-400 hover:text-zinc-600"
+              }`}
+            >
+              {t === "session" ? "Session" : "Portrait"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-hidden">
+        <div className={`h-full overflow-y-auto px-6 py-5 ${tab !== "portrait" ? "hidden" : ""}`}>
+          <div className="mx-auto max-w-2xl">
+            {portrait ? (
+              <div className="rounded-lg border border-zinc-200 bg-white p-5">
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-4">Portrait</h2>
+                <div className="space-y-5">
+                  {portrait.content_json.portrait_narrative && (
+                    <p className="border-b border-zinc-100 pb-5 text-sm leading-relaxed text-zinc-700 italic">
+                      {portrait.content_json.portrait_narrative}
+                    </p>
+                  )}
+                  {portrait.content_json.current_growth_edge && (
+                    <PortraitSection label="Current Growth Edge">
+                      <p className="text-sm leading-relaxed text-zinc-800">{portrait.content_json.current_growth_edge}</p>
+                    </PortraitSection>
+                  )}
+                  {portrait.content_json.next_session_focus && (
+                    <PortraitSection label="Next Session Focus">
+                      <p className="text-sm leading-relaxed text-zinc-800">{portrait.content_json.next_session_focus}</p>
+                    </PortraitSection>
+                  )}
+                </div>
               </div>
-            </div>
+            ) : (
+              <p className="text-xs text-zinc-400">No portrait yet — your teacher will generate one after your first session.</p>
+            )}
           </div>
-        )}
+        </div>
 
-        {tab === "session" && (
+        <div className={`h-full ${tab !== "session" ? "hidden" : ""}`}>
           <AgentSessionTab student={student} />
-        )}
+        </div>
       </div>
     </div>
   );
@@ -1031,20 +1383,65 @@ export default function LabPage() {
   const [selected, setSelected] = useState<Student | null>(null);
   const [showAddStudent, setShowAddStudent] = useState(false);
   const [loadingStudents, setLoadingStudents] = useState(true);
+  const [selfStudent, setSelfStudent] = useState<Student | null | undefined>(undefined);
+  const [role, setRole] = useState<"teacher" | "student" | null>(null);
 
   useEffect(() => {
-    fetch("/api/lab/students")
-      .then((r) => r.json())
-      .then((data) => {
-        setStudents(data);
-        setLoadingStudents(false);
-      });
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      const r = user.user_metadata?.role === "student" ? "student" : "teacher";
+      setRole(r);
+
+      if (r === "student") {
+        fetch("/api/lab/students?self=true")
+          .then((res) => res.json())
+          .then((data) => setSelfStudent(data ?? null));
+      } else {
+        fetch("/api/lab/students")
+          .then((res) => res.json())
+          .then((data) => {
+            setStudents(data);
+            setLoadingStudents(false);
+          });
+      }
+    });
   }, []);
 
   function handleStudentCreated(s: Student) {
     setStudents((prev) => [...prev, s].sort((a, b) => a.name.localeCompare(b.name)));
     setSelected(s);
     setShowAddStudent(false);
+  }
+
+  // Student role — show their own data only
+  if (role === "student") {
+    if (selfStudent === undefined) {
+      return (
+        <div className="flex min-h-dvh items-center justify-center">
+          <span className="text-xs text-zinc-400">Loading…</span>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col h-dvh">
+        <div className="flex h-10 flex-none items-center justify-between border-b border-zinc-200 bg-white px-4">
+          <span className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">StoryLab</span>
+          <AccountMenu />
+        </div>
+        <div className="flex-1 overflow-hidden">
+          {selfStudent ? (
+            <StudentSelfView student={selfStudent} />
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center">
+              <p className="text-sm text-zinc-700">Your account isn't linked to a student entry yet.</p>
+              <p className="text-xs text-zinc-400">Ask your teacher for a claim link.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   }
 
   return (

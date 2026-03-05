@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
+import { getCallerUser, getUserRole } from "@/lib/lab-auth";
 import type { Student, Session, Portrait, PortraitContent } from "@/lib/supabase";
 
 const PORTRAIT_SYSTEM_PROMPT = `You are a longitudinal intellectual development tracker for a tutoring and college counseling practice called StoryLab. Your job is not to summarize what happened in sessions. Your job is to build and maintain a living portrait of how a student thinks — updated each time new session data arrives.
@@ -74,6 +75,12 @@ function buildPortraitPrompt(
 }
 
 export async function POST(req: NextRequest) {
+  const user = await getCallerUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (getUserRole(user) !== "teacher") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const { student_id, new_session_id } = await req.json();
 
   if (!student_id) {

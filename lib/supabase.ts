@@ -14,6 +14,8 @@ export function getSupabase() {
 }
 
 // Types matching our schema
+export type UserRole = "teacher" | "student";
+
 export type DevelopmentStage =
   | "exploration"
   | "narrative_dev"
@@ -32,6 +34,8 @@ export interface Student {
   family_language_pref: string | null;
   development_stage: DevelopmentStage;
   seed_notes: string | null;
+  user_id: string | null;
+  email: string | null;
   created_at: string;
 }
 

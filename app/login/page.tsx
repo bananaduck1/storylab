@@ -5,6 +5,7 @@ import { createBrowserClient } from "@supabase/ssr";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"teacher" | "student">("teacher");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,6 +23,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
+        data: { role },
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
@@ -61,6 +63,30 @@ export default function LoginPage() {
               required
               className="w-full rounded border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500"
             />
+            <div className="flex rounded border border-zinc-200 overflow-hidden text-xs">
+              <button
+                type="button"
+                onClick={() => setRole("teacher")}
+                className={`flex-1 py-2 transition-colors ${
+                  role === "teacher"
+                    ? "bg-zinc-900 text-white"
+                    : "text-zinc-500 hover:bg-zinc-50"
+                }`}
+              >
+                Teacher
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole("student")}
+                className={`flex-1 py-2 transition-colors ${
+                  role === "student"
+                    ? "bg-zinc-900 text-white"
+                    : "text-zinc-500 hover:bg-zinc-50"
+                }`}
+              >
+                Student
+              </button>
+            </div>
             {error && <p className="text-xs text-red-600">{error}</p>}
             <button
               type="submit"
