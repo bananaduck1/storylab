@@ -3,7 +3,7 @@ import { AdminNav } from "./_components/AdminNav";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-dvh bg-white">
+    <div className="min-h-dvh">
       <AdminNav />
       <main>{children}</main>
     </div>
