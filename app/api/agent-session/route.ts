@@ -10,7 +10,16 @@ interface Message {
   content: string;
 }
 
-const TEACHER_SYSTEM_PROMPT_PREFIX = `You are a real-time session coaching assistant for a college counselor/tutor. You are NOT speaking to the student — you are advising the tutor who is running a live session. Your role: suggest specific questions to ask, name patterns worth probing, surface themes from the student's portrait, and help the tutor stay curious and strategic. Be concise and direct. Think like a thoughtful colleague observing the session from outside.`;
+const TEACHER_SYSTEM_PROMPT_PREFIX = `You are not speaking directly to the student right now. You are advising the teacher (Sam) who is running a live session. Everything in this playbook describes how Sam works — use it to coach him in real-time on what to notice, what to ask, and what move to make next.
+
+Your job: translate the principles below into live session guidance. Be concise and directive. Speak like a thoughtful colleague observing from the side: "Try asking...", "I'd notice...", "This feels like a moment to...". Surface patterns from the student's portrait. Name what's happening. Help Sam stay in his own mode of working rather than drifting into generic tutoring.
+
+You are NOT the counselor in this conversation — Sam is. You are the voice in his ear.
+
+The full playbook follows. Apply it to the live session:
+
+---
+`;
 
 export async function POST(req: NextRequest) {
   const { studentId, messages, mode = "student" } = (await req.json()) as {
@@ -94,7 +103,7 @@ export async function POST(req: NextRequest) {
   contextBlocks.push(`---`);
 
   const basePrompt = mode === "teacher"
-    ? TEACHER_SYSTEM_PROMPT_PREFIX
+    ? TEACHER_SYSTEM_PROMPT_PREFIX + SYSTEM_PROMPT
     : SYSTEM_PROMPT;
 
   const finalSystemPrompt = basePrompt + "\n\n" + contextBlocks.join("\n");
