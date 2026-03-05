@@ -968,6 +968,62 @@ function Field({
   );
 }
 
+// ── account menu ─────────────────────────────────────────────────────────────
+
+function AccountMenu() {
+  const [open, setOpen] = useState(false);
+
+  async function signOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="text-xs text-zinc-400 hover:text-zinc-600"
+      >
+        Account
+      </button>
+
+      {open && (
+        <>
+          {/* Backdrop to close on outside click */}
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setOpen(false)}
+          />
+          <div className="absolute right-0 top-full z-20 mt-1.5 w-44 rounded-md border border-zinc-200 bg-white py-1 shadow-md">
+            <a
+              href="/lab/profile"
+              className="block px-4 py-2 text-xs text-zinc-700 hover:bg-zinc-50"
+              onClick={() => setOpen(false)}
+            >
+              Profile
+            </a>
+            <a
+              href="/lab/settings"
+              className="block px-4 py-2 text-xs text-zinc-700 hover:bg-zinc-50"
+              onClick={() => setOpen(false)}
+            >
+              Account settings
+            </a>
+            <div className="my-1 border-t border-zinc-100" />
+            <button
+              onClick={signOut}
+              className="w-full px-4 py-2 text-left text-xs text-zinc-700 hover:bg-zinc-50"
+            >
+              Sign out
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── main page ─────────────────────────────────────────────────────────────────
 
 export default function LabPage() {
@@ -1002,16 +1058,7 @@ export default function LabPage() {
           <a href="/" className="text-xs text-zinc-400 hover:text-zinc-600">
             ← Site
           </a>
-          <button
-            onClick={async () => {
-              const supabase = createClient();
-              await supabase.auth.signOut();
-              window.location.href = "/login";
-            }}
-            className="text-xs text-zinc-400 hover:text-zinc-600"
-          >
-            Sign out
-          </button>
+          <AccountMenu />
         </div>
       </div>
 

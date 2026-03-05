@@ -4,26 +4,33 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { deletePost } from "../actions";
 
-export function DeleteButton({ id }: { id: string }) {
-  const router = useRouter();
+export default function DeleteButton({
+  id,
+  slug,
+  title,
+}: {
+  id: string;
+  slug: string;
+  title: string;
+}) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
-  function handleDelete() {
-    if (!confirm("Delete this post? This cannot be undone.")) return;
+  const handleDelete = () => {
+    if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
     startTransition(async () => {
-      await deletePost(id);
-      router.push("/admin/dashboard");
+      await deletePost(id, slug);
       router.refresh();
     });
-  }
+  };
 
   return (
     <button
       onClick={handleDelete}
       disabled={isPending}
-      className="text-sm text-red-600 hover:text-red-800 disabled:opacity-40 transition-colors"
+      className="text-xs text-red-500 hover:text-red-700 transition-colors disabled:opacity-40"
     >
-      {isPending ? "Deleting…" : "Delete"}
+      {isPending ? "…" : "Delete"}
     </button>
   );
 }

@@ -1,63 +1,73 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { getSupabase } from "@/lib/supabase";
+import { revalidatePath } from "next/cache";
 
-interface PostData {
+interface PostInput {
   title: string;
   slug: string;
-  excerpt: string;
+  excerpt: string | null;
   content: string;
   tags: string[];
   published: boolean;
 }
 
-export async function createPost(data: PostData) {
-  const supabase = await createClient();
+export async function createPost(data: PostInput): Promise<{ id: string }> {
+  const supabase = getSupabase();
 
-  const { error } = await supabase.from("posts").insert({
-    title: data.title,
-    slug: data.slug,
-    excerpt: data.excerpt || null,
-    content: data.content,
-    tags: data.tags,
-    published: data.published,
-    published_at: data.published ? new Date().toISOString() : null,
-  });
+  const { data: post, error } = await supabase
+    .from("posts")
+    .insert({
+      ...data,
+      published_at: data.published ? new Date().toISOString() : null,
+    })
+    .select("id")
+    .single();
 
-  if (error) return { error: error.message };
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/blog");
+  revalidatePath("/admin/dashboard");
+
+  return post;
 }
 
-export async function updatePost(id: string, data: PostData) {
-  const supabase = await createClient();
+export async function updatePost(id: string, data: PostInput): Promise<void> {
+  const supabase = getSupabase();
 
   const { data: existing } = await supabase
     .from("posts")
-    .select("published, published_at")
+    .select("published_at")
     .eq("id", id)
     .single();
 
-  const published_at =
-    data.published && !existing?.published
-      ? new Date().toISOString()
-      : existing?.published_at ?? null;
+  let published_at: string | null = existing?.published_at ?? null;
+  if (data.published && !published_at) {
+    published_at = new Date().toISOString();
+  } else if (!data.published) {
+    published_at = null;
+  }
 
   const { error } = await supabase
     .from("posts")
-    .update({
-      title: data.title,
-      slug: data.slug,
-      excerpt: data.excerpt || null,
-      content: data.content,
-      tags: data.tags,
-      published: data.published,
-      published_at,
-    })
+    .update({ ...data, published_at })
     .eq("id", id);
 
-  if (error) return { error: error.message };
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/blog");
+  revalidatePath(`/blog/${data.slug}`);
+  revalidatePath("/admin/dashboard");
 }
 
-export async function deletePost(id: string) {
-  const supabase = await createClient();
-  await supabase.from("posts").delete().eq("id", id);
+export async function deletePost(id: string, slug: string): Promise<void> {
+  const supabase = getSupabase();
+
+  const { error } = await supabase.from("posts").delete().eq("id", id);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/blog");
+  revalidatePath(`/blog/${slug}`);
+  revalidatePath("/admin/dashboard");
 }
