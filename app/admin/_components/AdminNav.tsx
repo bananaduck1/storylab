@@ -26,6 +26,12 @@ export function AdminNav() {
         >
           Posts
         </Link>
+        <Link
+          href="/lab"
+          className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
+        >
+          Lab
+        </Link>
       </div>
       <button
         onClick={signOut}
