@@ -39,7 +39,7 @@ function PostCard({ post }: { post: Post }) {
       </h2>
 
       {post.excerpt && (
-        <p className="text-zinc-600 text-base leading-relaxed mb-4 line-clamp-3 flex-1">
+        <p className="text-zinc-600 text-base leading-relaxed mb-4 flex-1">
           {post.excerpt}
         </p>
       )}

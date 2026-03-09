@@ -13,26 +13,18 @@ export function SendNewsletterButton({ postId, sentAt }: Props) {
   const [result, setResult] = useState<{ sent: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  if (sentAt) {
-    const date = new Date(sentAt).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-    return (
-      <span className="text-xs text-zinc-400">Sent {date}</span>
-    );
-  }
-
-  if (result) {
-    return (
-      <span className="text-xs text-emerald-700">
-        Sent to {result.sent} {result.sent === 1 ? "subscriber" : "subscribers"}
-      </span>
-    );
-  }
+  const alreadySent = sentAt || result;
+  const sentLabel = result
+    ? `Sent to ${result.sent} subscriber${result.sent === 1 ? "" : "s"}`
+    : sentAt
+    ? `Sent ${new Date(sentAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+    : null;
 
   function handleClick() {
-    if (!confirm("Send this post to all email subscribers?")) return;
+    const msg = alreadySent
+      ? "This was already sent. Send again to all subscribers?"
+      : "Send this post to all email subscribers?";
+    if (!confirm(msg)) return;
     setError(null);
     startTransition(async () => {
       try {
@@ -47,12 +39,15 @@ export function SendNewsletterButton({ postId, sentAt }: Props) {
   return (
     <div className="flex items-center gap-2">
       {error && <span className="text-xs text-red-500">{error}</span>}
+      {sentLabel && !isPending && (
+        <span className="text-xs text-zinc-400">{sentLabel} ·</span>
+      )}
       <button
         onClick={handleClick}
         disabled={isPending}
         className="text-xs text-zinc-600 hover:text-zinc-900 transition-colors disabled:opacity-40"
       >
-        {isPending ? "Sending…" : "Send to subscribers"}
+        {isPending ? "Sending…" : alreadySent ? "Resend" : "Send to subscribers"}
       </button>
     </div>
   );

@@ -73,7 +73,6 @@ export async function sendNewsletter(postId: string): Promise<{ sent: number }> 
 
   if (postError || !post) throw new Error("Post not found");
   if (!post.published) throw new Error("Post must be published before sending");
-  if (post.newsletter_sent_at) throw new Error("Newsletter already sent for this post");
 
   // Fetch all subscribers
   const { data: subscribers, error: subError } = await supabase
