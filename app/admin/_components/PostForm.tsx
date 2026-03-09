@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createPost, updatePost } from "../actions";
 import styles from "@/app/blog/blog.module.css";
+import { RichTextEditor } from "./RichTextEditor";
 
 export interface PostEditorData {
   id: string;
@@ -238,15 +239,9 @@ export function PostForm({ post }: { post?: PostEditorData }) {
 
           <div className="flex flex-col flex-1">
             <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1.5">
-              Content{" "}
-              <span className="normal-case font-normal text-zinc-400">— HTML</span>
+              Content
             </label>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder={CONTENT_PLACEHOLDER}
-              className="flex-1 min-h-96 w-full px-3 py-2.5 border border-zinc-200 rounded-lg text-zinc-900 font-mono text-sm focus:outline-none focus:border-zinc-400 resize-y transition-colors leading-relaxed"
-            />
+            <RichTextEditor value={content} onChange={setContent} />
           </div>
         </div>
 
