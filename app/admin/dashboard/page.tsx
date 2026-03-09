@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { getSupabase } from "@/lib/supabase";
 import DeleteButton from "../_components/DeleteButton";
+import { SendNewsletterButton } from "../_components/SendNewsletterButton";
 
 export const revalidate = 0;
 
 export default async function AdminDashboard() {
   const { data: posts } = await getSupabase()
     .from("posts")
-    .select("id, title, slug, published, published_at, created_at")
+    .select("id, title, slug, published, published_at, created_at, newsletter_sent_at")
     .order("created_at", { ascending: false });
 
   return (
@@ -69,6 +70,12 @@ export default async function AdminDashboard() {
                 </div>
 
                 <div className="flex-none flex items-center gap-4">
+                  {post.published && (
+                    <SendNewsletterButton
+                      postId={post.id}
+                      sentAt={post.newsletter_sent_at}
+                    />
+                  )}
                   {post.published && (
                     <Link
                       href={`/blog/${post.slug}`}
