@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createStaticClient } from "@/lib/supabase/server";
 import styles from "../blog.module.css";
+import SubscribeForm from "../_components/SubscribeForm";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -111,8 +112,15 @@ export default async function BlogPostPage({ params }: Props) {
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
 
+        {/* Subscribe */}
+        <div className="mt-20 pt-10 border-t border-zinc-200 text-center">
+          <p className="text-zinc-900 font-medium mb-1">Stay in the conversation.</p>
+          <p className="text-zinc-500 text-sm mb-6">New essays on storytelling, the humanities, and the college experience.</p>
+          <SubscribeForm />
+        </div>
+
         {/* Footer nav */}
-        <div className="mt-20 pt-10 border-t border-zinc-200">
+        <div className="mt-12 pt-10 border-t border-zinc-200">
           <Link
             href="/blog"
             className="inline-flex items-center gap-2 text-zinc-500 text-sm hover:text-zinc-900 transition-colors"
