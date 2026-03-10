@@ -727,20 +727,6 @@ export default function AcademyPage() {
                 <p className="mt-6 text-lg leading-relaxed text-zinc-600">
                   Our students have been admitted to Harvard, Yale, Princeton, Stanford, and other top universities.
                 </p>
-                <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                  <Link
-                    href="/results"
-                    className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white hover:bg-zinc-800"
-                  >
-                    See results
-                  </Link>
-                  <Link
-                    href="/contact"
-                    className="inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
-                  >
-                    Schedule a consultation
-                  </Link>
-                </div>
               </div>
               <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
                 <Image
@@ -1038,10 +1024,10 @@ export default function AcademyPage() {
               </p>
               <div className="mt-10">
                 <Link
-                  href="/contact"
+                  href="/academy/book"
                   className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-8 py-4 text-base font-medium text-white hover:bg-zinc-800"
                 >
-                  Schedule a consultation
+                  Book a session
                 </Link>
               </div>
             </div>
