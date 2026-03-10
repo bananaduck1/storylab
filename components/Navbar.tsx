@@ -37,7 +37,7 @@ export function Navbar() {
               </Link> */}
 
               {/* Academy with hover dropdown */}
-              <div className="relative group">
+              <div className="relative group after:absolute after:content-[''] after:left-0 after:right-0 after:top-full after:h-3">
                 <Link
                   href="/academy"
                   className="flex items-center gap-1 text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-zinc-900/30"
