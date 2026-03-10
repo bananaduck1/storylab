@@ -175,6 +175,7 @@ function ConsultationBookingContent() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          offering_type: "consultation",
           availability_id: selectedSlot!.id,
           visitor_timezone: visitorTz,
           ...form,

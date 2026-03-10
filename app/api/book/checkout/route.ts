@@ -120,34 +120,50 @@ export async function POST(req: NextRequest) {
       : "https://ivystorylab.com";
 
   // Create Stripe Checkout session
-  const session = await getStripe().checkout.sessions.create({
-    payment_method_types: ["card", "us_bank_account", "alipay", "link", "wechat_pay"],
-    payment_method_options: {
-      wechat_pay: { client: "web" },
-    },
-    mode: "payment",
-    customer_email: parent_email,
-    line_items: [
-      {
-        price_data: {
-          currency: "usd",
-          unit_amount: config.unitAmount,
-          product_data: {
-            name: config.productName,
-            description: config.description,
-          },
-        },
-        quantity: 1,
+  let session;
+  try {
+    session = await getStripe().checkout.sessions.create({
+      payment_method_types: ["card", "us_bank_account", "alipay", "link", "wechat_pay"],
+      payment_method_options: {
+        wechat_pay: { client: "web" },
       },
-    ],
-    metadata: {
-      booking_id: booking.id,
-      offering_type,
-      visitor_timezone: visitor_timezone ?? "America/New_York",
-    },
-    success_url: `${origin}/academy/pricing/${offering_type}/confirmed?booking_id=${booking.id}`,
-    cancel_url: `${origin}/academy/pricing/${offering_type}?cancelled=1`,
-  });
+      mode: "payment",
+      customer_email: parent_email,
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            unit_amount: config.unitAmount,
+            product_data: {
+              name: config.productName,
+              description: config.description,
+            },
+          },
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        booking_id: booking.id,
+        offering_type,
+        visitor_timezone: visitor_timezone ?? "America/New_York",
+      },
+      success_url: `${origin}/academy/pricing/${offering_type}/confirmed?booking_id=${booking.id}`,
+      cancel_url: `${origin}/academy/pricing/${offering_type}?cancelled=1`,
+    });
+  } catch (err) {
+    console.error("[checkout] Stripe session creation failed:", err);
+    // Roll back booking and slot if needed
+    await supabase.from("bookings").delete().eq("id", booking.id);
+    if (config.requiresSlot && availability_id) {
+      await supabase.from("availability").update({ is_booked: false }).eq("id", availability_id);
+    }
+    const message = err instanceof Error ? err.message : "Failed to create checkout session";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+
+  if (!session.url) {
+    return NextResponse.json({ error: "No checkout URL returned from Stripe" }, { status: 500 });
+  }
 
   return NextResponse.json({ url: session.url });
 }
