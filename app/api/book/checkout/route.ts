@@ -100,8 +100,8 @@ export async function POST(req: NextRequest) {
     metadata: {
       booking_id: booking.id,
     },
-    success_url: `${origin}/academy/book/consultation/confirmed?booking_id=${booking.id}`,
-    cancel_url: `${origin}/academy/book/consultation?cancelled=1`,
+    success_url: `${origin}/academy/pricing/consultation/confirmed?booking_id=${booking.id}`,
+    cancel_url: `${origin}/academy/pricing/consultation?cancelled=1`,
   });
 
   return NextResponse.json({ url: session.url });

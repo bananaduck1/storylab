@@ -895,7 +895,7 @@ export default function AcademyPage() {
                 {
                   href: "/academy/humanities",
                   title: "Humanities Foundations",
-                  desc: "Grades 7–11. Build the skills before you need them.",
+                  desc: "Build the skills before you need them.",
                 },
                 {
                   href: "/academy/applications",
@@ -1024,7 +1024,7 @@ export default function AcademyPage() {
               </p>
               <div className="mt-10">
                 <Link
-                  href="/academy/book"
+                  href="/academy/pricing"
                   className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-8 py-4 text-base font-medium text-white hover:bg-zinc-800"
                 >
                   Book a session

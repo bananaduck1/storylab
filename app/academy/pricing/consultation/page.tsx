@@ -172,7 +172,7 @@ function ConsultationBookingContent() {
     <div className="mx-auto w-full max-w-3xl px-6 py-20 md:py-28">
       {/* Back link */}
       <Link
-        href="/academy/book"
+        href="/academy/pricing"
         className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-700 transition-colors"
       >
         <span aria-hidden="true">←</span> All offerings

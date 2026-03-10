@@ -28,9 +28,6 @@ export default async function BlogPage() {
     <main className="min-h-screen">
       {/* Editorial hero */}
       <section className="border-b border-zinc-200 py-24 px-6 text-center">
-        <p className="text-sm uppercase tracking-widest text-emerald-800 mb-5">
-          StoryLab
-        </p>
         <h1 className="text-5xl md:text-6xl text-zinc-950 leading-tight tracking-tight mb-5">
           Perspectives
         </h1>
