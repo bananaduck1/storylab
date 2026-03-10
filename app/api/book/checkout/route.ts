@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { availability_id, parent_name, parent_email, student_grade, schools, essay_context } =
+  const { availability_id, parent_name, parent_email, student_grade, schools, essay_context, visitor_timezone } =
     body;
 
   if (
@@ -81,7 +81,10 @@ export async function POST(req: NextRequest) {
 
   // Create Stripe Checkout session
   const session = await getStripe().checkout.sessions.create({
-    payment_method_types: ["card", "us_bank_account"],
+    payment_method_types: ["card", "us_bank_account", "alipay", "link", "wechat_pay"],
+    payment_method_options: {
+      wechat_pay: { client: "web" },
+    },
     mode: "payment",
     customer_email: parent_email,
     line_items: [
@@ -99,6 +102,7 @@ export async function POST(req: NextRequest) {
     ],
     metadata: {
       booking_id: booking.id,
+      visitor_timezone: visitor_timezone ?? "America/New_York",
     },
     success_url: `${origin}/academy/pricing/consultation/confirmed?booking_id=${booking.id}`,
     cancel_url: `${origin}/academy/pricing/consultation?cancelled=1`,

@@ -17,8 +17,10 @@ create table if not exists bookings (
   student_grade     text not null,
   schools           text not null,
   essay_context     text not null,
-  stripe_session_id text,
-  status            text not null default 'pending', -- 'pending' | 'confirmed'
+  stripe_session_id         text,
+  stripe_payment_intent_id  text,
+  visitor_timezone          text,
+  status            text not null default 'pending', -- 'pending' | 'pending_payment' | 'processing' | 'confirmed' | 'failed'
   created_at        timestamptz not null default now()
 );
 
@@ -36,6 +38,10 @@ create policy "Public read available slots"
 create policy "Public read own booking"
   on bookings for select
   using (true);
+
+-- ─── ACH / delayed-payment columns (run if table already exists) ─────────────
+-- alter table bookings add column if not exists stripe_payment_intent_id text;
+-- alter table bookings add column if not exists visitor_timezone text;
 
 -- ─── Indexes ──────────────────────────────────────────────────────────────────
 create index if not exists availability_offering_datetime

@@ -30,7 +30,7 @@ export function LayoutWrapper({ children }: { children: ReactNode }) {
   if (isAcademyOverview) {
     return (
       <div className="flex min-h-dvh flex-col">
-        <div className="[&_header]:static [&_header]:border-b-0">
+        <div className="relative z-50 [&_header]:static [&_header]:border-b-0">
           <Navbar />
         </div>
         <main id="content" className="flex-1" style={{ transform: 'translateY(0)' }}>

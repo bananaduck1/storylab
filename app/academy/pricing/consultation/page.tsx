@@ -40,41 +40,12 @@ const GRADES = [
 
 // ── Formatting helpers ────────────────────────────────────────────────────────
 
-function formatDateHeader(isoString: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  }).format(new Date(isoString));
-}
-
-function formatTime(isoString: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(isoString));
-}
-
-function formatFullDateTime(isoString: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    timeZoneName: "short",
-  }).format(new Date(isoString));
-}
-
-// Group slots by calendar date (ET)
-function groupSlotsByDate(slots: Slot[]): SlotsByDate {
+// Group slots by the visitor's local calendar date
+function groupSlotsByDate(slots: Slot[], tz: string): SlotsByDate {
   const groups: SlotsByDate = {};
   for (const slot of slots) {
     const dateKey = new Intl.DateTimeFormat("en-US", {
-      timeZone: "America/New_York",
+      timeZone: tz,
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
@@ -85,12 +56,69 @@ function groupSlotsByDate(slots: Slot[]): SlotsByDate {
   return groups;
 }
 
+// "Thursday, March 20" in visitor's local timezone
+function formatDateHeader(isoString: string, tz: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: tz,
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  }).format(new Date(isoString));
+}
+
+// "3:00 PM your time (11:00 AM ET)"
+function formatTimeDual(isoString: string, localTz: string): string {
+  const date = new Date(isoString);
+  const local = new Intl.DateTimeFormat("en-US", {
+    timeZone: localTz,
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+  const et = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+  return `${local} your time (${et} ET)`;
+}
+
+// "Thursday, March 20 · 3:00 PM EDT (11:00 AM ET)" for the summary card
+function formatFullDual(isoString: string, localTz: string): string {
+  const date = new Date(isoString);
+  const localFull = new Intl.DateTimeFormat("en-US", {
+    timeZone: localTz,
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  }).format(date);
+  const etTime = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  }).format(date);
+  return `${localFull} (${etTime})`;
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 function ConsultationBookingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const wasCancelled = searchParams.get("cancelled") === "1";
+
+  // Detect visitor timezone on the client; default to ET for SSR
+  const [visitorTz, setVisitorTz] = useState<string>("America/New_York");
+  useEffect(() => {
+    try {
+      setVisitorTz(Intl.DateTimeFormat().resolvedOptions().timeZone);
+    } catch {
+      // keep default
+    }
+  }, []);
 
   const [slots, setSlots] = useState<Slot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(true);
@@ -124,7 +152,7 @@ function ConsultationBookingContent() {
     load();
   }, []);
 
-  const slotsByDate = groupSlotsByDate(slots);
+  const slotsByDate = groupSlotsByDate(slots, visitorTz);
   const sortedDateKeys = Object.keys(slotsByDate).sort();
 
   const formIsValid =
@@ -148,6 +176,7 @@ function ConsultationBookingContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           availability_id: selectedSlot!.id,
+          visitor_timezone: visitorTz,
           ...form,
         }),
       });
@@ -160,7 +189,6 @@ function ConsultationBookingContent() {
         return;
       }
 
-      // Redirect to Stripe Checkout
       router.push(json.url);
     } catch {
       setSubmitError("Network error. Please try again.");
@@ -194,8 +222,12 @@ function ConsultationBookingContent() {
           Book your session.
         </h1>
         <p className="mt-5 text-lg leading-relaxed text-zinc-500">
-          1 hour with Sam Ahn &mdash; <strong className="font-semibold text-zinc-700">$500</strong>.
+          1 hour with Sam Ahn &mdash;{" "}
+          <strong className="font-semibold text-zinc-700">$500</strong>.
           Select a time, tell us about your student, and pay to confirm.
+        </p>
+        <p className="mt-2 text-sm text-zinc-400">
+          Prices in USD. International cards accepted.
         </p>
       </div>
 
@@ -209,7 +241,9 @@ function ConsultationBookingContent() {
               Choose a time
             </h2>
           </div>
-          <p className="mt-1 ml-8 text-sm text-zinc-400">All times shown in Eastern Time (ET).</p>
+          <p className="mt-1 ml-8 text-sm text-zinc-400">
+            Shown in your local time with ET in parentheses.
+          </p>
 
           <div className="mt-6 ml-8">
             {slotsLoading && (
@@ -235,7 +269,7 @@ function ConsultationBookingContent() {
                 {sortedDateKeys.map((dateKey) => (
                   <div key={dateKey}>
                     <p className="mb-3 text-sm font-semibold text-zinc-500">
-                      {formatDateHeader(slotsByDate[dateKey][0].datetime)}
+                      {formatDateHeader(slotsByDate[dateKey][0].datetime, visitorTz)}
                     </p>
                     <div className="flex flex-wrap gap-3">
                       {slotsByDate[dateKey].map((slot) => (
@@ -249,7 +283,7 @@ function ConsultationBookingContent() {
                               : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"
                           }`}
                         >
-                          {formatTime(slot.datetime)} ET
+                          {formatTimeDual(slot.datetime, visitorTz)}
                         </button>
                       ))}
                     </div>
@@ -260,7 +294,7 @@ function ConsultationBookingContent() {
 
             {selectedSlot && (
               <p className="mt-4 text-sm text-emerald-700 font-medium">
-                ✓ Selected: {formatFullDateTime(selectedSlot.datetime)}
+                ✓ Selected: {formatFullDual(selectedSlot.datetime, visitorTz)}
               </p>
             )}
           </div>
@@ -376,9 +410,11 @@ function ConsultationBookingContent() {
             <div className="mb-6 rounded-2xl border border-zinc-100 bg-white p-6">
               <p className="text-sm text-zinc-500">Booking summary</p>
               <p className="mt-1.5 font-semibold text-zinc-900">Parent Consultation · 1 hour</p>
-              <p className="text-sm text-zinc-500">{formatFullDateTime(selectedSlot.datetime)}</p>
-              <p className="mt-3 text-xl font-semibold text-zinc-950">$500</p>
-              <p className="text-xs text-zinc-400">Card or ACH bank transfer accepted at checkout.</p>
+              <p className="text-sm text-zinc-500">{formatFullDual(selectedSlot.datetime, visitorTz)}</p>
+              <p className="mt-3 text-xl font-semibold text-zinc-950">$500 USD</p>
+              <p className="text-xs text-zinc-400">
+                Card, ACH, Alipay, WeChat Pay, and Link accepted at checkout.
+              </p>
             </div>
           )}
 
