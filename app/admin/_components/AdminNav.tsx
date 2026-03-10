@@ -33,6 +33,12 @@ export function AdminNav() {
           Sessions
         </Link>
         <Link
+          href="/admin/availability"
+          className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
+        >
+          Availability
+        </Link>
+        <Link
           href="/lab"
           className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
         >
