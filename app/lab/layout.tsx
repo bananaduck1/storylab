@@ -5,7 +5,7 @@ export default function LabLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-dvh text-zinc-900">
+    <div className="h-dvh overflow-hidden">
       {children}
     </div>
   );
