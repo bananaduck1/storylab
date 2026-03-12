@@ -24,6 +24,12 @@ export function AdminNav() {
           href="/admin/dashboard"
           className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
         >
+          Students
+        </Link>
+        <Link
+          href="/admin/posts"
+          className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
+        >
           Posts
         </Link>
         <Link
@@ -37,12 +43,6 @@ export function AdminNav() {
           className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
         >
           Availability
-        </Link>
-        <Link
-          href="/lab"
-          className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
-        >
-          Lab
         </Link>
       </div>
       <button
