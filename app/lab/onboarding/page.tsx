@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-const GRADES = ["9th", "10th", "11th", "12th", "Gap Year"];
+import { VALID_GRADES as GRADES } from "@/lib/lab-constants";
 
 const STEPS = [
   { title: "What should Sam call you?", subtitle: "Let's get acquainted before we dive into your essays." },

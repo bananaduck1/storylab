@@ -599,9 +599,15 @@ export default function LabChat({
               {checkingOut === "portal" ? "Redirecting…" : "Manage subscription"}
             </button>
           )}
+          <a
+            href="/lab/profile"
+            className="block text-xs text-zinc-400 hover:text-zinc-700 transition-colors"
+          >
+            Edit profile
+          </a>
           <button
             onClick={signOut}
-            className="block w-full text-left text-xs text-zinc-400 hover:text-zinc-700 transition-colors pt-1"
+            className="block w-full text-left text-xs text-zinc-400 hover:text-zinc-700 transition-colors"
           >
             Sign out
           </button>

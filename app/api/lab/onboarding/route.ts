@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCallerUser } from "@/lib/lab-auth";
 import { getSupabase } from "@/lib/supabase";
+import { VALID_GRADES, MAX_PROFILE_FIELD_LENGTH } from "@/lib/lab-constants";
 
 export async function POST(req: NextRequest) {
   const user = await getCallerUser();
@@ -14,6 +15,14 @@ export async function POST(req: NextRequest) {
   }
   if (!grade?.trim()) {
     return NextResponse.json({ error: "grade is required" }, { status: 400 });
+  }
+  if (!VALID_GRADES.includes(grade.trim())) {
+    return NextResponse.json({ error: "grade is invalid" }, { status: 400 });
+  }
+  for (const [field, value] of [["schools", schools], ["essay_focus", essay_focus], ["writing_voice", writing_voice], ["goals", goals]] as [string, string | undefined][]) {
+    if (value && value.length > MAX_PROFILE_FIELD_LENGTH) {
+      return NextResponse.json({ error: `${field} is too long (max ${MAX_PROFILE_FIELD_LENGTH} characters)` }, { status: 400 });
+    }
   }
 
   const { data, error } = await getSupabase()

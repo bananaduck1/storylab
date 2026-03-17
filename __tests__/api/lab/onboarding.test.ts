@@ -50,6 +50,20 @@ describe("POST /api/lab/onboarding — required field validation", () => {
     expect(data.error).toBe("grade is required");
   });
 
+  it("returns 400 when grade is invalid", async () => {
+    const res = await POST(makeRequest({ full_name: "Alice", grade: "purple" }));
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toBe("grade is invalid");
+  });
+
+  it("returns 400 when a text field exceeds 2000 characters", async () => {
+    const res = await POST(makeRequest({ full_name: "Alice", grade: "11th", schools: "x".repeat(2001) }));
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toMatch(/too long/);
+  });
+
   it("returns 200 with profile data on valid input", async () => {
     const mockProfile = { id: "p-1", user_id: "user-123", full_name: "Alice", grade: "11th", onboarding_done: true };
     const chain = {

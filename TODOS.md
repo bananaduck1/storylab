@@ -36,7 +36,7 @@ Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review 
 
 ---
 
-## TODO-3: Student profile edit page at /lab/profile
+## TODO-3: Student profile edit page at /lab/profile ✅ DONE
 
 **What:** Build a `/lab/profile` page where students can update their profile (name, grade, target schools, essay focus, voice, goals) after completing onboarding.
 
@@ -153,7 +153,7 @@ string with a coaching-intent classification.
 
 ---
 
-## TODO-9: Portrait reset endpoint
+## TODO-9: Portrait reset endpoint ✅ DONE
 
 **What:** `POST /api/lab/portrait/reset` — clears `student_profiles.portrait_notes` for
 the authenticated user.
