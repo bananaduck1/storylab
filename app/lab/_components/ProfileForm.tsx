@@ -11,6 +11,12 @@ interface ProfileData {
   writing_voice: string | null;
   goals: string | null;
   portrait_notes: string | null;
+  favorites_book: string | null;
+  favorites_movie: string | null;
+  favorites_song: string | null;
+  strengths_notes: string | null;
+  growth_notes: string | null;
+  portrait_summary_updated_at: string | null;
   updated_at: string;
 }
 
@@ -33,6 +39,9 @@ export default function ProfileForm({
   const [essayFocus, setEssayFocus] = useState(initial.essay_focus ?? "");
   const [writingVoice, setWritingVoice] = useState(initial.writing_voice ?? "");
   const [goals, setGoals] = useState(initial.goals ?? "");
+  const [favBook, setFavBook] = useState(initial.favorites_book ?? "");
+  const [favMovie, setFavMovie] = useState(initial.favorites_movie ?? "");
+  const [favSong, setFavSong] = useState(initial.favorites_song ?? "");
 
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -42,8 +51,13 @@ export default function ProfileForm({
   const [resetting, setResetting] = useState(false);
   const [resetError, setResetError] = useState("");
 
+  const [strengths, setStrengths] = useState<string | null>(initial.strengths_notes);
+  const [growthAreas, setGrowthAreas] = useState<string | null>(initial.growth_notes);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState("");
+
   // Profile completeness: count non-empty optional fields
-  const optionalFields = [schools, essayFocus, writingVoice, goals];
+  const optionalFields = [schools, essayFocus, writingVoice, goals, favBook, favMovie, favSong];
   const filledCount = optionalFields.filter((f) => f.trim().length > 0).length;
   const totalOptional = optionalFields.length;
 
@@ -63,6 +77,9 @@ export default function ProfileForm({
           essay_focus: essayFocus || null,
           writing_voice: writingVoice || null,
           goals: goals || null,
+          favorites_book: favBook || null,
+          favorites_movie: favMovie || null,
+          favorites_song: favSong || null,
         }),
       });
       if (!res.ok) {
@@ -75,6 +92,26 @@ export default function ProfileForm({
       setSaveError("Network error. Please try again.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleRefreshPortrait() {
+    setRefreshing(true);
+    setRefreshError("");
+    try {
+      const res = await fetch("/api/lab/profile/refresh-portrait", { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json();
+        setRefreshError(data.error || "Failed to refresh.");
+      } else {
+        const data = await res.json();
+        setStrengths(data.strengths_notes);
+        setGrowthAreas(data.growth_notes);
+      }
+    } catch {
+      setRefreshError("Network error. Please try again.");
+    } finally {
+      setRefreshing(false);
     }
   }
 
@@ -222,6 +259,43 @@ export default function ProfileForm({
             />
           </div>
 
+          {/* Favorites */}
+          <div className="space-y-4 pt-2 border-t border-zinc-100">
+            <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide pt-2">
+              A few favorites <span className="normal-case font-normal">(optional — helps Sam get to know you)</span>
+            </p>
+            <div>
+              <label className="block text-xs text-zinc-400 mb-1">Favorite book</label>
+              <input
+                type="text"
+                value={favBook}
+                onChange={(e) => { setFavBook(e.target.value); setSaved(false); }}
+                placeholder="e.g. The Alchemist, The Brief Wondrous Life of Oscar Wao…"
+                className="w-full border-0 border-b border-zinc-200 focus:border-zinc-900 outline-none text-zinc-900 text-sm py-2 bg-transparent transition-colors placeholder:text-zinc-300"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-zinc-400 mb-1">Favorite movie or show</label>
+              <input
+                type="text"
+                value={favMovie}
+                onChange={(e) => { setFavMovie(e.target.value); setSaved(false); }}
+                placeholder="e.g. Spirited Away, Atlanta…"
+                className="w-full border-0 border-b border-zinc-200 focus:border-zinc-900 outline-none text-zinc-900 text-sm py-2 bg-transparent transition-colors placeholder:text-zinc-300"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-zinc-400 mb-1">Favorite song or artist</label>
+              <input
+                type="text"
+                value={favSong}
+                onChange={(e) => { setFavSong(e.target.value); setSaved(false); }}
+                placeholder={`e.g. Kendrick Lamar, "Saturn" by SZA…`}
+                className="w-full border-0 border-b border-zinc-200 focus:border-zinc-900 outline-none text-zinc-900 text-sm py-2 bg-transparent transition-colors placeholder:text-zinc-300"
+              />
+            </div>
+          </div>
+
           {saveError && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
               {saveError}
@@ -239,6 +313,88 @@ export default function ProfileForm({
             {saved && <p className="text-xs text-zinc-400">Saved.</p>}
           </div>
         </form>
+
+        {/* Your portrait */}
+        <section className="border-t border-zinc-100 pt-8">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
+                Your portrait
+              </h2>
+              <p className="text-xs text-zinc-400 mt-0.5">AI-generated from your coaching sessions.</p>
+            </div>
+            {portrait && (
+              <button
+                onClick={handleRefreshPortrait}
+                disabled={refreshing}
+                className="text-xs text-zinc-400 hover:text-zinc-700 transition-colors disabled:opacity-40 shrink-0 ml-4"
+              >
+                {refreshing ? "Refreshing…" : "Refresh"}
+              </button>
+            )}
+          </div>
+
+          {portrait ? (
+            <div className="space-y-5">
+              {(strengths || growthAreas) ? (
+                <>
+                  {strengths && (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-2">Strengths</p>
+                      <ul className="space-y-1.5">
+                        {strengths.split("\n").filter(Boolean).map((s, i) => (
+                          <li key={i} className="text-sm text-zinc-700 leading-relaxed flex gap-2">
+                            <span className="text-zinc-300 shrink-0">—</span>
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {growthAreas && (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-2">Growing in</p>
+                      <ul className="space-y-1.5">
+                        {growthAreas.split("\n").filter(Boolean).map((g, i) => (
+                          <li key={i} className="text-sm text-zinc-700 leading-relaxed flex gap-2">
+                            <span className="text-zinc-300 shrink-0">—</span>
+                            {g}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {(favBook || favMovie || favSong) && (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-2">Interests</p>
+                      <div className="space-y-1 text-sm text-zinc-600">
+                        {favBook && <p><span className="text-zinc-400">Book:</span> {favBook}</p>}
+                        {favMovie && <p><span className="text-zinc-400">Movie:</span> {favMovie}</p>}
+                        {favSong && <p><span className="text-zinc-400">Music:</span> {favSong}</p>}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex items-center justify-between bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3">
+                  <p className="text-sm text-zinc-400 italic">Portrait not yet extracted.</p>
+                  <button
+                    onClick={handleRefreshPortrait}
+                    disabled={refreshing}
+                    className="text-xs text-zinc-500 hover:text-zinc-900 transition-colors disabled:opacity-40 shrink-0 ml-3"
+                  >
+                    {refreshing ? "Working…" : "Generate →"}
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-zinc-400 italic">
+              No portrait yet — Sam will build one as you chat.
+            </p>
+          )}
+          {refreshError && <p className="mt-2 text-xs text-red-500">{refreshError}</p>}
+        </section>
 
         {/* What Sam remembers */}
         <section className="border-t border-zinc-100 pt-8">

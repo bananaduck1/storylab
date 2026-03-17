@@ -19,9 +19,11 @@ export default async function LabPage(props: {
 
   const db = getSupabase();
 
+  const isStudent = user.user_metadata?.role === "student";
+
   // Fetch profile + conversations in parallel, then checkQuota reuses the profile row.
-  // This eliminates the duplicate student_profiles SELECT that checkQuota would otherwise make.
-  const [{ data: profile }, { data: conversations }] = await Promise.all([
+  // For student-role users, also check if they have a linked students record.
+  const [{ data: profile }, { data: conversations }, linkedStudentRow] = await Promise.all([
     db.from("student_profiles").select("*").eq("user_id", user.id).maybeSingle(),
     db
       .from("conversations")
@@ -29,8 +31,14 @@ export default async function LabPage(props: {
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false })
       .limit(50),
+    isStudent
+      ? db.from("students").select("id").eq("user_id", user.id).maybeSingle().then((r) => r.data)
+      : Promise.resolve(null),
   ]);
   const quota = await checkQuota(user.id, profile);
+
+  // isLinked: true if this student-role user has a linked students record
+  const isLinked = isStudent ? !!linkedStudentRow : true;
 
   if (!profile || !profile.onboarding_done) {
     redirect("/lab/onboarding");
@@ -87,6 +95,7 @@ export default async function LabPage(props: {
       initialMessages={initialMessages}
       quota={quotaState}
       successType={successType}
+      isLinked={isLinked}
     />
   );
 }

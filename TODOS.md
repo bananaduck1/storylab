@@ -1,6 +1,6 @@
 # TODOs
 
-Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x2).
+Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x3).
 
 ---
 
@@ -205,3 +205,39 @@ Add this endpoint alongside any future "your coaching profile" UI.
 **Context:** The migration is trivial (one ALTER TABLE). The per-turn write goes in the `after()` block in `app/api/lab/chat/route.ts` alongside the existing conversation `updated_at` write. The admin dashboard is at `app/admin/dashboard/page.tsx`.
 
 **Effort:** M | **Priority:** P3 | **Depends on:** Behavioral layer shipping + enough sessions to make phase data interesting
+
+---
+
+## TODO-13: Invite email bounce tracking
+
+**What:** Handle Resend webhook to detect when a student invite email bounces and surface that status in the admin student pane.
+
+**Why:** When Sam sends an invite email to a student, there's no signal that it was delivered. A bounced email means the student will never see the claim link, and Sam has no way to know.
+
+**Context:** Resend exposes a webhook for bounce/delivery events. The admin invite email feature (PR 1 of student unification plan) is the trigger for this. Once invite emails are shipping, add a `webhook` route for Resend events that updates a `students.invite_status` or similar column. The admin student pane can then show "bounced" / "delivered" / "pending" alongside the invite button. Resend docs: https://resend.com/docs/dashboard/webhooks/overview
+
+**Effort:** M | **Priority:** P3 | **Depends on:** Invite email feature (student unification PR 1)
+
+---
+
+## TODO-14: Student-editable strengths and growth areas
+
+**What:** Let students add their own framing to the AI-generated strengths and growth areas on their `/lab/profile` card.
+
+**Why:** The AI portrait is informed but not infallible. A student who reads "tends to over-explain" might want to contextualize it. Giving them a text field to add their own perspective closes the loop between AI observation and student self-awareness.
+
+**Context:** The student portrait card (student unification PR 2) shows AI-extracted `strengths_notes` and `growth_notes`. This TODO adds optional `strengths_own_notes TEXT` and `growth_own_notes TEXT` columns on `student_profiles` that students can write to via a simple edit mode on `/lab/profile`. Revisit after validating AI output quality with real students — the AI framing needs to be good before letting students react to it.
+
+**Effort:** S | **Priority:** P3 | **Depends on:** Student portrait card (student unification PR 2) + 2–4 weeks of real student usage
+
+---
+
+## TODO-15: Invite history in admin student pane
+
+**What:** Show "Invited on [date] / Claimed on [date]" in the admin student pane so Sam knows the status of each outreach.
+
+**Why:** Once invite emails are sending, there's no UI feedback on whether a student received and acted on the link. `students.user_id` being set tells you they claimed, but there's no record of when the invite went out.
+
+**Context:** Add `invited_at TIMESTAMPTZ` to the `students` table. Set it when the invite email is sent. The admin student pane already shows sessions and portrait; add a small status line: `Invited: Mar 17 | Claimed: Mar 18` (or `Not yet claimed`). Requires the invite email feature from student unification PR 1.
+
+**Effort:** S | **Priority:** P3 | **Depends on:** Invite email feature (student unification PR 1)

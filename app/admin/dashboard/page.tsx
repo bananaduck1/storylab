@@ -25,6 +25,31 @@ const SESSION_TYPE_LABELS: Record<SessionType, string> = {
   parent_call: "Parent Call",
 };
 
+const PHASE_LABELS: Record<string, string> = {
+  opening: "Opening",
+  diagnosing: "Diagnosing",
+  coaching: "Coaching",
+  feedback: "Feedback",
+};
+
+interface LabData {
+  user_id: string;
+  full_name: string;
+  grade: string | null;
+  portrait_notes: string | null;
+  session_phase: string;
+  lab_last_active: string;
+}
+
+interface LabOnlyProfile {
+  user_id: string;
+  full_name: string;
+  grade: string | null;
+  portrait_notes: string | null;
+  session_phase: string;
+  lab_last_active: string;
+}
+
 function formatDate(iso: string) {
   return new Date(iso + "T00:00:00").toLocaleDateString("en-US", {
     month: "short",
@@ -1033,12 +1058,14 @@ function AgentSessionTab({ student }: { student: Student }) {
 
 type Tab = "portrait" | "log" | "session";
 
-function StudentView({ student }: { student: Student }) {
+function StudentView({ student, lab }: { student: Student; lab: LabData | null }) {
   const [tab, setTab] = useState<Tab>("portrait");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [portrait, setPortrait] = useState<Portrait | null>(null);
   const [loading, setLoading] = useState(true);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [inviteSent, setInviteSent] = useState(false);
+  const [inviting, setInviting] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -1063,6 +1090,20 @@ function StudentView({ student }: { student: Student }) {
     navigator.clipboard.writeText(`${window.location.origin}/lab/claim/${student.id}`);
     setLinkCopied(true);
     setTimeout(() => setLinkCopied(false), 2000);
+  }
+
+  async function sendInvite() {
+    setInviting(true);
+    const res = await fetch("/api/admin/invite-student", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ student_id: student.id }),
+    });
+    setInviting(false);
+    if (res.ok) {
+      setInviteSent(true);
+      setTimeout(() => setInviteSent(false), 3000);
+    }
   }
 
   if (loading) {
@@ -1091,16 +1132,26 @@ function StudentView({ student }: { student: Student }) {
           <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500">
             {STAGE_LABELS[student.development_stage]}
           </span>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
             {student.user_id ? (
               <span className="text-xs text-emerald-600">Linked</span>
             ) : (
-              <button
-                onClick={copyClaimLink}
-                className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
-              >
-                {linkCopied ? "Link copied!" : "Copy claim link"}
-              </button>
+              <>
+                <button
+                  onClick={sendInvite}
+                  disabled={inviting || !student.email}
+                  title={!student.email ? "No email on file" : undefined}
+                  className="rounded border border-zinc-300 px-2.5 py-1 text-xs text-zinc-600 hover:bg-zinc-50 disabled:opacity-40 transition-colors"
+                >
+                  {inviting ? "Sending…" : inviteSent ? "Sent!" : "Send invite"}
+                </button>
+                <button
+                  onClick={copyClaimLink}
+                  className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
+                >
+                  {linkCopied ? "Copied!" : "Copy link"}
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -1131,12 +1182,34 @@ function StudentView({ student }: { student: Student }) {
       {/* Tab content — all panes stay mounted to preserve session state */}
       <div className="flex-1 overflow-hidden">
         <div className={`h-full overflow-y-auto px-6 py-5 ${tab !== "portrait" ? "hidden" : ""}`}>
-          <div className="mx-auto max-w-2xl">
+          <div className="mx-auto max-w-2xl space-y-6">
             <PortraitCard
               portrait={portrait}
               studentId={student.id}
               onRegenerated={setPortrait}
             />
+            {lab && (
+              <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
+                    /lab AI Coach
+                  </h2>
+                  <div className="flex items-center gap-3">
+                    <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-500">
+                      {PHASE_LABELS[lab.session_phase] ?? lab.session_phase}
+                    </span>
+                    <span className="text-xs text-zinc-400">
+                      Last active {new Date(lab.lab_last_active).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    </span>
+                  </div>
+                </div>
+                {lab.portrait_notes ? (
+                  <p className="text-sm leading-relaxed text-zinc-700">{lab.portrait_notes}</p>
+                ) : (
+                  <p className="text-xs text-zinc-400">No portrait notes yet.</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -1254,11 +1327,15 @@ function Sidebar({
   selectedId,
   onSelect,
   onAddStudent,
+  labDataMap,
+  labOnly,
 }: {
   students: Student[];
   selectedId: string | null;
   onSelect: (s: Student) => void;
   onAddStudent: () => void;
+  labDataMap: Map<string, LabData>;
+  labOnly: LabOnlyProfile[];
 }) {
   return (
     <div className="flex h-full flex-col border-r border-zinc-200 bg-zinc-50">
@@ -1275,26 +1352,56 @@ function Sidebar({
         </button>
       </div>
       <div className="flex-1 overflow-y-auto py-1">
-        {students.length === 0 && (
+        {students.length === 0 && labOnly.length === 0 && (
           <p className="px-4 py-3 text-xs text-zinc-400">No students yet.</p>
         )}
-        {students.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => onSelect(s)}
-            className={`w-full px-4 py-2.5 text-left transition-colors ${
-              selectedId === s.id
-                ? "bg-white text-zinc-900"
-                : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
-            }`}
-          >
-            <p className="text-sm font-medium leading-snug">{s.name}</p>
-            <p className="text-xs text-zinc-400">
-              {s.grade ? `${s.grade} · ` : ""}
-              {STAGE_LABELS[s.development_stage]}
+        {students.map((s) => {
+          const hasLab = !!(s.user_id && labDataMap.has(s.user_id));
+          return (
+            <button
+              key={s.id}
+              onClick={() => onSelect(s)}
+              className={`w-full px-4 py-2.5 text-left transition-colors ${
+                selectedId === s.id
+                  ? "bg-white text-zinc-900"
+                  : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+              }`}
+            >
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-medium leading-snug flex-1">{s.name}</p>
+                {hasLab && (
+                  <span className="rounded bg-zinc-200 px-1 py-px text-[10px] text-zinc-500 leading-tight">/lab</span>
+                )}
+              </div>
+              <p className="text-xs text-zinc-400">
+                {s.grade ? `${s.grade} · ` : ""}
+                {STAGE_LABELS[s.development_stage]}
+              </p>
+            </button>
+          );
+        })}
+        {labOnly.length > 0 && (
+          <>
+            <div className="mx-4 my-2 border-t border-zinc-200" />
+            <p className="px-4 pb-1 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">
+              AI Coach only
             </p>
-          </button>
-        ))}
+            {labOnly.map((p) => (
+              <div
+                key={p.user_id}
+                className="w-full px-4 py-2.5 text-left"
+              >
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm font-medium leading-snug flex-1 text-zinc-500">{p.full_name}</p>
+                  <span className="rounded bg-zinc-200 px-1 py-px text-[10px] text-zinc-400 leading-tight">/lab</span>
+                </div>
+                <p className="text-xs text-zinc-400">
+                  {p.grade ?? "—"} · {PHASE_LABELS[p.session_phase] ?? p.session_phase}
+                </p>
+              </div>
+            ))}
+          </>
+        )}
       </div>
     </div>
   );
@@ -1376,96 +1483,6 @@ function AccountMenu() {
   );
 }
 
-// ── lab students panel ────────────────────────────────────────────────────────
-
-const PHASE_LABELS: Record<string, string> = {
-  opening: "Opening",
-  diagnosing: "Diagnosing",
-  coaching: "Coaching",
-  feedback: "Feedback",
-};
-
-interface LabStudent {
-  user_id: string;
-  full_name: string;
-  grade: string | null;
-  portrait_notes: string | null;
-  updated_at: string;
-  session_phase: string;
-}
-
-function LabStudentsPanel() {
-  const [students, setStudents] = useState<LabStudent[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/admin/lab-students")
-      .then((r) => r.json())
-      .then((data) => {
-        setStudents(Array.isArray(data) ? data : []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <span className="text-xs text-zinc-400">Loading…</span>
-      </div>
-    );
-  }
-
-  if (students.length === 0) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <p className="text-xs text-zinc-400">No /lab students yet.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="h-full overflow-y-auto p-6">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-widest text-zinc-400">
-            <th className="pb-2 font-medium">Name</th>
-            <th className="pb-2 font-medium">Grade</th>
-            <th className="pb-2 font-medium">Phase</th>
-            <th className="pb-2 font-medium">Portrait</th>
-            <th className="pb-2 font-medium">Last active</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-zinc-100">
-          {students.map((s) => (
-            <tr key={s.user_id} className="align-top">
-              <td className="py-3 pr-4 font-medium text-zinc-900">{s.full_name}</td>
-              <td className="py-3 pr-4 text-zinc-500">{s.grade ?? "—"}</td>
-              <td className="py-3 pr-4">
-                <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-600">
-                  {PHASE_LABELS[s.session_phase] ?? s.session_phase}
-                </span>
-              </td>
-              <td className="py-3 pr-4 max-w-sm text-xs text-zinc-500 leading-relaxed">
-                {s.portrait_notes
-                  ? s.portrait_notes.slice(0, 200) + (s.portrait_notes.length > 200 ? "…" : "")
-                  : <span className="text-zinc-300">—</span>}
-              </td>
-              <td className="py-3 text-xs text-zinc-400 whitespace-nowrap">
-                {new Date(s.updated_at).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
 // ── main page ─────────────────────────────────────────────────────────────────
 
 export default function LabPage() {
@@ -1475,7 +1492,8 @@ export default function LabPage() {
   const [loadingStudents, setLoadingStudents] = useState(true);
   const [selfStudent, setSelfStudent] = useState<Student | null | undefined>(undefined);
   const [role, setRole] = useState<"teacher" | "student" | null>(null);
-  const [activeTab, setActiveTab] = useState<"students" | "lab">("students");
+  const [labDataMap, setLabDataMap] = useState<Map<string, LabData>>(new Map());
+  const [labOnly, setLabOnly] = useState<LabOnlyProfile[]>([]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -1489,12 +1507,19 @@ export default function LabPage() {
           .then((res) => res.json())
           .then((data) => setSelfStudent(data ?? null));
       } else {
-        fetch("/api/lab/students")
-          .then((res) => res.json())
-          .then((data) => {
-            setStudents(data);
-            setLoadingStudents(false);
-          });
+        Promise.all([
+          fetch("/api/lab/students").then((res) => res.json()),
+          fetch("/api/admin/lab-students").then((res) => res.json()),
+        ]).then(([studentData, labData]) => {
+          setStudents(studentData);
+          const map = new Map<string, LabData>();
+          for (const s of labData.students ?? []) {
+            if (s.user_id && s.lab) map.set(s.user_id, s.lab);
+          }
+          setLabDataMap(map);
+          setLabOnly(labData.labOnly ?? []);
+          setLoadingStudents(false);
+        });
       }
     });
   }, []);
@@ -1539,33 +1564,9 @@ export default function LabPage() {
     <>
       {/* Top bar */}
       <div className="flex h-10 items-center justify-between border-b border-zinc-200 bg-white px-4">
-        <div className="flex items-center gap-6">
-          <span className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
-            StoryLab · Internal
-          </span>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setActiveTab("students")}
-              className={`rounded px-2.5 py-1 text-xs transition-colors ${
-                activeTab === "students"
-                  ? "bg-zinc-100 text-zinc-900 font-medium"
-                  : "text-zinc-400 hover:text-zinc-600"
-              }`}
-            >
-              Students
-            </button>
-            <button
-              onClick={() => setActiveTab("lab")}
-              className={`rounded px-2.5 py-1 text-xs transition-colors ${
-                activeTab === "lab"
-                  ? "bg-zinc-100 text-zinc-900 font-medium"
-                  : "text-zinc-400 hover:text-zinc-600"
-              }`}
-            >
-              /lab
-            </button>
-          </div>
-        </div>
+        <span className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
+          StoryLab · Internal
+        </span>
         <div className="flex items-center gap-4">
           <a href="/" className="text-xs text-zinc-400 hover:text-zinc-600">
             ← Site
@@ -1579,42 +1580,42 @@ export default function LabPage() {
         className="flex"
         style={{ height: "calc(100dvh - 2.5rem)" }}
       >
-        {activeTab === "lab" ? (
-          <LabStudentsPanel />
-        ) : (
-          <>
-            {/* Sidebar */}
-            <div className="w-52 flex-none">
-              {loadingStudents ? (
-                <div className="flex h-full items-center justify-center">
-                  <span className="text-xs text-zinc-400">Loading…</span>
-                </div>
-              ) : (
-                <Sidebar
-                  students={students}
-                  selectedId={selected?.id ?? null}
-                  onSelect={setSelected}
-                  onAddStudent={() => setShowAddStudent(true)}
-                />
-              )}
+        {/* Sidebar */}
+        <div className="w-52 flex-none">
+          {loadingStudents ? (
+            <div className="flex h-full items-center justify-center">
+              <span className="text-xs text-zinc-400">Loading…</span>
             </div>
+          ) : (
+            <Sidebar
+              students={students}
+              selectedId={selected?.id ?? null}
+              onSelect={setSelected}
+              onAddStudent={() => setShowAddStudent(true)}
+              labDataMap={labDataMap}
+              labOnly={labOnly}
+            />
+          )}
+        </div>
 
-            {/* Main panel */}
-            <div className="flex-1 overflow-hidden">
-              {selected ? (
-                <StudentView key={selected.id} student={selected} />
-              ) : (
-                <div className="flex h-full items-center justify-center">
-                  <p className="text-xs text-zinc-400">
-                    {students.length === 0
-                      ? "Add a student to get started."
-                      : "Select a student."}
-                  </p>
-                </div>
-              )}
+        {/* Main panel */}
+        <div className="flex-1 overflow-hidden">
+          {selected ? (
+            <StudentView
+              key={selected.id}
+              student={selected}
+              lab={selected.user_id ? (labDataMap.get(selected.user_id) ?? null) : null}
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <p className="text-xs text-zinc-400">
+                {students.length === 0
+                  ? "Add a student to get started."
+                  : "Select a student."}
+              </p>
             </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Add student modal */}

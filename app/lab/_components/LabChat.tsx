@@ -40,6 +40,8 @@ interface LabChatProps {
   initialMessages: Message[];
   quota: QuotaInfo;
   successType?: "subscription" | "topup" | null;
+  /** False only for role=student users who haven't claimed a students record yet. */
+  isLinked?: boolean;
 }
 
 function formatRelativeDate(dateStr: string): string {
@@ -86,6 +88,7 @@ export default function LabChat({
   initialMessages,
   quota,
   successType,
+  isLinked = true,
 }: LabChatProps) {
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
@@ -616,6 +619,15 @@ export default function LabChat({
 
       {/* Main chat area */}
       <div className="flex-1 flex flex-col min-w-0">
+        {/* Claim banner — shown to student-role users who haven't linked their account */}
+        {!isLinked && (
+          <div className="bg-amber-50 border-b border-amber-200 px-4 py-2.5 flex items-center gap-3">
+            <p className="text-sm text-amber-800 flex-1">
+              Your teacher may have a profile on file for you. Ask them for your claim link to connect your accounts.
+            </p>
+          </div>
+        )}
+
         {/* Success banner */}
         {successBanner && (
           <div className="bg-green-50 border-b border-green-200 px-4 py-2.5 flex items-center justify-between">
