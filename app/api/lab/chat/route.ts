@@ -359,7 +359,7 @@ export async function POST(request: NextRequest) {
             await debitQuota(user.id, debitType, conversation_id, today);
             await db
               .from("conversations")
-              .update({ updated_at: new Date().toISOString() })
+              .update({ updated_at: new Date().toISOString(), session_phase: phase.toLowerCase() })
               .eq("id", conversation_id);
           } catch (persistErr) {
             console.error("Failed to persist chat turn:", persistErr);

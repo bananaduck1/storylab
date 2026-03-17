@@ -1,10 +1,26 @@
 import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { getSupabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 
-/** Get the authenticated user from request cookies (safe — validates JWT with Supabase). */
+/**
+ * Get the authenticated user from request cookies or a Bearer token.
+ *
+ * Auth resolution order:
+ *   1. Authorization: Bearer <token>  — for non-browser callers (eval harness, scripts)
+ *   2. Cookie-based session           — for browser clients (normal flow)
+ */
 export async function getCallerUser(): Promise<User | null> {
+  // 1. Bearer token (non-browser callers)
+  const headersList = await headers();
+  const authHeader = headersList.get("Authorization");
+  if (authHeader?.startsWith("Bearer ")) {
+    const token = authHeader.slice(7);
+    const { data: { user } } = await getSupabase().auth.getUser(token);
+    return user;
+  }
+
+  // 2. Cookie-based session (browser clients)
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

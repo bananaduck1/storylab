@@ -122,6 +122,58 @@ describe("checkQuota — monthly plan", () => {
   });
 });
 
+// ── checkQuota — preloaded profile ────────────────────────────────────────────
+
+describe("checkQuota — preloaded profile", () => {
+  beforeEach(() => {
+    process.env.LAB_DAILY_LIMIT = "50";
+  });
+
+  it("skips student_profiles SELECT when preloadedProfile is provided", async () => {
+    const fromMock = vi.fn((table: string) => {
+      // Only usage_logs is expected; student_profiles SELECT would be a test failure
+      expect(table).not.toBe("student_profiles");
+      return makeDbChain({ count: 5, data: null });
+    });
+    vi.mocked(getSupabase).mockReturnValue({ from: fromMock } as never);
+
+    const profile = { plan: "free", extra_messages: 0, monthly_message_limit: null, current_period_end: null };
+    const q = await checkQuota("user-1", profile);
+    expect(q).not.toBeNull();
+    expect(q!.remaining).toBe(45);
+  });
+
+  it("returns null immediately when preloadedProfile is null", async () => {
+    const fromMock = vi.fn();
+    vi.mocked(getSupabase).mockReturnValue({ from: fromMock } as never);
+
+    const q = await checkQuota("user-1", null);
+    expect(q).toBeNull();
+    // No DB calls should be made
+    expect(fromMock).not.toHaveBeenCalled();
+  });
+
+  it("uses preloaded profile values correctly for monthly plan", async () => {
+    const periodEnd = new Date();
+    periodEnd.setDate(periodEnd.getDate() + 10);
+    const fromMock = vi.fn((table: string) => {
+      expect(table).toBe("usage_logs");
+      return makeDbChain({ count: 100, data: null });
+    });
+    vi.mocked(getSupabase).mockReturnValue({ from: fromMock } as never);
+
+    const profile = {
+      plan: "monthly",
+      monthly_message_limit: 500,
+      extra_messages: 0,
+      current_period_end: periodEnd.toISOString(),
+    };
+    const q = await checkQuota("user-1", profile);
+    expect(q!.plan).toBe("monthly");
+    expect(q!.remaining).toBe(400);
+  });
+});
+
 // ── debitQuota ────────────────────────────────────────────────────────────────
 
 describe("debitQuota", () => {

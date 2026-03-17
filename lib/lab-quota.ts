@@ -8,6 +8,14 @@ function freeDailyLimit(): number {
   return parseInt(process.env.LAB_DAILY_LIMIT ?? "50");
 }
 
+/** Subset of student_profiles fields needed by checkQuota. Pass a pre-fetched profile to skip the SELECT. */
+export interface ProfileSnapshot {
+  plan?: string | null;
+  monthly_message_limit?: number | null;
+  extra_messages?: number | null;
+  current_period_end?: string | null;
+}
+
 export interface QuotaState {
   plan: "free" | "monthly";
   /** Total messages the user can still send right now */
@@ -21,16 +29,26 @@ export interface QuotaState {
 /**
  * Check how many messages the user has left and what should be debited next.
  * Always called with service-role Supabase — never trusts client input.
+ *
+ * Pass `preloadedProfile` to skip the student_profiles SELECT (e.g. when the
+ * caller already fetched the profile row). Pass undefined to fetch it fresh.
  */
-export async function checkQuota(userId: string): Promise<QuotaState | null> {
+export async function checkQuota(userId: string, preloadedProfile?: ProfileSnapshot | null): Promise<QuotaState | null> {
   const db = getSupabase();
   const today = new Date().toISOString().split("T")[0];
 
-  const { data: profile } = await db
-    .from("student_profiles")
-    .select("plan, monthly_message_limit, extra_messages, current_period_end")
-    .eq("user_id", userId)
-    .maybeSingle();
+  let profile: ProfileSnapshot | null;
+  if (preloadedProfile !== undefined) {
+    // Caller provided a pre-fetched profile (may be null if no row exists)
+    profile = preloadedProfile;
+  } else {
+    const { data } = await db
+      .from("student_profiles")
+      .select("plan, monthly_message_limit, extra_messages, current_period_end")
+      .eq("user_id", userId)
+      .maybeSingle();
+    profile = data;
+  }
 
   if (!profile) return null;
 

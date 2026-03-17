@@ -19,8 +19,9 @@ export default async function LabPage(props: {
 
   const db = getSupabase();
 
-  // Fetch profile, conversations, and quota in parallel
-  const [{ data: profile }, { data: conversations }, quota] = await Promise.all([
+  // Fetch profile + conversations in parallel, then checkQuota reuses the profile row.
+  // This eliminates the duplicate student_profiles SELECT that checkQuota would otherwise make.
+  const [{ data: profile }, { data: conversations }] = await Promise.all([
     db.from("student_profiles").select("*").eq("user_id", user.id).maybeSingle(),
     db
       .from("conversations")
@@ -28,8 +29,8 @@ export default async function LabPage(props: {
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false })
       .limit(50),
-    checkQuota(user.id),
   ]);
+  const quota = await checkQuota(user.id, profile);
 
   if (!profile || !profile.onboarding_done) {
     redirect("/lab/onboarding");

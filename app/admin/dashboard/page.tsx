@@ -1376,6 +1376,96 @@ function AccountMenu() {
   );
 }
 
+// ── lab students panel ────────────────────────────────────────────────────────
+
+const PHASE_LABELS: Record<string, string> = {
+  opening: "Opening",
+  diagnosing: "Diagnosing",
+  coaching: "Coaching",
+  feedback: "Feedback",
+};
+
+interface LabStudent {
+  user_id: string;
+  full_name: string;
+  grade: string | null;
+  portrait_notes: string | null;
+  updated_at: string;
+  session_phase: string;
+}
+
+function LabStudentsPanel() {
+  const [students, setStudents] = useState<LabStudent[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/admin/lab-students")
+      .then((r) => r.json())
+      .then((data) => {
+        setStudents(Array.isArray(data) ? data : []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <span className="text-xs text-zinc-400">Loading…</span>
+      </div>
+    );
+  }
+
+  if (students.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <p className="text-xs text-zinc-400">No /lab students yet.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full overflow-y-auto p-6">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-zinc-200 text-left text-xs uppercase tracking-widest text-zinc-400">
+            <th className="pb-2 font-medium">Name</th>
+            <th className="pb-2 font-medium">Grade</th>
+            <th className="pb-2 font-medium">Phase</th>
+            <th className="pb-2 font-medium">Portrait</th>
+            <th className="pb-2 font-medium">Last active</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-zinc-100">
+          {students.map((s) => (
+            <tr key={s.user_id} className="align-top">
+              <td className="py-3 pr-4 font-medium text-zinc-900">{s.full_name}</td>
+              <td className="py-3 pr-4 text-zinc-500">{s.grade ?? "—"}</td>
+              <td className="py-3 pr-4">
+                <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-600">
+                  {PHASE_LABELS[s.session_phase] ?? s.session_phase}
+                </span>
+              </td>
+              <td className="py-3 pr-4 max-w-sm text-xs text-zinc-500 leading-relaxed">
+                {s.portrait_notes
+                  ? s.portrait_notes.slice(0, 200) + (s.portrait_notes.length > 200 ? "…" : "")
+                  : <span className="text-zinc-300">—</span>}
+              </td>
+              <td className="py-3 text-xs text-zinc-400 whitespace-nowrap">
+                {new Date(s.updated_at).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 // ── main page ─────────────────────────────────────────────────────────────────
 
 export default function LabPage() {
@@ -1385,6 +1475,7 @@ export default function LabPage() {
   const [loadingStudents, setLoadingStudents] = useState(true);
   const [selfStudent, setSelfStudent] = useState<Student | null | undefined>(undefined);
   const [role, setRole] = useState<"teacher" | "student" | null>(null);
+  const [activeTab, setActiveTab] = useState<"students" | "lab">("students");
 
   useEffect(() => {
     const supabase = createClient();
@@ -1448,9 +1539,33 @@ export default function LabPage() {
     <>
       {/* Top bar */}
       <div className="flex h-10 items-center justify-between border-b border-zinc-200 bg-white px-4">
-        <span className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
-          StoryLab · Internal
-        </span>
+        <div className="flex items-center gap-6">
+          <span className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
+            StoryLab · Internal
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setActiveTab("students")}
+              className={`rounded px-2.5 py-1 text-xs transition-colors ${
+                activeTab === "students"
+                  ? "bg-zinc-100 text-zinc-900 font-medium"
+                  : "text-zinc-400 hover:text-zinc-600"
+              }`}
+            >
+              Students
+            </button>
+            <button
+              onClick={() => setActiveTab("lab")}
+              className={`rounded px-2.5 py-1 text-xs transition-colors ${
+                activeTab === "lab"
+                  ? "bg-zinc-100 text-zinc-900 font-medium"
+                  : "text-zinc-400 hover:text-zinc-600"
+              }`}
+            >
+              /lab
+            </button>
+          </div>
+        </div>
         <div className="flex items-center gap-4">
           <a href="/" className="text-xs text-zinc-400 hover:text-zinc-600">
             ← Site
@@ -1459,41 +1574,47 @@ export default function LabPage() {
         </div>
       </div>
 
-      {/* Split pane */}
+      {/* Content */}
       <div
         className="flex"
         style={{ height: "calc(100dvh - 2.5rem)" }}
       >
-        {/* Sidebar */}
-        <div className="w-52 flex-none">
-          {loadingStudents ? (
-            <div className="flex h-full items-center justify-center">
-              <span className="text-xs text-zinc-400">Loading…</span>
+        {activeTab === "lab" ? (
+          <LabStudentsPanel />
+        ) : (
+          <>
+            {/* Sidebar */}
+            <div className="w-52 flex-none">
+              {loadingStudents ? (
+                <div className="flex h-full items-center justify-center">
+                  <span className="text-xs text-zinc-400">Loading…</span>
+                </div>
+              ) : (
+                <Sidebar
+                  students={students}
+                  selectedId={selected?.id ?? null}
+                  onSelect={setSelected}
+                  onAddStudent={() => setShowAddStudent(true)}
+                />
+              )}
             </div>
-          ) : (
-            <Sidebar
-              students={students}
-              selectedId={selected?.id ?? null}
-              onSelect={setSelected}
-              onAddStudent={() => setShowAddStudent(true)}
-            />
-          )}
-        </div>
 
-        {/* Main panel */}
-        <div className="flex-1 overflow-hidden">
-          {selected ? (
-            <StudentView key={selected.id} student={selected} />
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <p className="text-xs text-zinc-400">
-                {students.length === 0
-                  ? "Add a student to get started."
-                  : "Select a student."}
-              </p>
+            {/* Main panel */}
+            <div className="flex-1 overflow-hidden">
+              {selected ? (
+                <StudentView key={selected.id} student={selected} />
+              ) : (
+                <div className="flex h-full items-center justify-center">
+                  <p className="text-xs text-zinc-400">
+                    {students.length === 0
+                      ? "Add a student to get started."
+                      : "Select a student."}
+                  </p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
 
       {/* Add student modal */}

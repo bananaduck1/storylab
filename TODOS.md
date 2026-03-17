@@ -1,6 +1,6 @@
 # TODOs
 
-Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17.
+Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x2).
 
 ---
 
@@ -187,24 +187,15 @@ Add this endpoint alongside any future "your coaching profile" UI.
 
 ---
 
-## TODO-11: Phase threshold env-var tuning ✅ PARTIALLY DONE
+## TODO-11: Phase threshold env-var tuning ✅ CLOSED
 
-**What:** ~~Replace the magic numbers in `inferPhase()` with named constants~~ — **done**, `OPENING_TURNS = 2` and `DIAGNOSING_TURNS = 8` are named constants in `lib/behavioral-constraints.ts`. Optional stretch: make them env-configurable via `LAB_OPENING_TURNS` and `LAB_DIAGNOSING_TURNS`.
-
-**Why:** If the phase boundaries feel wrong in production (e.g., Sam is still in "opening" mode on message 3 when the student already pasted a draft), you currently need a code change + redeploy to adjust. Named constants at minimum, env vars for faster tuning.
-
-**Pros:** Faster iteration on session arc feel without deploys.
-**Cons:** Env vars add configuration overhead. Named constants alone are sufficient for most cases.
-
-**Context:** `inferPhase` lives in `lib/behavioral-constraints.ts` alongside `buildBehavioralConstraints`. The thresholds are named constants (`OPENING_TURNS = 2`, `DIAGNOSING_TURNS = 8`): 0–2 messages = OPENING, 3–8 = DIAGNOSING, 9+ = COACHING. File upload always overrides to FEEDBACK regardless of count.
-
-**Effort:** S | **Priority:** P3 | **Depends on:** Behavioral layer shipping + 1 week of usage data
+**Decision (2026-03-17):** Named constants (`OPENING_TURNS = 2`, `DIAGNOSING_TURNS = 8`) are done and sufficient. Env-var configuration was explicitly decided against — the overhead isn't justified for thresholds that rarely need changing, and a code edit + redeploy is acceptable when they do. If production data shows the boundaries consistently feel wrong, reopen then.
 
 ---
 
 ## TODO-12: DB-persisted session phase for admin visibility
 
-**What:** Add `session_phase TEXT DEFAULT 'opening'` to the `conversations` table. Write the inferred phase on each turn. Surface it in `/admin/dashboard` alongside the conversation list so Sam can see where each student is in their arc and manually reset stuck sessions.
+**What:** Add `session_phase TEXT DEFAULT 'opening'` to the `conversations` table. Write the inferred phase on each turn. Surface it in `/admin/dashboard` alongside the lab students view so the phase of each student's most recent session is visible.
 
 **Why:** Message-count phase inference is invisible — there's no way to know from the outside whether any session is in the right phase. Admin visibility lets you diagnose cases where a student has been in "OPENING" mode for 20 messages.
 
