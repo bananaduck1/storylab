@@ -96,6 +96,10 @@ export default function LabChat({
   const [dragOver, setDragOver] = useState(false);
   const [parsingFile, setParsingFile] = useState(false);
   const [quotaRemaining, setQuotaRemaining] = useState(quota.remaining);
+  // Track limit in state so it stays consistent as extra_messages drain mid-session.
+  // When extras are exhausted the limit snaps down to the base daily/monthly cap.
+  const FREE_DAILY_CAP = 50;
+  const [quotaLimit, setQuotaLimit] = useState(quota.limit);
   const [loadingConv, setLoadingConv] = useState(false);
   const [convLoadError, setConvLoadError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -106,7 +110,7 @@ export default function LabChat({
       ? "Done! 100 messages have been added to your account."
       : null
   );
-  const [checkingOut, setCheckingOut] = useState<"subscribe" | "topup" | null>(null);
+  const [checkingOut, setCheckingOut] = useState<"subscribe" | "topup" | "portal" | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -254,10 +258,13 @@ export default function LabChat({
     e.target.value = "";
   }
 
-  async function startCheckout(type: "subscribe" | "topup") {
+  async function startCheckout(type: "subscribe" | "topup" | "portal") {
     setCheckingOut(type);
     try {
-      const endpoint = type === "subscribe" ? "/api/payments/subscribe" : "/api/payments/topup";
+      const endpoint =
+        type === "subscribe" ? "/api/payments/subscribe"
+        : type === "topup"    ? "/api/payments/topup"
+        :                       "/api/payments/portal";
       const res = await fetch(endpoint, { method: "POST" });
       const data = await res.json();
       if (data.url) {
@@ -334,7 +341,13 @@ export default function LabChat({
 
       const remainingHeader = res.headers.get("X-RateLimit-Remaining");
       if (remainingHeader !== null) {
-        setQuotaRemaining(parseInt(remainingHeader, 10));
+        const newRemaining = parseInt(remainingHeader, 10);
+        setQuotaRemaining(newRemaining);
+        // Once extras are exhausted, snap the limit down to the base cap
+        // so the chip doesn't show "0 / 70" when only 50 is the real ceiling.
+        if (quota.plan === "free") {
+          setQuotaLimit(Math.max(newRemaining, FREE_DAILY_CAP));
+        }
       }
 
       const reader = res.body.getReader();
@@ -502,6 +515,15 @@ export default function LabChat({
           >
             {checkingOut === "topup" ? "Redirecting…" : "Buy +100 msgs — $10"}
           </button>
+          {quota.plan === "monthly" && (
+            <button
+              onClick={() => startCheckout("portal")}
+              disabled={checkingOut !== null}
+              className="block w-full text-left text-xs text-zinc-400 hover:text-zinc-700 transition-colors disabled:opacity-50"
+            >
+              {checkingOut === "portal" ? "Redirecting…" : "Manage subscription"}
+            </button>
+          )}
           <button
             onClick={signOut}
             className="block w-full text-left text-xs text-zinc-400 hover:text-zinc-700 transition-colors pt-1"
@@ -548,7 +570,7 @@ export default function LabChat({
           <div className="flex items-center gap-2">
             <QuotaChip
               remaining={quotaRemaining}
-              limit={quota.limit}
+              limit={quotaLimit}
               plan={quota.plan}
             />
           </div>

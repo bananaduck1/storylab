@@ -15,11 +15,24 @@ import { getSupabase } from "@/lib/supabase";
 
 const MOCK_USER = { id: "user-123", email: "test@test.com" };
 
+// Free plan profile with quota available so checkQuota passes and we reach
+// the conversation ownership check.
+const FREE_PLAN_PROFILE = {
+  data: {
+    plan: "free",
+    monthly_message_limit: 50,
+    extra_messages: 0,
+    current_period_end: null,
+  },
+  error: null,
+};
+
 function makeChain(result: unknown) {
   const p = Promise.resolve(result);
   return {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
+    gte: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
     limit: vi.fn().mockReturnThis(),
     insert: vi.fn().mockResolvedValue({ data: {}, error: null }),
@@ -49,6 +62,8 @@ describe("POST /api/lab/chat — conversation ownership validation", () => {
   it("returns 404 when conversation does not belong to the user", async () => {
     vi.mocked(getSupabase).mockReturnValue({
       from: vi.fn((table: string) => {
+        if (table === "student_profiles") return makeChain(FREE_PLAN_PROFILE);
+        // usage_logs count = 0 → quota passes
         if (table === "usage_logs") return makeChain({ count: 0, data: null });
         // conversations check returns null — not found or wrong owner
         if (table === "conversations") return makeChain({ data: null, error: null });

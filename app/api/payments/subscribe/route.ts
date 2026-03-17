@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCallerUser } from "@/lib/lab-auth";
 import { getSupabase } from "@/lib/supabase";
-import { getStripe } from "@/lib/stripe";
+import { getStripe, getOrCreateStripeCustomer } from "@/lib/stripe";
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   const user = await getCallerUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -15,7 +15,6 @@ export async function POST(req: NextRequest) {
   }
 
   const db = getSupabase();
-  const stripe = getStripe();
 
   const { data: profile } = await db
     .from("student_profiles")
@@ -32,24 +31,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Already subscribed" }, { status: 409 });
   }
 
-  // Get or create Stripe customer
-  let customerId: string = profile.stripe_customer_id;
-  if (!customerId) {
-    const customer = await stripe.customers.create({
-      email: user.email ?? undefined,
-      name: profile.full_name,
-      metadata: { user_id: user.id },
-    });
-    customerId = customer.id;
-    await db
-      .from("student_profiles")
-      .update({ stripe_customer_id: customerId })
-      .eq("user_id", user.id);
-  }
+  const customerId = await getOrCreateStripeCustomer(
+    user.id,
+    user.email,
+    profile.full_name,
+    profile.stripe_customer_id
+  );
 
-  const origin = req.headers.get("origin") ?? "https://ivystorylab.com";
+  const origin = process.env.NEXT_PUBLIC_APP_URL ?? "https://ivystorylab.com";
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     customer: customerId,
     mode: "subscription",
     line_items: [{ price: priceId, quantity: 1 }],

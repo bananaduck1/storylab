@@ -9,18 +9,17 @@ export const runtime = "nodejs";
 // ── Idempotency ───────────────────────────────────────────────────────────────
 
 /**
- * Insert the event ID into stripe_events. Returns true if newly inserted
- * (first time we've seen this event), false if already processed.
+ * Record that this event was processed. Called AFTER the handler succeeds.
+ * A unique-violation (23505) means a prior delivery already ran — that's fine,
+ * we just swallow it. Other errors are surfaced so the caller can decide.
  */
-async function claimEvent(eventId: string): Promise<boolean> {
+async function claimEvent(eventId: string): Promise<void> {
   const { error } = await getSupabase()
     .from("stripe_events")
     .insert({ id: eventId });
 
-  if (!error) return true;
-  // Postgres unique-violation code = 23505
-  if ((error as { code?: string }).code === "23505") return false;
-  // Any other error — re-throw so it surfaces as a 500
+  if (!error) return;
+  if ((error as { code?: string }).code === "23505") return; // already recorded
   throw error;
 }
 
@@ -113,19 +112,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
-  // Idempotency guard — safe to receive the same event twice
-  let claimed: boolean;
-  try {
-    claimed = await claimEvent(event.id);
-  } catch (err) {
-    console.error("[lab/webhook] Failed to claim event:", err);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
-  }
-
-  if (!claimed) {
-    return NextResponse.json({ received: true, skipped: true });
-  }
-
+  // Run the handler BEFORE claiming the event so that a failed handler
+  // (DB down, RPC error, etc.) returns 500 to Stripe and allows clean retries.
+  // We only mark the event as processed once we know it succeeded.
   switch (event.type) {
     case "checkout.session.completed":
       await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
@@ -140,8 +129,17 @@ export async function POST(req: NextRequest) {
       break;
 
     default:
-      // Ignore unhandled event types
+      // Ignore unhandled event types — still claim so we don't re-log noise
       break;
+  }
+
+  // Idempotency claim — after successful handling only.
+  // If the INSERT fails with a unique violation the event was already processed; that's fine.
+  // Any other DB error is unexpected but the handler already ran, so we return 200 anyway.
+  try {
+    await claimEvent(event.id);
+  } catch (err) {
+    console.warn("[lab/webhook] Failed to record event ID (non-fatal):", err);
   }
 
   return NextResponse.json({ received: true });

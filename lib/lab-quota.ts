@@ -1,8 +1,12 @@
 import { getSupabase } from "@/lib/supabase";
 
-const FREE_DAILY_LIMIT = parseInt(process.env.LAB_DAILY_LIMIT ?? "50");
-
 export type DebitType = "extra" | "daily" | "monthly";
+
+// Read at call-time so tests can set process.env.LAB_DAILY_LIMIT in beforeEach
+// and so a config change takes effect on the next deploy without needing a code change.
+function freeDailyLimit(): number {
+  return parseInt(process.env.LAB_DAILY_LIMIT ?? "50");
+}
 
 export interface QuotaState {
   plan: "free" | "monthly";
@@ -68,14 +72,14 @@ export async function checkQuota(userId: string): Promise<QuotaState | null> {
     .eq("day", today);
 
   const dailyUsed = dailyCount ?? 0;
-  const dailyRemaining = Math.max(0, FREE_DAILY_LIMIT - dailyUsed);
+  const dailyRemaining = Math.max(0, freeDailyLimit() - dailyUsed);
 
   if (extraMessages > 0) {
     // Extra messages drain first; daily cap is the backstop
     return {
       plan,
       remaining: extraMessages + dailyRemaining,
-      limit: extraMessages + FREE_DAILY_LIMIT,
+      limit: extraMessages + freeDailyLimit(),
       extraMessages,
       debitType: "extra",
     };
@@ -84,7 +88,7 @@ export async function checkQuota(userId: string): Promise<QuotaState | null> {
   return {
     plan,
     remaining: dailyRemaining,
-    limit: FREE_DAILY_LIMIT,
+    limit: freeDailyLimit(),
     extraMessages: 0,
     debitType: "daily",
   };
