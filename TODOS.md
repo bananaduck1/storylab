@@ -4,13 +4,13 @@ Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review 
 
 ---
 
-## TODO-1: Markdown rendering for assistant messages
+## TODO-1: Markdown rendering for assistant messages ✅ DONE
 
 **What:** Install `react-markdown` (or equivalent) and render AI coach responses as formatted markdown instead of raw whitespace-pre-wrap text.
 
-**Why:** The Sam Ahn agent frequently returns structured responses — bullet lists for essay feedback, bold emphasis on key coaching points, numbered revision steps. Currently these render as literal `**text**` and `- item` plaintext, degrading the reading experience.
+**Why:** The behavioral layer's quote-before-comment constraint generates `> blockquote` syntax for every cited passage — currently renders as literal `> text` plaintext instead of a styled blockquote. Sam also uses `**bold**` for emphasis on key coaching words. Both degrade the reading experience without markdown rendering.
 
-**Pros:** Significantly improves readability of coaching feedback. Students see structured, scannable responses rather than walls of text.
+**Pros:** Blockquoted essay passages become visually distinct from Sam's commentary. Bold emphasis lands correctly. Makes the quote-before-comment UX actually work visually.
 
 **Cons:** Adds a dependency (`react-markdown` ~10kb gzipped). Requires adding prose styles consistent with the rest of the app (or reuse `app/blog/blog.module.css` pattern).
 
@@ -20,7 +20,7 @@ Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review 
 
 ---
 
-## TODO-2: Conversation delete + rename UI in the sidebar
+## TODO-2: Conversation delete + rename UI in the sidebar ✅ DONE
 
 **What:** Add hover-reveal controls to each conversation item in the sidebar — a trash icon to delete and an editable title (click-to-edit inline) to rename.
 
@@ -187,9 +187,9 @@ Add this endpoint alongside any future "your coaching profile" UI.
 
 ---
 
-## TODO-11: Phase threshold tuning via named constants
+## TODO-11: Phase threshold env-var tuning ✅ PARTIALLY DONE
 
-**What:** Replace the magic numbers in `inferPhase()` (`<= 2`, `<= 8`) with named constants at the top of the module. Optional stretch: make them env-configurable via `LAB_OPENING_TURNS` and `LAB_DIAGNOSING_TURNS`.
+**What:** ~~Replace the magic numbers in `inferPhase()` with named constants~~ — **done**, `OPENING_TURNS = 2` and `DIAGNOSING_TURNS = 8` are named constants in `lib/behavioral-constraints.ts`. Optional stretch: make them env-configurable via `LAB_OPENING_TURNS` and `LAB_DIAGNOSING_TURNS`.
 
 **Why:** If the phase boundaries feel wrong in production (e.g., Sam is still in "opening" mode on message 3 when the student already pasted a draft), you currently need a code change + redeploy to adjust. Named constants at minimum, env vars for faster tuning.
 

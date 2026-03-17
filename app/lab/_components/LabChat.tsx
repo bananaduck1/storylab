@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
+import ReactMarkdown from "react-markdown";
+import remarkBreaks from "remark-breaks";
 
 interface Conversation {
   id: string;
@@ -111,6 +113,8 @@ export default function LabChat({
       : null
   );
   const [checkingOut, setCheckingOut] = useState<"subscribe" | "topup" | "portal" | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameTitle, setRenameTitle] = useState("");
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -194,6 +198,48 @@ export default function LabChat({
     if (convId === activeConvId) return;
     setActiveConvId(convId);
     setSidebarOpen(false);
+  }
+
+  async function deleteConversation(id: string) {
+    if (!window.confirm("Delete this conversation?")) return;
+    try {
+      const res = await fetch(`/api/lab/conversations/${id}`, { method: "DELETE" });
+      if (!res.ok) return; // server rejected — leave UI unchanged
+    } catch {
+      return; // network error — leave UI unchanged
+    }
+    const remaining = conversations.filter((c) => c.id !== id);
+    setConversations(remaining);
+    if (activeConvId === id) {
+      if (remaining.length > 0) {
+        switchConversation(remaining[0].id);
+      } else {
+        newConversation();
+      }
+    }
+  }
+
+  function startRename(id: string, title: string) {
+    setRenamingId(id);
+    setRenameTitle(title);
+  }
+
+  async function commitRename(id: string) {
+    const trimmed = renameTitle.trim();
+    setRenamingId(null);
+    if (!trimmed) return;
+    setConversations((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, title: trimmed } : c))
+    );
+    try {
+      await fetch(`/api/lab/conversations/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: trimmed }),
+      });
+    } catch {
+      // ignore — title already updated optimistically
+    }
   }
 
   async function refreshConversations() {
@@ -474,25 +520,54 @@ export default function LabChat({
         <div className="flex-1 overflow-y-auto px-2 pb-2">
           {conversations.map((conv) => {
             const isActive = conv.id === activeConvId;
+            const isRenaming = renamingId === conv.id;
             return (
-              <button
+              <div
                 key={conv.id}
-                onClick={() => switchConversation(conv.id)}
                 className={`
-                  w-full text-left px-3 py-2.5 rounded-lg mb-0.5 transition-colors
+                  group relative w-full text-left px-3 py-2.5 rounded-lg mb-0.5 transition-colors cursor-pointer
                   ${isActive
                     ? "bg-white border-l-2 border-zinc-900 shadow-sm"
                     : "hover:bg-zinc-100 border-l-2 border-transparent"
                   }
                 `}
+                onClick={() => !isRenaming && switchConversation(conv.id)}
               >
-                <p className={`text-xs font-medium truncate ${isActive ? "text-zinc-900" : "text-zinc-700"}`}>
-                  {truncateTitle(conv.title)}
-                </p>
+                {isRenaming ? (
+                  <input
+                    autoFocus
+                    className="w-full text-xs font-medium text-zinc-900 bg-transparent border-b border-zinc-400 outline-none py-0.5 pr-6"
+                    value={renameTitle}
+                    onChange={(e) => setRenameTitle(e.target.value)}
+                    onBlur={() => commitRename(conv.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") { e.preventDefault(); commitRename(conv.id); }
+                      if (e.key === "Escape") { setRenamingId(null); }
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <p
+                    className={`text-xs font-medium truncate pr-6 ${isActive ? "text-zinc-900" : "text-zinc-700"}`}
+                    onDoubleClick={(e) => { e.stopPropagation(); startRename(conv.id, conv.title); }}
+                  >
+                    {truncateTitle(conv.title)}
+                  </p>
+                )}
                 <p className="text-xs text-zinc-400 mt-0.5">
                   {formatRelativeDate(conv.updated_at)}
                 </p>
-              </button>
+                {/* Delete button — hover reveal */}
+                <button
+                  className="absolute right-2 top-2.5 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-400 hover:text-red-500"
+                  onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id); }}
+                  aria-label="Delete conversation"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                  </svg>
+                </button>
+              </div>
             );
           })}
         </div>
@@ -627,16 +702,39 @@ export default function LabChat({
                         <span className="truncate max-w-[200px]">{msg.file_name}</span>
                       </div>
                     )}
-                    <span className="whitespace-pre-wrap">
-                      {msg.content}
-                      {msg.id === "streaming" && msg.content === "" && (
-                        <span className="inline-flex gap-1">
-                          <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:0ms]" />
-                          <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                          <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:300ms]" />
-                        </span>
-                      )}
-                    </span>
+                    {msg.role === "user" ? (
+                      <span className="whitespace-pre-wrap">{msg.content}</span>
+                    ) : msg.id === "streaming" && msg.content === "" ? (
+                      <span className="inline-flex gap-1">
+                        <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:0ms]" />
+                        <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:150ms]" />
+                        <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:300ms]" />
+                      </span>
+                    ) : (
+                      <ReactMarkdown
+                        remarkPlugins={[remarkBreaks]}
+                        components={{
+                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                          blockquote: ({ children }) => (
+                            <blockquote className="border-l-2 border-zinc-300 pl-3 my-2 text-zinc-500 italic">
+                              {children}
+                            </blockquote>
+                          ),
+                          strong: ({ children }) => (
+                            <strong className="font-semibold text-zinc-900">{children}</strong>
+                          ),
+                          em: ({ children }) => <em className="italic">{children}</em>,
+                          code: ({ children }) => (
+                            <code className="font-mono text-xs bg-zinc-100 px-1 py-0.5 rounded">
+                              {children}
+                            </code>
+                          ),
+                          a: ({ children }) => <span className="text-zinc-700 underline underline-offset-2">{children}</span>,
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    )}
                   </div>
                 </div>
               ))}
