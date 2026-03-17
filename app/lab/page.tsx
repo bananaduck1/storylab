@@ -1,40 +1,51 @@
 import { redirect } from "next/navigation";
 import { getCallerUser } from "@/lib/lab-auth";
 import { getSupabase } from "@/lib/supabase";
+import { checkQuota } from "@/lib/lab-quota";
 import LabChat from "./_components/LabChat";
 
 export const dynamic = "force-dynamic";
 
-export default async function LabPage() {
+export default async function LabPage(props: {
+  searchParams: Promise<Record<string, string | string[]>>;
+}) {
   const user = await getCallerUser();
   if (!user) redirect("/login");
 
+  const searchParams = await props.searchParams;
+  const successParam = typeof searchParams.success === "string" ? searchParams.success : null;
+  const successType =
+    successParam === "subscription" || successParam === "topup" ? successParam : null;
+
   const db = getSupabase();
 
-  // Profile check — redirect to onboarding if missing
-  const { data: profile } = await db
-    .from("student_profiles")
-    .select("*")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  // Fetch profile, conversations, and quota in parallel
+  const [{ data: profile }, { data: conversations }, quota] = await Promise.all([
+    db.from("student_profiles").select("*").eq("user_id", user.id).maybeSingle(),
+    db
+      .from("conversations")
+      .select("id, title, updated_at")
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false })
+      .limit(50),
+    checkQuota(user.id),
+  ]);
 
   if (!profile || !profile.onboarding_done) {
     redirect("/lab/onboarding");
   }
 
-  // Fetch conversations
-  const { data: conversations } = await db
-    .from("conversations")
-    .select("id, title, updated_at")
-    .eq("user_id", user.id)
-    .order("updated_at", { ascending: false })
-    .limit(50);
-
   const convList = conversations ?? [];
 
   // Ensure at least one conversation exists
   let activeConvId: string;
-  let initialMessages: Array<{ id: string; role: string; content: string; file_name: string | null; created_at: string }> = [];
+  let initialMessages: Array<{
+    id: string;
+    role: string;
+    content: string;
+    file_name: string | null;
+    created_at: string;
+  }> = [];
 
   if (convList.length === 0) {
     const { data: newConv } = await db
@@ -43,7 +54,11 @@ export default async function LabPage() {
       .select()
       .single();
     activeConvId = newConv!.id;
-    convList.unshift({ id: activeConvId, title: "New conversation", updated_at: new Date().toISOString() });
+    convList.unshift({
+      id: activeConvId,
+      title: "New conversation",
+      updated_at: new Date().toISOString(),
+    });
   } else {
     activeConvId = convList[0].id;
     const { data: msgs } = await db
@@ -55,25 +70,22 @@ export default async function LabPage() {
     initialMessages = msgs ?? [];
   }
 
-  // Daily quota
-  const today = new Date().toISOString().split("T")[0];
-  const { count: usedToday } = await db
-    .from("usage_logs")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", user.id)
-    .eq("day", today);
-
-  const dailyLimit = parseInt(process.env.LAB_DAILY_LIMIT ?? "50");
+  const quotaState = quota ?? {
+    plan: "free" as const,
+    remaining: 0,
+    limit: 50,
+    extraMessages: 0,
+    debitType: "daily" as const,
+  };
 
   return (
     <LabChat
-      userId={user.id}
       profile={profile}
       conversations={convList}
       activeConversationId={activeConvId}
       initialMessages={initialMessages}
-      dailyUsed={usedToday ?? 0}
-      dailyLimit={dailyLimit}
+      quota={quotaState}
+      successType={successType}
     />
   );
 }

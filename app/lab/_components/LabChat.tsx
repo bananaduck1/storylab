@@ -24,14 +24,20 @@ interface AttachedFile {
   file_type: string;
 }
 
+interface QuotaInfo {
+  plan: "free" | "monthly";
+  remaining: number;
+  limit: number;
+  extraMessages: number;
+}
+
 interface LabChatProps {
-  userId: string;
   profile: { full_name: string; grade: string };
   conversations: Conversation[];
   activeConversationId: string;
   initialMessages: Message[];
-  dailyUsed: number;
-  dailyLimit: number;
+  quota: QuotaInfo;
+  successType?: "subscription" | "topup" | null;
 }
 
 function formatRelativeDate(dateStr: string): string {
@@ -54,7 +60,7 @@ function truncateTitle(title: string, max = 30): string {
   return title.length > max ? title.slice(0, max).trimEnd() + "…" : title;
 }
 
-function QuotaChip({ remaining, limit }: { remaining: number; limit: number }) {
+function QuotaChip({ remaining, limit, plan }: { remaining: number; limit: number; plan: "free" | "monthly" }) {
   const color =
     remaining <= 3
       ? "bg-red-50 text-red-600 border-red-200"
@@ -62,9 +68,11 @@ function QuotaChip({ remaining, limit }: { remaining: number; limit: number }) {
       ? "bg-amber-50 text-amber-600 border-amber-200"
       : "bg-green-50 text-green-600 border-green-200";
 
+  const label = plan === "monthly" ? "mo" : "today";
+
   return (
     <span className={`text-xs px-2 py-0.5 rounded-full border ${color}`}>
-      {remaining} / {limit} left
+      {remaining} / {limit} {label}
     </span>
   );
 }
@@ -74,8 +82,8 @@ export default function LabChat({
   conversations: initialConversations,
   activeConversationId,
   initialMessages,
-  dailyUsed,
-  dailyLimit,
+  quota,
+  successType,
 }: LabChatProps) {
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
@@ -84,41 +92,70 @@ export default function LabChat({
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [parsingFile, setParsingFile] = useState(false);
-  const [quotaRemaining, setQuotaRemaining] = useState(dailyLimit - dailyUsed);
+  const [quotaRemaining, setQuotaRemaining] = useState(quota.remaining);
   const [loadingConv, setLoadingConv] = useState(false);
+  const [convLoadError, setConvLoadError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [successBanner, setSuccessBanner] = useState<string | null>(
+    successType === "subscription"
+      ? "You're now on the Monthly plan — 500 messages/month!"
+      : successType === "topup"
+      ? "Done! 100 messages have been added to your account."
+      : null
+  );
+  const [checkingOut, setCheckingOut] = useState<"subscribe" | "topup" | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isFirstMount = useRef(true);
 
-  // Scroll to bottom when messages change
+  // Dismiss success banner after 6 s and clear the URL param
+  useEffect(() => {
+    if (!successBanner) return;
+    const t = setTimeout(() => {
+      setSuccessBanner(null);
+      // Remove ?success from URL without triggering a navigation
+      const url = new URL(window.location.href);
+      url.searchParams.delete("success");
+      window.history.replaceState({}, "", url.toString());
+    }, 6000);
+    return () => clearTimeout(t);
+  }, [successBanner]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // When activeConvId changes (skip on initial mount), fetch messages
   useEffect(() => {
     if (isFirstMount.current) {
       isFirstMount.current = false;
       return;
     }
+    const convIdAtSwitch = activeConvId;
     async function loadMessages() {
       setLoadingConv(true);
+      setConvLoadError(null);
       try {
-        const res = await fetch(`/api/lab/conversations/${activeConvId}`);
+        const res = await fetch(`/api/lab/conversations/${convIdAtSwitch}`);
         if (res.ok) {
           const data = await res.json();
           setMessages(data);
+        } else {
+          throw new Error("Failed to load conversation");
         }
+      } catch {
+        setConvLoadError("Couldn't load this conversation. Please try again.");
+        setActiveConvId((prev) => (prev === convIdAtSwitch ? activeConversationId : prev));
       } finally {
         setLoadingConv(false);
       }
     }
     loadMessages();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeConvId]);
 
   async function signOut() {
@@ -167,12 +204,13 @@ export default function LabChat({
     }
   }
 
-  async function processFile(file: File) {
+  const processFile = useCallback(async (file: File) => {
     const ext = file.name.split(".").pop()?.toLowerCase();
     if (ext !== "pdf" && ext !== "docx") {
-      alert("Please upload a .pdf or .docx file.");
+      setFileError("Please upload a .pdf or .docx file.");
       return;
     }
+    setFileError(null);
     setParsingFile(true);
     try {
       const formData = new FormData();
@@ -183,14 +221,14 @@ export default function LabChat({
         setAttachedFile({ text: data.text, file_name: data.file_name, file_type: data.file_type });
       } else {
         const err = await res.json();
-        alert(err.error || "Failed to parse file.");
+        setFileError(err.error || "Failed to parse file.");
       }
     } catch {
-      alert("Failed to upload file.");
+      setFileError("Failed to upload file. Please try again.");
     } finally {
       setParsingFile(false);
     }
-  }
+  }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -208,12 +246,30 @@ export default function LabChat({
     setDragOver(false);
     const file = e.dataTransfer.files[0];
     if (file) processFile(file);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [processFile]);
 
   function handleFileInput(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) processFile(file);
     e.target.value = "";
+  }
+
+  async function startCheckout(type: "subscribe" | "topup") {
+    setCheckingOut(type);
+    try {
+      const endpoint = type === "subscribe" ? "/api/payments/subscribe" : "/api/payments/topup";
+      const res = await fetch(endpoint, { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        console.error("Checkout error:", data.error);
+      }
+    } catch (err) {
+      console.error("Checkout failed:", err);
+    } finally {
+      setCheckingOut(null);
+    }
   }
 
   async function send() {
@@ -262,19 +318,11 @@ export default function LabChat({
 
       if (res.status === 429) {
         const data = await res.json();
-        setMessages((prev) =>
-          prev
-            .filter((m) => m.id !== streamingId)
-            .concat({
-              id: crypto.randomUUID(),
-              role: "assistant",
-              content:
-                data.error === "daily_limit_reached"
-                  ? "You've reached your daily message limit. Please come back tomorrow!"
-                  : "Too many requests. Please try again later.",
-              file_name: null,
-              created_at: new Date().toISOString(),
-            })
+        const isMonthly = data.error === "monthly_limit_reached";
+        pushErrorMessage(
+          isMonthly
+            ? "You've used all your messages for this month. Top up or wait for renewal."
+            : "You've reached your daily message limit. Top up to keep going or come back tomorrow!"
         );
         setQuotaRemaining(0);
         return;
@@ -284,7 +332,6 @@ export default function LabChat({
         throw new Error("Request failed");
       }
 
-      // Read X-RateLimit-Remaining header
       const remainingHeader = res.headers.get("X-RateLimit-Remaining");
       if (remainingHeader !== null) {
         setQuotaRemaining(parseInt(remainingHeader, 10));
@@ -306,7 +353,6 @@ export default function LabChat({
         );
       }
 
-      // Replace streaming message with a permanent one
       setMessages((prev) =>
         prev.map((m) =>
           m.id === streamingId
@@ -315,20 +361,11 @@ export default function LabChat({
         )
       );
 
-      // Refresh conversation list (titles may have changed)
-      refreshConversations();
+      if (messages.length === 0) {
+        refreshConversations();
+      }
     } catch {
-      setMessages((prev) =>
-        prev
-          .filter((m) => m.id !== streamingId)
-          .concat({
-            id: crypto.randomUUID(),
-            role: "assistant",
-            content: "Something went wrong. Please try again.",
-            file_name: null,
-            created_at: new Date().toISOString(),
-          })
-      );
+      pushErrorMessage("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -345,6 +382,13 @@ export default function LabChat({
     setInput(e.target.value);
     e.target.style.height = "auto";
     e.target.style.height = Math.min(e.target.scrollHeight, 160) + "px";
+  }
+
+  function pushErrorMessage(content: string) {
+    setMessages((prev) => [
+      ...prev.filter((m) => m.id !== "streaming"),
+      { id: crypto.randomUUID(), role: "assistant", content, file_name: null, created_at: new Date().toISOString() },
+    ]);
   }
 
   const firstName = profile.full_name.split(" ")[0];
@@ -440,11 +484,27 @@ export default function LabChat({
           })}
         </div>
 
-        {/* Sidebar footer */}
-        <div className="border-t border-zinc-100 px-4 py-3">
+        {/* Sidebar footer — plan + upgrade actions */}
+        <div className="border-t border-zinc-100 px-3 py-3 space-y-2">
+          {quota.plan === "free" && (
+            <button
+              onClick={() => startCheckout("subscribe")}
+              disabled={checkingOut !== null}
+              className="w-full text-xs px-3 py-2 rounded-lg bg-zinc-900 text-white hover:bg-zinc-700 transition-colors disabled:opacity-50"
+            >
+              {checkingOut === "subscribe" ? "Redirecting…" : "Upgrade — $49/mo"}
+            </button>
+          )}
+          <button
+            onClick={() => startCheckout("topup")}
+            disabled={checkingOut !== null}
+            className="w-full text-xs px-3 py-2 rounded-lg border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-50"
+          >
+            {checkingOut === "topup" ? "Redirecting…" : "Buy +100 msgs — $10"}
+          </button>
           <button
             onClick={signOut}
-            className="text-xs text-zinc-400 hover:text-zinc-700 transition-colors"
+            className="block w-full text-left text-xs text-zinc-400 hover:text-zinc-700 transition-colors pt-1"
           >
             Sign out
           </button>
@@ -453,6 +513,21 @@ export default function LabChat({
 
       {/* Main chat area */}
       <div className="flex-1 flex flex-col min-w-0">
+        {/* Success banner */}
+        {successBanner && (
+          <div className="bg-green-50 border-b border-green-200 px-4 py-2.5 flex items-center justify-between">
+            <p className="text-sm text-green-700">{successBanner}</p>
+            <button
+              onClick={() => setSuccessBanner(null)}
+              className="text-green-400 hover:text-green-700 ml-4"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+
         {/* Chat header */}
         <header className="flex items-center justify-between px-4 py-3 border-b border-zinc-100 shrink-0">
           <div className="flex items-center gap-3">
@@ -470,7 +545,13 @@ export default function LabChat({
               <p className="text-xs text-zinc-400">{profile.grade} grade</p>
             </div>
           </div>
-          <QuotaChip remaining={quotaRemaining} limit={dailyLimit} />
+          <div className="flex items-center gap-2">
+            <QuotaChip
+              remaining={quotaRemaining}
+              limit={quota.limit}
+              plan={quota.plan}
+            />
+          </div>
         </header>
 
         {/* Messages */}
@@ -482,6 +563,10 @@ export default function LabChat({
                 <span className="w-2 h-2 bg-zinc-300 rounded-full animate-bounce [animation-delay:150ms]" />
                 <span className="w-2 h-2 bg-zinc-300 rounded-full animate-bounce [animation-delay:300ms]" />
               </div>
+            </div>
+          ) : convLoadError ? (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-sm text-zinc-400">{convLoadError}</p>
             </div>
           ) : (
             <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
@@ -542,12 +627,41 @@ export default function LabChat({
         <div className="shrink-0 border-t border-zinc-100 bg-white px-4 py-3">
           <div className="max-w-2xl mx-auto">
             {quotaRemaining <= 0 ? (
-              <div className="text-center py-3 text-sm text-zinc-500 bg-zinc-50 rounded-xl border border-zinc-200">
-                You&apos;ve reached your daily limit. Come back tomorrow!
+              <div className="py-4 px-4 bg-zinc-50 rounded-xl border border-zinc-200 text-center space-y-3">
+                <p className="text-sm text-zinc-600">
+                  {quota.plan === "monthly"
+                    ? "You've used all your messages for this month."
+                    : "You've reached your daily limit."}
+                </p>
+                <div className="flex gap-2 justify-center flex-wrap">
+                  {quota.plan === "free" && (
+                    <button
+                      onClick={() => startCheckout("subscribe")}
+                      disabled={checkingOut !== null}
+                      className="text-sm px-4 py-2 rounded-lg bg-zinc-900 text-white hover:bg-zinc-700 transition-colors disabled:opacity-50"
+                    >
+                      {checkingOut === "subscribe" ? "Redirecting…" : "Upgrade — $49/mo"}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => startCheckout("topup")}
+                    disabled={checkingOut !== null}
+                    className="text-sm px-4 py-2 rounded-lg border border-zinc-300 text-zinc-700 hover:bg-zinc-100 transition-colors disabled:opacity-50"
+                  >
+                    {checkingOut === "topup" ? "Redirecting…" : "Buy +100 msgs — $10"}
+                  </button>
+                  {quota.plan === "free" && (
+                    <p className="w-full text-xs text-zinc-400 mt-1">
+                      Or come back tomorrow for your daily reset.
+                    </p>
+                  )}
+                </div>
               </div>
             ) : (
               <>
-                {/* File chip */}
+                {fileError && (
+                  <p className="text-xs text-red-500 mb-1.5">{fileError}</p>
+                )}
                 {attachedFile && (
                   <div className="flex items-center gap-2 mb-2">
                     <div className="flex items-center gap-1.5 bg-zinc-100 border border-zinc-200 rounded-lg px-3 py-1.5 text-xs text-zinc-700 max-w-xs">
@@ -566,7 +680,6 @@ export default function LabChat({
                 )}
 
                 <div className="flex items-end gap-2 bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-2.5 focus-within:border-zinc-400 transition-colors">
-                  {/* Paperclip button */}
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={parsingFile}

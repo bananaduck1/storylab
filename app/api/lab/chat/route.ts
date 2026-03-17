@@ -1,11 +1,19 @@
-import { NextRequest } from "next/server";
+import { NextRequest, after } from "next/server";
 import { getCallerUser } from "@/lib/lab-auth";
 import { getSupabase } from "@/lib/supabase";
 import { buildSystemPromptForUser } from "@/lib/lab-profile";
 import { retrieveKnowledge } from "@/lib/knowledge-retrieval";
+import { checkQuota, debitQuota } from "@/lib/lab-quota";
 
-const DAILY_LIMIT = parseInt(process.env.LAB_DAILY_LIMIT ?? "50");
+const MAX_FILE_TEXT_LENGTH = 8000;
 const HISTORY_LIMIT = 20;
+
+// Explicit output cap — gpt-4o defaults to 4096; detailed essay reviews can hit that ceiling.
+// 4096 tokens ≈ 3,000 words — generous for a coaching response without runaway costs.
+const MAX_RESPONSE_TOKENS = 4096;
+
+// Set LAB_DEBUG=1 in .env.local to log request payloads to server console.
+const DEBUG = process.env.LAB_DEBUG === "1";
 
 export async function POST(request: NextRequest) {
   const user = await getCallerUser();
@@ -49,25 +57,20 @@ export async function POST(request: NextRequest) {
 
   const db = getSupabase();
 
-  // ── rate limit check ──────────────────────────────────────────────────────
-  const today = new Date().toISOString().split("T")[0];
-  const { count: usedToday } = await db
-    .from("usage_logs")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", user.id)
-    .eq("day", today);
+  // ── quota check ───────────────────────────────────────────────────────────
+  const quota = await checkQuota(user.id);
 
-  const used = usedToday ?? 0;
-  const remaining = DAILY_LIMIT - used;
-
-  if (remaining <= 0) {
+  if (!quota || quota.remaining <= 0) {
+    const limitType =
+      !quota || quota.plan === "free"
+        ? "daily_limit_reached"
+        : "monthly_limit_reached";
     return new Response(
-      JSON.stringify({ error: "daily_limit_reached", limit: DAILY_LIMIT, used }),
+      JSON.stringify({ error: limitType, remaining: 0 }),
       {
         status: 429,
         headers: {
           "Content-Type": "application/json",
-          "X-RateLimit-Limit": String(DAILY_LIMIT),
           "X-RateLimit-Remaining": "0",
         },
       }
@@ -121,24 +124,52 @@ export async function POST(request: NextRequest) {
       .eq("id", conversation_id);
   }
 
-  // ── build effective user content (with file if present) ──────────────────
-  const effectiveContent = file_text
-    ? `[Attached document: "${file_name ?? "document"}"]\n\n${file_text}\n\n---\n\n${message}`
+  // ── build effective user content ──────────────────────────────────────────
+  // Do this BEFORE RAG so we can use essay text as the retrieval query.
+  const safeFileText = file_text
+    ? file_text.slice(0, MAX_FILE_TEXT_LENGTH)
+    : undefined;
+  const effectiveContent = safeFileText
+    ? `[Attached document: "${file_name ?? "document"}"]\n\n${safeFileText}\n\n---\n\n${message}`
     : message;
 
   // ── build system prompt (profile + RAG) ──────────────────────────────────
   let systemContent = await buildSystemPromptForUser(user.id);
 
+  // When a document is attached, query RAG with the essay text (first 1 500 chars)
+  // plus the user's message so retrieval targets the actual draft content, not just
+  // a generic "please review" string.
+  const ragQuery = safeFileText
+    ? `${message}\n\n${safeFileText.slice(0, 1500)}`
+    : message;
+
+  let ragChunks: string[] = [];
   try {
-    const chunks = await retrieveKnowledge(message, { limit: 6 });
-    if (chunks.length > 0) {
+    ragChunks = await retrieveKnowledge(ragQuery, { limit: 6 });
+    if (ragChunks.length > 0) {
       systemContent +=
         "\n\n---\nRELEVANT TRAINING CONTEXT (from playbook and case studies):\n\n" +
-        chunks.join("\n\n---\n\n") +
+        ragChunks.join("\n\n---\n\n") +
         "\n---";
     }
   } catch {
     // best-effort RAG — proceed without it
+  }
+
+  // ── debug logging ─────────────────────────────────────────────────────────
+  if (DEBUG) {
+    console.log("[lab/chat/debug] request payload summary", {
+      userId: user.id,
+      conversationId: conversation_id,
+      systemPromptChars: systemContent.length,
+      ragChunksRetrieved: ragChunks.length,
+      ragChunkLengths: ragChunks.map((c) => c.length),
+      historyMessages: history.length,
+      effectiveContentChars: effectiveContent.length,
+      hasFileAttachment: !!safeFileText,
+      fileChars: safeFileText?.length ?? 0,
+      maxResponseTokens: MAX_RESPONSE_TOKENS,
+    });
   }
 
   // ── stream from OpenAI ────────────────────────────────────────────────────
@@ -152,6 +183,7 @@ export async function POST(request: NextRequest) {
       model: "gpt-4o",
       stream: true,
       stream_options: { include_usage: true },
+      max_tokens: MAX_RESPONSE_TOKENS,
       messages: [
         { role: "system", content: systemContent },
         ...history,
@@ -167,11 +199,19 @@ export async function POST(request: NextRequest) {
 
   const encoder = new TextEncoder();
   let accumulated = "";
+  const today = new Date().toISOString().split("T")[0];
+  const { debitType } = quota;
 
   const stream = new ReadableStream({
     async start(controller) {
       const reader = openaiRes.body!.getReader();
       const decoder = new TextDecoder();
+      // Buffer for incomplete SSE lines that span multiple read() calls.
+      // Without this, a "data: {...}" line split across two network reads would
+      // produce one truncated JSON (parse error → silently dropped) and one
+      // orphaned fragment not starting with "data: " (filtered out) — losing
+      // every token in that pair of chunks.
+      let lineBuffer = "";
       let done = false;
 
       try {
@@ -179,10 +219,15 @@ export async function POST(request: NextRequest) {
           const { done: rdDone, value } = await reader.read();
           if (rdDone) break;
 
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split("\n").filter((l) => l.startsWith("data: "));
+          lineBuffer += decoder.decode(value, { stream: true });
+
+          // Split on newlines, keeping the last (potentially incomplete) line
+          // in the buffer for the next iteration.
+          const lines = lineBuffer.split("\n");
+          lineBuffer = lines.pop() ?? "";
 
           for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
             const data = line.slice(6);
             if (data === "[DONE]") {
               done = true;
@@ -190,10 +235,18 @@ export async function POST(request: NextRequest) {
             }
             try {
               const json = JSON.parse(data);
-              const text: string | undefined = json.choices?.[0]?.delta?.content;
+              const choice = json.choices?.[0];
+              const text: string | undefined = choice?.delta?.content;
               if (text) {
                 accumulated += text;
                 controller.enqueue(encoder.encode(text));
+              }
+              // Warn if the model was cut off at the token limit
+              if (choice?.finish_reason === "length") {
+                console.warn(
+                  "[lab/chat] finish_reason=length — response hit max_tokens limit.",
+                  { maxTokens: MAX_RESPONSE_TOKENS, accumulatedChars: accumulated.length }
+                );
               }
             } catch {
               // skip malformed chunks
@@ -204,8 +257,7 @@ export async function POST(request: NextRequest) {
         reader.releaseLock();
         controller.close();
 
-        // Persist assistant message + log usage after stream ends
-        void (async () => {
+        after(async () => {
           try {
             if (accumulated) {
               await db.from("conversation_messages").insert({
@@ -215,11 +267,7 @@ export async function POST(request: NextRequest) {
                 content: accumulated,
               });
             }
-            await db.from("usage_logs").insert({
-              user_id: user.id,
-              conversation_id,
-              day: today,
-            });
+            await debitQuota(user.id, debitType, conversation_id, today);
             await db
               .from("conversations")
               .update({ updated_at: new Date().toISOString() })
@@ -227,7 +275,7 @@ export async function POST(request: NextRequest) {
           } catch (persistErr) {
             console.error("Failed to persist chat turn:", persistErr);
           }
-        })();
+        });
       }
     },
   });
@@ -235,8 +283,7 @@ export async function POST(request: NextRequest) {
   return new Response(stream, {
     headers: {
       "Content-Type": "text/plain; charset=utf-8",
-      "X-RateLimit-Limit": String(DAILY_LIMIT),
-      "X-RateLimit-Remaining": String(remaining - 1),
+      "X-RateLimit-Remaining": String(quota.remaining - 1),
     },
   });
 }
