@@ -1,6 +1,6 @@
 # TODOs
 
-Captured during /plan-eng-review on 2026-03-12.
+Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17.
 
 ---
 
@@ -169,3 +169,48 @@ portraits are visible to students in some form.
 Add this endpoint alongside any future "your coaching profile" UI.
 
 **Effort:** S | **Priority:** P3 | **Depends on:** Portrait system shipping
+
+---
+
+## TODO-10: Behavioral compliance eval harness
+
+**What:** A script (`scripts/eval-chat.ts`) that sends a set of scripted messages through the `/api/lab/chat` endpoint and grades each response for behavioral compliance: no bullet lists, ends with a question, quote present in feedback phase, one-problem focus.
+
+**Why:** There's currently no way to detect regressions when the system prompt is updated. Every prompt change requires manual QA. An eval harness makes prompt iteration scientific instead of intuitive.
+
+**Pros:** Catches regressions automatically. Makes prompt A/B testing possible. Unlocks confident iteration.
+**Cons:** Effort to build and maintain the test fixture. Real API calls = real cost per run.
+
+**Context:** The harness would run 5–10 pre-scripted conversation stubs (opening message only, 4-turn conversation ending with essay upload, etc.) and parse each response for: (1) no lines starting with `-` or `*`, (2) response ends with `?`, (3) at least one `>` blockquote line in feedback phase. Run as `npx tsx --env-file=.env.local scripts/eval-chat.ts`. Add to CI as an optional check.
+
+**Effort:** L | **Priority:** P2 | **Depends on:** Behavioral layer shipping
+
+---
+
+## TODO-11: Phase threshold tuning via named constants
+
+**What:** Replace the magic numbers in `inferPhase()` (`<= 2`, `<= 8`) with named constants at the top of the module. Optional stretch: make them env-configurable via `LAB_OPENING_TURNS` and `LAB_DIAGNOSING_TURNS`.
+
+**Why:** If the phase boundaries feel wrong in production (e.g., Sam is still in "opening" mode on message 3 when the student already pasted a draft), you currently need a code change + redeploy to adjust. Named constants at minimum, env vars for faster tuning.
+
+**Pros:** Faster iteration on session arc feel without deploys.
+**Cons:** Env vars add configuration overhead. Named constants alone are sufficient for most cases.
+
+**Context:** `inferPhase` lives in `lib/behavioral-constraints.ts` alongside `buildBehavioralConstraints`. The thresholds are named constants (`OPENING_TURNS = 2`, `DIAGNOSING_TURNS = 8`): 0–2 messages = OPENING, 3–8 = DIAGNOSING, 9+ = COACHING. File upload always overrides to FEEDBACK regardless of count.
+
+**Effort:** S | **Priority:** P3 | **Depends on:** Behavioral layer shipping + 1 week of usage data
+
+---
+
+## TODO-12: DB-persisted session phase for admin visibility
+
+**What:** Add `session_phase TEXT DEFAULT 'opening'` to the `conversations` table. Write the inferred phase on each turn. Surface it in `/admin/dashboard` alongside the conversation list so Sam can see where each student is in their arc and manually reset stuck sessions.
+
+**Why:** Message-count phase inference is invisible — there's no way to know from the outside whether any session is in the right phase. Admin visibility lets you diagnose cases where a student has been in "OPENING" mode for 20 messages.
+
+**Pros:** Full observability into session health. Enables manual reset. Foundation for session quality metrics.
+**Cons:** Additional migration + per-turn DB write. Admin UI work.
+
+**Context:** The migration is trivial (one ALTER TABLE). The per-turn write goes in the `after()` block in `app/api/lab/chat/route.ts` alongside the existing conversation `updated_at` write. The admin dashboard is at `app/admin/dashboard/page.tsx`.
+
+**Effort:** M | **Priority:** P3 | **Depends on:** Behavioral layer shipping + enough sessions to make phase data interesting

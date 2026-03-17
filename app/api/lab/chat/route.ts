@@ -2,6 +2,7 @@ import { NextRequest, after } from "next/server";
 import { getCallerUser } from "@/lib/lab-auth";
 import { getSupabase } from "@/lib/supabase";
 import { buildSystemPromptForUser, writePortraitNote } from "@/lib/lab-profile";
+import { inferPhase } from "@/lib/behavioral-constraints";
 import {
   embedQuery,
   retrievePlaybookByVector,
@@ -188,10 +189,15 @@ export async function POST(request: NextRequest) {
     ? `[Attached document: "${file_name ?? "document"}"]\n\n${safeFileText}\n\n---\n\n${message}`
     : message;
 
-  // ── build system prompt (Layer 1: identity + Layer 2: student/portrait) ───
+  // ── build system prompt (Layer 0: constraints + Layer 1: identity + Layer 2: student) ──
+  // inferPhase determines Sam's behavioral mode for this turn. File attachment always
+  // triggers FEEDBACK phase regardless of conversation length.
+  const phase = inferPhase(history.length, !!safeFileText);
+  console.log("[lab/chat] phase", { phase, historyLen: history.length, hasFile: !!safeFileText });
+
   // Pass isNewConversation so the function can inject the returning-session opener
   // when the student has portrait notes and this is their first message here.
-  let systemContent = await buildSystemPromptForUser(user.id, history.length === 0);
+  let systemContent = await buildSystemPromptForUser(user.id, history.length === 0, phase);
 
   // ── embed once, retrieve playbook + case studies in parallel (Layer 3) ────
   //

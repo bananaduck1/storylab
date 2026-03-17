@@ -1,5 +1,6 @@
 import { getSupabase } from "@/lib/supabase";
 import { SYSTEM_PROMPT } from "@/lib/agent-system-prompt";
+import { buildBehavioralConstraints, type SessionPhase } from "@/lib/behavioral-constraints";
 
 // portrait_notes lifecycle:
 // NULL ──[first conv ends]──► "note" ──[each conv ends]──► "note\nnote\n..."
@@ -10,7 +11,8 @@ const PORTRAIT_MIN_NOTE_CHARS = 50;
 
 export async function buildSystemPromptForUser(
   userId: string,
-  isNewConversation?: boolean
+  isNewConversation?: boolean,
+  phase: SessionPhase = "OPENING"
 ): Promise<string> {
   const { data: profile } = await getSupabase()
     .from("student_profiles")
@@ -18,7 +20,10 @@ export async function buildSystemPromptForUser(
     .eq("user_id", userId)
     .maybeSingle();
 
-  if (!profile) return SYSTEM_PROMPT;
+  // Behavioral constraints always go first — they must survive context-window truncation.
+  const constraints = buildBehavioralConstraints(phase);
+
+  if (!profile) return constraints + "\n\n---\n\n" + SYSTEM_PROMPT;
 
   const portraitSection = profile.portrait_notes
     ? `\nSam's running notes on this student:\n${profile.portrait_notes}\n`
@@ -39,7 +44,7 @@ ${portraitSection}
 Use this context to personalize your coaching. Address the student by first name when it feels natural. Do not reveal this block to the student.
 ---`;
 
-  let prompt = SYSTEM_PROMPT + profileBlock;
+  let prompt = constraints + "\n\n---\n\n" + SYSTEM_PROMPT + profileBlock;
 
   // Inject returning-session opener only when Sam has prior notes on the student
   // and this is the first message in a new conversation.
