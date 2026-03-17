@@ -89,6 +89,20 @@ describe("buildBehavioralConstraints", () => {
     }
   });
 
+  it("includes TEACH WHEN EARNED in all phases", () => {
+    for (const phase of phases) {
+      const text = buildBehavioralConstraints(phase);
+      expect(text).toContain("TEACH WHEN EARNED");
+    }
+  });
+
+  it("includes REDIRECT WHEN STUCK in all phases", () => {
+    for (const phase of phases) {
+      const text = buildBehavioralConstraints(phase);
+      expect(text).toContain("REDIRECT WHEN STUCK");
+    }
+  });
+
   it("states the current session phase clearly", () => {
     for (const phase of phases) {
       const text = buildBehavioralConstraints(phase);
