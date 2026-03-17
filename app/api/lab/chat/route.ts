@@ -1,8 +1,12 @@
 import { NextRequest, after } from "next/server";
 import { getCallerUser } from "@/lib/lab-auth";
 import { getSupabase } from "@/lib/supabase";
-import { buildSystemPromptForUser } from "@/lib/lab-profile";
-import { retrieveKnowledge } from "@/lib/knowledge-retrieval";
+import { buildSystemPromptForUser, writePortraitNote } from "@/lib/lab-profile";
+import {
+  embedQuery,
+  retrievePlaybookByVector,
+  retrieveCaseStudyByVector,
+} from "@/lib/knowledge-retrieval";
 import { checkQuota, debitQuota } from "@/lib/lab-quota";
 
 const MAX_FILE_TEXT_LENGTH = 8000;
@@ -12,8 +16,59 @@ const HISTORY_LIMIT = 20;
 // 4096 tokens ≈ 3,000 words — generous for a coaching response without runaway costs.
 const MAX_RESPONSE_TOKENS = 4096;
 
+// gpt-4o-mini for portrait notes — cheap and fast; runs in after() so latency doesn't matter.
+const PORTRAIT_MODEL = "gpt-4o-mini";
+
 // Set LAB_DEBUG=1 in .env.local to log request payloads to server console.
 const DEBUG = process.env.LAB_DEBUG === "1";
+
+// Generates a brief note for Sam's portrait of this student based on the conversation.
+// Returns an empty string on failure so the caller's guard handles it cleanly.
+export async function generatePortraitNote(
+  apiKey: string,
+  recentUserMessages: string[],
+  assistantSummary: string
+): Promise<string> {
+  const context = [
+    "Recent student messages:",
+    ...recentUserMessages.map((m, i) => `[${i + 1}] ${m.slice(0, 300)}`),
+    "",
+    "Sam's response (summary):",
+    assistantSummary.slice(0, 200),
+  ].join("\n");
+
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: PORTRAIT_MODEL,
+      max_tokens: 150,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are Sam's memory system. Given this coaching exchange, write 1–3 sentences " +
+            "about what Sam should remember about this student for the next session. " +
+            "Be specific: note patterns, topics, personal details, emotional responses, " +
+            "or where the student is stuck. Write in third person " +
+            "(e.g., 'Student mentioned...', 'Student tends to...'). " +
+            "Capture only what's worth carrying forward — skip generic observations.",
+        },
+        { role: "user", content: context },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Portrait generation failed: ${res.status}`);
+  }
+
+  const json = await res.json();
+  return (json.choices?.[0]?.message?.content as string | undefined) ?? "";
+}
 
 export async function POST(request: NextRequest) {
   const user = await getCallerUser();
@@ -133,27 +188,48 @@ export async function POST(request: NextRequest) {
     ? `[Attached document: "${file_name ?? "document"}"]\n\n${safeFileText}\n\n---\n\n${message}`
     : message;
 
-  // ── build system prompt (profile + RAG) ──────────────────────────────────
-  let systemContent = await buildSystemPromptForUser(user.id);
+  // ── build system prompt (Layer 1: identity + Layer 2: student/portrait) ───
+  // Pass isNewConversation so the function can inject the returning-session opener
+  // when the student has portrait notes and this is their first message here.
+  let systemContent = await buildSystemPromptForUser(user.id, history.length === 0);
 
-  // When a document is attached, query RAG with the essay text (first 1 500 chars)
-  // plus the user's message so retrieval targets the actual draft content, not just
-  // a generic "please review" string.
+  // ── embed once, retrieve playbook + case studies in parallel (Layer 3) ────
+  //
+  // RAG layers:
+  //   Layer 3a — playbook: behavioral rules, techniques to apply NOW
+  //   Layer 3b — case studies: past student examples, use as ANALOGY
+  //
+  // We embed the query once and pass the vector to both typed retrievals
+  // to avoid a duplicate embeddings API call.
   const ragQuery = safeFileText
     ? `${message}\n\n${safeFileText.slice(0, 1500)}`
     : message;
 
-  let ragChunks: string[] = [];
+  let playbookChunks: string[] = [];
+  let caseStudyChunks: string[] = [];
+
   try {
-    ragChunks = await retrieveKnowledge(ragQuery, { limit: 6 });
-    if (ragChunks.length > 0) {
-      systemContent +=
-        "\n\n---\nRELEVANT TRAINING CONTEXT (from playbook and case studies):\n\n" +
-        ragChunks.join("\n\n---\n\n") +
-        "\n---";
-    }
+    const ragVector = await embedQuery(ragQuery);
+    [playbookChunks, caseStudyChunks] = await Promise.all([
+      retrievePlaybookByVector(ragVector, 3),
+      retrieveCaseStudyByVector(ragVector, 2),
+    ]);
   } catch {
     // best-effort RAG — proceed without it
+  }
+
+  if (playbookChunks.length > 0) {
+    systemContent +=
+      "\n\n---\nPLAYBOOK TECHNIQUES — APPLY NOW:\n\n" +
+      playbookChunks.join("\n\n---\n\n") +
+      "\n---";
+  }
+
+  if (caseStudyChunks.length > 0) {
+    systemContent +=
+      "\n\n---\nPAST STUDENT EXAMPLES — REFERENCE AS ANALOGY (not as rules):\n\n" +
+      caseStudyChunks.join("\n\n---\n\n") +
+      "\n---";
   }
 
   // ── debug logging ─────────────────────────────────────────────────────────
@@ -161,9 +237,10 @@ export async function POST(request: NextRequest) {
     console.log("[lab/chat/debug] request payload summary", {
       userId: user.id,
       conversationId: conversation_id,
+      isNewConversation: history.length === 0,
       systemPromptChars: systemContent.length,
-      ragChunksRetrieved: ragChunks.length,
-      ragChunkLengths: ragChunks.map((c) => c.length),
+      playbookChunksRetrieved: playbookChunks.length,
+      caseStudyChunksRetrieved: caseStudyChunks.length,
       historyMessages: history.length,
       effectiveContentChars: effectiveContent.length,
       hasFileAttachment: !!safeFileText,
@@ -257,7 +334,13 @@ export async function POST(request: NextRequest) {
         reader.releaseLock();
         controller.close();
 
+        // after() side effects (non-blocking, best-effort):
+        // 1. persist assistant message
+        // 2. debit quota
+        // 3. update conversation timestamp
+        // 4. generate + write portrait note
         after(async () => {
+          // Critical persistence — logged on failure
           try {
             if (accumulated) {
               await db.from("conversation_messages").insert({
@@ -274,6 +357,38 @@ export async function POST(request: NextRequest) {
               .eq("id", conversation_id);
           } catch (persistErr) {
             console.error("Failed to persist chat turn:", persistErr);
+          }
+
+          // Portrait note — best-effort, never blocks or throws
+          if (accumulated) {
+            try {
+              // Build context from the last few user turns + this one
+              const recentUserMessages = [
+                ...history.filter((m) => m.role === "user").slice(-2).map((m) => m.content),
+                message,
+              ];
+
+              const note = await generatePortraitNote(apiKey, recentUserMessages, accumulated);
+
+              // Fetch current portrait to support rolling cap in writePortraitNote
+              const { data: profileRow } = await db
+                .from("student_profiles")
+                .select("portrait_notes")
+                .eq("user_id", user.id)
+                .maybeSingle();
+
+              await writePortraitNote(
+                user.id,
+                profileRow?.portrait_notes ?? null,
+                note
+              );
+            } catch (portraitErr) {
+              console.error("[lab/portrait] failed", {
+                userId: user.id,
+                conversationId: conversation_id,
+                error: String(portraitErr),
+              });
+            }
           }
         });
       }

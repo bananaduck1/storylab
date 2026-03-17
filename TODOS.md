@@ -65,3 +65,107 @@ Captured during /plan-eng-review on 2026-03-12.
 **Context:** The fix is to add `profileData?: object` as an optional second parameter to `checkQuota`. If provided, skip the `student_profiles` SELECT. The chat route (`app/api/lab/chat/route.ts`) calls `checkQuota` without a profile and should continue doing so. Only `app/lab/page.tsx` passes it. The duplicate SELECT is at `page.tsx` line ~21 (`db.from("student_profiles").select("*")`) and inside `checkQuota` at `lib/lab-quota.ts` line ~25.
 
 **Depends on:** Nothing. Independent refactor.
+
+---
+
+## TODO-5: System prompt XML restructuring
+
+**What:** Convert the quick-reference tables in Section 6 of `lib/agent-system-prompt.ts`
+(Symptom → First Move, Student State → Move) from plain markdown to structured XML tags
+(e.g., `<symptom>`, `<first_move>`).
+
+**Why:** GPT-4o parses structured XML tags more reliably than markdown tables in long system
+prompts. The behavioral `→ Agent:` directives may be compressed in the model's attention
+over a 600-line document.
+
+**Pros:** Higher signal-to-noise for the most actionable rules.
+**Cons:** Requires careful prompt regression testing — any change to the system prompt needs
+eval against baseline behavior before shipping.
+
+**Context:** Deferred because it's hard to isolate what fixed what if you change the prompt
+and the memory architecture simultaneously. Ship the portrait/RAG changes first, observe
+whether the agent still produces generic responses, then restructure the prompt if needed.
+
+**Effort:** M | **Priority:** P2 | **Depends on:** Portrait system shipping + 1 week of data
+
+---
+
+## TODO-6: Structured portrait JSON schema
+
+**What:** Replace free-text `student_profiles.portrait_notes` with a structured JSON schema:
+`{ deflection_patterns, essay_topics_tried, recurring_phrases, key_personal_details, last_updated }`.
+
+**Why:** Structured fields enable targeted retrieval and richer system prompt injection
+(e.g., "this student tends to deflect when asked about family").
+
+**Pros:** Much more queryable. Admin UI can display structured data cleanly.
+**Cons:** Requires a migration and a rewrite of `generatePortraitNote` + `writePortraitNote`.
+Risk: designing the schema before you know what the AI naturally wants to record.
+
+**Context:** Start by reading 20–30 actual `portrait_notes` values after the free-text system
+has been running for a week. Let the real data drive the schema. Do not design speculatively.
+`writePortraitNote` is in `lib/lab-profile.ts`. `generatePortraitNote` is in `app/api/lab/chat/route.ts`.
+
+**Effort:** M | **Priority:** P2 | **Depends on:** 1–2 weeks of portrait accumulation data
+
+---
+
+## TODO-7: Admin portrait visibility
+
+**What:** Add a read-only display of `student_profiles.portrait_notes` to `/admin/dashboard`
+so Sam can inspect what the AI has learned about each /lab student.
+
+**Why:** Without visibility, there's no way to verify portrait quality or catch cases where
+the AI is writing unhelpful notes.
+
+**Pros:** Trust signal. Debugging tool.
+**Cons:** Exposes AI-written internal notes in the UI — need to make clear these are
+agent-generated, not Sam's own notes.
+
+**Context:** `/admin/dashboard` is at `app/admin/dashboard/page.tsx`. Note that admin uses
+a separate `students` table with its own `portraits` table (narratives), while /lab stores
+its notes in `student_profiles.portrait_notes`. These are different data sources. The admin
+view would need to join or query `student_profiles` by matching email/identity.
+
+**Effort:** S | **Priority:** P2 | **Depends on:** Portrait system shipping + real data to display
+
+---
+
+## TODO-8: Diagnostic intent pre-classification
+
+**What:** Before `retrievePlaybookByVector`, make a brief gpt-4o-mini call to classify
+the coaching challenge in the student's message (e.g., "expository ending", "fluency trap",
+"no pivot scene"). Use the classification as the retrieval query instead of the raw message.
+
+**Why:** Cosine similarity over raw student messages retrieves chunks semantically similar
+to the topic (e.g., "piano") rather than the coaching technique needed ("find the left clavicle").
+Classification routes retrieval by diagnostic intent, not keyword.
+
+**Pros:** More targeted playbook retrieval. Higher precision.
+**Cons:** ~300ms synchronous latency. ~$0.002/message classification cost.
+
+**Context:** Validate that the current RAG separation (typed retrieval + differentiated labels)
+alone fixes generic responses before adding this. The classification call would go in
+`app/api/lab/chat/route.ts` before the `embedQuery` call, replacing the raw `ragQuery`
+string with a coaching-intent classification.
+
+**Effort:** M | **Priority:** P3 | **Depends on:** RAG separation + 2 weeks of usage data
+
+---
+
+## TODO-9: Portrait reset endpoint
+
+**What:** `POST /api/lab/portrait/reset` — clears `student_profiles.portrait_notes` for
+the authenticated user.
+
+**Why:** A student who had a bad or uncharacteristic first conversation could be stuck with
+misleading portrait notes indefinitely.
+
+**Pros:** Low implementation cost (~20 lines). Strong trust signal.
+**Cons:** Students don't currently know portrait_notes exists. May not be needed until
+portraits are visible to students in some form.
+
+**Context:** For now Sam can manually clear portrait_notes via Supabase dashboard if needed.
+Add this endpoint alongside any future "your coaching profile" UI.
+
+**Effort:** S | **Priority:** P3 | **Depends on:** Portrait system shipping

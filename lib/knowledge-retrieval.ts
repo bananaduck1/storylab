@@ -13,7 +13,7 @@ interface KnowledgeChunk {
   similarity: number;
 }
 
-async function embedQuery(query: string): Promise<number[]> {
+export async function embedQuery(query: string): Promise<number[]> {
   const res = await fetch("https://api.openai.com/v1/embeddings", {
     method: "POST",
     headers: {
@@ -32,14 +32,14 @@ async function embedQuery(query: string): Promise<number[]> {
   return json.data[0].embedding as number[];
 }
 
-export async function retrieveKnowledge(
-  query: string,
+// Internal: run the Supabase RPC with a pre-computed embedding vector.
+// Use this when you need to embed once and retrieve multiple chunk types in parallel.
+async function retrieveByVector(
+  vector: number[],
   options?: { chunkType?: ChunkType; limit?: number }
 ): Promise<string[]> {
-  const embedding = await embedQuery(query);
-
   const { data, error } = await getSupabase().rpc("match_knowledge_chunks", {
-    query_embedding: embedding,
+    query_embedding: vector,
     match_count: options?.limit ?? 5,
     filter_chunk_type: options?.chunkType ?? null,
   });
@@ -49,7 +49,24 @@ export async function retrieveKnowledge(
   return ((data ?? []) as KnowledgeChunk[]).map((row) => row.content);
 }
 
-// Convenience wrappers
+// Vector-based typed retrievals — for callers that embed once and retrieve in parallel.
+// The chat route uses these to avoid a second embedQuery call.
+export const retrievePlaybookByVector = (vector: number[], limit = 3) =>
+  retrieveByVector(vector, { chunkType: "playbook", limit });
+
+export const retrieveCaseStudyByVector = (vector: number[], limit = 2) =>
+  retrieveByVector(vector, { chunkType: "case_study", limit });
+
+// Full pipeline (embed + retrieve) — for callers that don't need embed-once optimization.
+export async function retrieveKnowledge(
+  query: string,
+  options?: { chunkType?: ChunkType; limit?: number }
+): Promise<string[]> {
+  const embedding = await embedQuery(query);
+  return retrieveByVector(embedding, options);
+}
+
+// String-based typed convenience wrappers — use when embed-once isn't needed.
 export const retrievePlaybook = (query: string, limit = 3) =>
   retrieveKnowledge(query, { chunkType: "playbook", limit });
 
