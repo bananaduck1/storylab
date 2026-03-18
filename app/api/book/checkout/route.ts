@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
   const {
     offering_type,
     availability_id,
+    teacher_id,
     parent_name,
     parent_email,
     student_grade,
@@ -98,6 +99,7 @@ export async function POST(req: NextRequest) {
     status: "pending",
   };
   if (availability_id) insertData.availability_id = availability_id;
+  if (teacher_id) insertData.teacher_id = teacher_id;
 
   const { data: booking, error: bookingError } = await supabase
     .from("bookings")

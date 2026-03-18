@@ -561,9 +561,10 @@ function ProgressDots({
 interface TeacherStorefrontContentProps {
   teacherSlug: string;
   teacherName: string;
+  acceptingBookings?: boolean;
 }
 
-export function TeacherStorefrontContent({ teacherSlug, teacherName }: TeacherStorefrontContentProps) {
+export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBookings = false }: TeacherStorefrontContentProps) {
   const sectionRefs = useRef<(HTMLElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -652,14 +653,16 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName }: TeacherSt
                   >
                     Try a free message →
                   </a>
-                  <Link
-                    href="/academy/book"
-                    aria-label="Book a session with Sam"
-                    className="inline-flex items-center rounded-[3px] border border-white/60 bg-transparent px-6 py-3 text-sm font-medium text-white hover:bg-white/10 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
-                    style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
-                  >
-                    Book a session →
-                  </Link>
+                  {acceptingBookings && (
+                    <Link
+                      href={`/teachers/${teacherSlug}/book`}
+                      aria-label={`Book a live session with ${teacherName}`}
+                      className="inline-flex items-center rounded-[3px] border border-white/60 bg-transparent px-6 py-3 text-sm font-medium text-white hover:bg-white/10 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+                      style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+                    >
+                      Book a session →
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>
@@ -965,10 +968,10 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName }: TeacherSt
               </p>
               <div className="mt-10">
                 <Link
-                  href={`/teachers/${teacherSlug}/pricing`}
+                  href={acceptingBookings ? `/teachers/${teacherSlug}/book` : `/teachers/${teacherSlug}`}
                   className="inline-flex items-center justify-center rounded-[3px] bg-[#2C4A3E] px-8 py-4 text-base font-medium text-white hover:bg-[#3A6054]"
                 >
-                  Book a session
+                  {acceptingBookings ? "Book a session" : "Start learning"}
                 </Link>
               </div>
             </div>

@@ -111,6 +111,9 @@ export default function TeacherDashboard({
           </div>
           <div className="flex items-center gap-4">
             <NotificationBell variant="dark" />
+            <Link href="/dashboard/availability" className="text-sm text-zinc-400 hover:text-white transition-colors">
+              Availability
+            </Link>
             <Link href="/dashboard/settings" className="text-sm text-zinc-400 hover:text-white transition-colors">
               Settings
             </Link>

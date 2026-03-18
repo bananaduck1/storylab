@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { google, calendar_v3 } from "googleapis";
 import { getSupabase } from "@/lib/supabase";
 
+interface TeacherRow {
+  id: string;
+  slug: string | null;
+  google_calendar_id: string | null;
+}
+
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
@@ -94,13 +100,35 @@ export async function GET(req: NextRequest) {
   }
 
   const config = getConfig();
-  const now = new Date();
+  const supabase = getSupabase();
 
-  const windowEnd = new Date(now);
-  windowEnd.setDate(windowEnd.getDate() + config.lookaheadDays);
+  // ── Fetch all teachers with a configured google_calendar_id ──────────────
+  // Fall back to the env-var calendar (Sam's) for any teacher with slug='sam-a'
+  // that has no google_calendar_id set yet (backward compatibility).
+  const { data: teachers, error: teacherErr } = await supabase
+    .from("teachers")
+    .select("id, slug, google_calendar_id")
+    .eq("storefront_published", true);
 
-  // ── 1. Fetch Google Calendar events ────────────────────────────────────────
+  if (teacherErr) {
+    console.error("[sync-availability] Failed to fetch teachers:", teacherErr);
+    return NextResponse.json({ error: "Failed to fetch teachers" }, { status: 500 });
+  }
 
+  // Build effective teacher list: use DB google_calendar_id if set;
+  // fall back to env vars for Sam so we don't break the live deployment.
+  const effectiveTeachers: Array<TeacherRow & { effectiveCalendarId: string }> = [];
+  for (const t of teachers ?? []) {
+    const calId = t.google_calendar_id ?? (t.slug === "sam-a" ? config.calendarId : null);
+    if (!calId) continue;
+    effectiveTeachers.push({ ...t, effectiveCalendarId: calId });
+  }
+
+  if (effectiveTeachers.length === 0) {
+    return NextResponse.json({ ok: true, inserted: 0, checked: 0, teachers: 0 });
+  }
+
+  // Shared Google auth (service account — same credentials for all teachers for now)
   const auth = new google.auth.JWT({
     email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
     key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, "\n"),
@@ -108,34 +136,60 @@ export async function GET(req: NextRequest) {
   });
   const gcal = google.calendar({ version: "v3", auth });
 
+  let totalInserted = 0;
+  let totalChecked = 0;
+
+  for (const teacher of effectiveTeachers) {
+    const inserted = await syncTeacher(teacher, teacher.effectiveCalendarId, gcal, supabase, config);
+    totalInserted += inserted;
+    totalChecked += config.lookaheadDays * (config.slotEndHour - config.slotStartHour);
+    console.log(`[sync-availability] teacher=${teacher.slug} inserted=${inserted}`);
+  }
+
+  return NextResponse.json({
+    ok: true,
+    inserted: totalInserted,
+    checked: totalChecked,
+    teachers: effectiveTeachers.length,
+  });
+}
+
+async function syncTeacher(
+  teacher: TeacherRow,
+  calendarId: string,
+  gcal: calendar_v3.Calendar,
+  supabase: ReturnType<typeof getSupabase>,
+  config: ReturnType<typeof getConfig>
+): Promise<number> {
+  const now = new Date();
+  const windowEnd = new Date(now);
+  windowEnd.setDate(windowEnd.getDate() + config.lookaheadDays);
+
+  // ── 1. Fetch Google Calendar events for this teacher ────────────────────
   let calEvents: calendar_v3.Schema$Event[] = [];
   try {
     const res = await gcal.events.list({
-      calendarId: config.calendarId,
+      calendarId,
       timeMin: now.toISOString(),
       timeMax: windowEnd.toISOString(),
-      singleEvents: true, // expands recurring events
+      singleEvents: true,
       orderBy: "startTime",
     });
     calEvents = res.data.items ?? [];
   } catch (err) {
-    console.error("[sync-availability] Google Calendar fetch failed:", err);
-    return NextResponse.json({ error: "Calendar fetch failed" }, { status: 500 });
+    console.error(`[sync-availability] GCal fetch failed for teacher=${teacher.slug}:`, err);
+    return 0; // non-fatal — skip this teacher, continue with others
   }
 
-  // Build timed intervals only (skip all-day events like birthdays/reminders).
   const calIntervals = calEvents
     .map(timedInterval)
     .filter((e): e is { start: Date; end: Date } => e !== null);
 
-  // ── 2. Fetch existing Supabase state ────────────────────────────────────────
-
-  const supabase = getSupabase();
-
-  // All existing availability slots in the window — to avoid duplicates.
+  // ── 2. Fetch existing slots for this teacher ────────────────────────────
   const { data: existingSlots } = await supabase
     .from("availability")
     .select("datetime")
+    .eq("teacher_id", teacher.id)
     .eq("offering_type", config.offeringType)
     .gte("datetime", now.toISOString())
     .lte("datetime", windowEnd.toISOString());
@@ -144,14 +198,14 @@ export async function GET(req: NextRequest) {
     (existingSlots ?? []).map((s) => new Date(s.datetime).toISOString())
   );
 
-  // All pending/confirmed bookings in the window — to enforce daily booking cap.
+  // ── 3. Count this teacher's bookings per day (daily cap) ────────────────
   const { data: existingBookings } = await supabase
     .from("bookings")
     .select("availability:availability_id(datetime)")
+    .eq("teacher_id", teacher.id)
     .eq("offering_type", config.offeringType)
     .in("status", ["pending", "confirmed"]);
 
-  // Count bookings per ET calendar date.
   const bookingsByDate: Record<string, number> = {};
   for (const b of existingBookings ?? []) {
     const raw = b.availability as unknown;
@@ -163,29 +217,23 @@ export async function GET(req: NextRequest) {
     bookingsByDate[d] = (bookingsByDate[d] ?? 0) + 1;
   }
 
-  // ── 3. Generate free slots ─────────────────────────────────────────────────
-
-  const slotsToInsert: { offering_type: string; datetime: string; is_booked: boolean }[] = [];
+  // ── 4. Generate free slots ──────────────────────────────────────────────
+  const slotsToInsert: { offering_type: string; datetime: string; is_booked: boolean; teacher_id: string }[] = [];
 
   for (let dayOffset = 0; dayOffset < config.lookaheadDays; dayOffset++) {
     const dayDate = new Date(now);
     dayDate.setUTCDate(dayDate.getUTCDate() + dayOffset);
     const dateStr = etDateStr(dayDate);
 
-    // Skip days at or over the daily booking cap.
     if ((bookingsByDate[dateStr] ?? 0) >= config.maxDailyBookings) continue;
 
     for (let hour = config.slotStartHour; hour < config.slotEndHour; hour++) {
       const slotStart = makeETDate(dateStr, hour,     0);
       const slotEnd   = makeETDate(dateStr, hour + 1, 0);
 
-      // Skip anything that hasn't started at least 30 minutes from now.
       if (slotStart.getTime() <= now.getTime() + config.bufferMinutes * 60_000) continue;
-
-      // Skip if this slot already exists in the availability table.
       if (existingSlotISOs.has(slotStart.toISOString())) continue;
 
-      // The protected window: 30 min before slot start through 30 min after slot end.
       const bufferStart = new Date(slotStart.getTime() - config.bufferMinutes * 60_000);
       const bufferEnd   = new Date(slotEnd.getTime()   + config.bufferMinutes * 60_000);
 
@@ -198,41 +246,21 @@ export async function GET(req: NextRequest) {
           offering_type: config.offeringType,
           datetime: slotStart.toISOString(),
           is_booked: false,
+          teacher_id: teacher.id,
         });
-        // Prevent duplicates within the same run.
         existingSlotISOs.add(slotStart.toISOString());
       }
     }
   }
 
-  // ── 4. Insert ──────────────────────────────────────────────────────────────
-
-  let inserted = 0;
+  // ── 5. Insert ────────────────────────────────────────────────────────────
   if (slotsToInsert.length > 0) {
     const { error } = await supabase.from("availability").insert(slotsToInsert);
     if (error) {
-      console.error("[sync-availability] Supabase insert failed:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error(`[sync-availability] Insert failed for teacher=${teacher.slug}:`, error);
+      return 0;
     }
-    inserted = slotsToInsert.length;
   }
 
-  const totalChecked = config.lookaheadDays * (config.slotEndHour - config.slotStartHour);
-
-  console.log(
-    `[sync-availability] Done. Inserted ${inserted} slots out of ${totalChecked} checked.`
-  );
-
-  return NextResponse.json({
-    ok: true,
-    inserted,
-    checked: totalChecked,
-    config: {
-      slotStartHour: config.slotStartHour,
-      slotEndHour:   config.slotEndHour,
-      lookaheadDays: config.lookaheadDays,
-      bufferMinutes: config.bufferMinutes,
-      maxDailyBookings: config.maxDailyBookings,
-    },
-  });
+  return slotsToInsert.length;
 }

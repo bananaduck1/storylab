@@ -310,10 +310,11 @@ function Step3Pricing({
 }) {
   const [monthlyPrice, setMonthlyPrice] = useState("");
   const [sessionPrice, setSessionPrice] = useState("");
+  const [googleCalendarId, setGoogleCalendarId] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onNext({ monthlyPrice, sessionPrice });
+    onNext({ monthlyPrice, sessionPrice, googleCalendarId });
   };
 
   return (
@@ -388,6 +389,32 @@ function Step3Pricing({
           style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Per 1-hour live video coaching session.
+        </p>
+      </div>
+
+      <div>
+        <label
+          htmlFor="google-calendar-id"
+          className="block text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-2"
+          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+        >
+          Google Calendar ID (optional)
+        </label>
+        <input
+          id="google-calendar-id"
+          type="text"
+          value={googleCalendarId}
+          onChange={(e) => setGoogleCalendarId(e.target.value)}
+          placeholder="your-calendar@group.calendar.google.com"
+          className="w-full rounded-[4px] border border-[#C0D9CB] bg-white px-4 py-3 text-base text-[#1A2E26] placeholder-[#1A2E26]/30 focus:outline-none focus:ring-2 focus:ring-[#2C4A3E]/30"
+          style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
+        />
+        <p
+          className="mt-1.5 text-xs text-[#1A2E26]/40"
+          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+        >
+          Connect your Google Calendar to automatically sync your available booking slots.
+          Find this in Google Calendar → Settings → your calendar → Calendar ID.
         </p>
       </div>
 
@@ -558,6 +585,7 @@ interface AgentConfigData {
 interface PricingData {
   monthlyPrice: string;
   sessionPrice: string;
+  googleCalendarId: string;
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────

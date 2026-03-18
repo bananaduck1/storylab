@@ -45,7 +45,7 @@ export default async function TeacherStorefrontPage({ params }: Props) {
 
   const { data: teacher } = await supabase
     .from("teachers")
-    .select("id, name, slug, subject, bio, photo_url, quote, storefront_published")
+    .select("id, name, slug, subject, bio, photo_url, quote, storefront_published, accepting_bookings")
     .eq("slug", slug)
     .eq("storefront_published", true)
     .maybeSingle();
@@ -56,6 +56,7 @@ export default async function TeacherStorefrontPage({ params }: Props) {
     <TeacherStorefrontContent
       teacherSlug={teacher.slug}
       teacherName={teacher.name}
+      acceptingBookings={teacher.accepting_bookings ?? false}
     />
   );
 }
