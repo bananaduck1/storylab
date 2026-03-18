@@ -2,13 +2,16 @@
 
 // VideoRoom — in-platform video session using Daily.co.
 //
-// Transcript strategy: Web Speech API (teacher side only, MVP).
-// The teacher's browser captures their own mic input via SpeechRecognition.
-// Transcript accumulates in React state. On session end, it is POSTed to
-// /api/session/[id]/complete which triggers portrait generation.
+// Transcript strategy: Web Speech API on both teacher AND student browsers.
+// Each participant's browser captures their own mic input and streams chunks to
+// POST /api/session/[id]/transcript as they speak. The server merges chunks by
+// timestamp on session complete into a full labelled dialogue.
 //
-// Phase 2: replace with bidirectional Deepgram WebSocket transcript.
-// See TODO-18 (SSE coaching sidebar) and TODO-19 (recording storage).
+// Chrome/Edge only — Web Speech API is not available in Safari/Firefox.
+// Browsers without support silently skip transcription (session still works).
+//
+// Phase 2: replace with Deepgram WebSocket for browser-agnostic bidirectional
+// transcription. See TODO-21 (Deepgram upgrade) and TODO-22 (Daily.co paid plan).
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import DailyIframe, { DailyCall } from "@daily-co/daily-js";
@@ -27,23 +30,33 @@ export default function VideoRoom({
   const containerRef = useRef<HTMLDivElement>(null);
   const callRef = useRef<DailyCall | null>(null);
   const recognitionRef = useRef<any>(null);
-  const transcriptRef = useRef<string>("");
   const sessionStartRef = useRef<number>(Date.now());
+  const endedRef = useRef(false);
 
   const [joined, setJoined] = useState(false);
-  const [ended, setEnded] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Local transcript only used for coaching sidebar (teacher) — chunks are persisted server-side
   const [transcript, setTranscript] = useState("");
 
-  // Keep transcriptRef in sync for use inside callbacks
-  useEffect(() => {
-    transcriptRef.current = transcript;
-  }, [transcript]);
+  // Post a single speech chunk to the server (fire-and-forget, non-fatal)
+  const postChunk = useCallback(
+    (text: string) => {
+      fetch(`/api/session/${sessionId}/transcript`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, timestamp_ms: Date.now() }),
+      }).catch(() => {
+        // Non-fatal — chunk is lost but session continues
+      });
+    },
+    [sessionId]
+  );
 
   const completeSession = useCallback(async () => {
-    if (completing || completed) return;
+    if (endedRef.current) return;
+    endedRef.current = true;
     setCompleting(true);
 
     const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
@@ -52,10 +65,7 @@ export default function VideoRoom({
       await fetch(`/api/session/${sessionId}/complete`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          transcript: transcriptRef.current,
-          duration_seconds: durationSeconds,
-        }),
+        body: JSON.stringify({ duration_seconds: durationSeconds }),
       });
       setCompleted(true);
     } catch (err) {
@@ -63,14 +73,13 @@ export default function VideoRoom({
     } finally {
       setCompleting(false);
     }
-  }, [sessionId, completing, completed]);
+  }, [sessionId]);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     async function initCall() {
       try {
-        // Fetch a Daily.co meeting token for this user
         const tokenRes = await fetch(`/api/session/${sessionId}/token`);
         if (!tokenRes.ok) {
           const j = await tokenRes.json();
@@ -93,7 +102,6 @@ export default function VideoRoom({
         callRef.current = call;
 
         call.on("left-meeting", async () => {
-          setEnded(true);
           recognitionRef.current?.stop();
           if (isTeacher) {
             await completeSession();
@@ -122,14 +130,16 @@ export default function VideoRoom({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, roomName]);
 
-  // Web Speech API — teacher side only
+  // Web Speech API — both teacher and student capture their own mic.
+  // Teacher: chunks posted to server + accumulated locally for coaching sidebar.
+  // Student: chunks posted to server only.
   useEffect(() => {
-    if (!isTeacher || !joined) return;
+    if (!joined) return;
 
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      console.warn("[VideoRoom] Web Speech API not available in this browser");
+      console.warn("[VideoRoom] Web Speech API not available — transcript will be empty");
       return;
     }
 
@@ -145,20 +155,22 @@ export default function VideoRoom({
         .map((r: any) => r[0].transcript.trim())
         .join(" ");
       if (chunk) {
-        setTranscript((prev) => (prev ? `${prev} ${chunk}` : chunk));
+        postChunk(chunk);
+        // Teacher also maintains local state for coaching sidebar
+        if (isTeacher) {
+          setTranscript((prev) => (prev ? `${prev} ${chunk}` : chunk));
+        }
       }
     };
 
     recognition.onerror = (event: any) => {
-      // Restart on recoverable errors
       if (event.error === "no-speech" || event.error === "audio-capture") {
         try { recognition.start(); } catch {}
       }
     };
 
     recognition.onend = () => {
-      // Auto-restart unless session has ended
-      if (!ended) {
+      if (!endedRef.current) {
         try { recognition.start(); } catch {}
       }
     };
@@ -171,7 +183,7 @@ export default function VideoRoom({
     }
 
     return () => recognition.stop();
-  }, [isTeacher, joined, ended]);
+  }, [joined, isTeacher, postChunk]);
 
   if (error) {
     return (

@@ -1,6 +1,7 @@
 // POST /api/session/[id]/complete
-// Admin-only. Called by the teacher's browser when the session ends.
-// Saves the transcript, triggers portrait regeneration, generates parent email draft.
+// Teacher-only. Called by the teacher's browser when the session ends.
+// Reads transcript_chunks from DB (both teacher + student speech), merges into
+// a labelled dialogue, saves it, then triggers portrait regen + parent email draft.
 
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
@@ -33,14 +34,10 @@ export async function POST(
   }
 
   const body = await req.json();
-  const { transcript, duration_seconds } = body as {
-    transcript: string;
-    duration_seconds: number;
-  };
+  const { duration_seconds } = body as { duration_seconds: number };
 
   const supabase = getSupabase();
 
-  // Fetch session
   const { data: session, error: sessionErr } = await supabase
     .from("sessions")
     .select("*")
@@ -51,28 +48,39 @@ export async function POST(
     return NextResponse.json({ error: "Session not found" }, { status: 404 });
   }
 
+  // Read all transcript chunks for this session, sorted by timestamp
+  const { data: chunks } = await supabase
+    .from("transcript_chunks")
+    .select("speaker, text, timestamp_ms")
+    .eq("session_id", id)
+    .order("timestamp_ms", { ascending: true });
+
+  // Build labelled dialogue: "Sam: ...\nStudent: ..."
+  const dialogue = (chunks ?? [])
+    .map((c) => `${c.speaker === "teacher" ? "Sam" : "Student"}: ${c.text}`)
+    .join("\n");
+
   const transcriptQuality =
-    !transcript || transcript.trim().length < 50
+    !dialogue || dialogue.length < 50
       ? "none"
       : duration_seconds < 30
       ? "partial"
       : "full";
 
-  // Save transcript, mark completed, and set raw_notes in one atomic update
-  // so that portrait generation always has the notes available on retry.
+  // Atomic update: transcript + status + raw_notes for portrait generation
   const baseUpdate: Record<string, unknown> = {
-    transcript: transcript?.trim() ?? null,
+    transcript: dialogue || null,
     transcript_quality: transcriptQuality,
     status: "completed",
     portrait_status: "pending",
   };
   if (transcriptQuality !== "none") {
-    baseUpdate.raw_notes = transcript.trim();
+    baseUpdate.raw_notes = dialogue;
     baseUpdate.key_observations = `[Auto-transcribed session — ${Math.round(duration_seconds / 60)} min]`;
   }
   await supabase.from("sessions").update(baseUpdate).eq("id", id);
 
-  // Portrait regeneration — call lib directly (avoids internal HTTP auth issues)
+  // Portrait regeneration — call lib directly (no internal HTTP auth issues)
   let portraitGenerated = false;
 
   if (transcriptQuality !== "none") {
@@ -91,14 +99,13 @@ export async function POST(
         .eq("id", id);
     }
   } else {
-    // No usable transcript — skip portrait, mark as no-op
     await supabase
       .from("sessions")
       .update({ portrait_status: "skipped" })
       .eq("id", id);
   }
 
-  // Generate parent email draft (non-fatal if it fails)
+  // Generate parent email draft (non-fatal)
   if (transcriptQuality !== "none") {
     try {
       const { data: student } = await supabase
@@ -124,7 +131,7 @@ Current growth edge: ${(latestPortrait.content_json as any).current_growth_edge 
 Next session focus: ${(latestPortrait.content_json as any).next_session_focus ?? ""}` : ""}
 
 Transcript excerpt:
-${transcript.slice(0, 1500)}
+${dialogue.slice(0, 1500)}
 
 Write the parent update email body.`;
 

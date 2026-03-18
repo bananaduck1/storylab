@@ -321,3 +321,35 @@ Add this endpoint alongside any future "your coaching profile" UI.
 **Context:** The `portraits` table already stores versioned portraits. The visualization reads portrait history in chronological order and extracts the `current_growth_edge` field from each version to show progression. Start by reading 20+ real portrait histories after the video pipeline has been running for 4-6 weeks — let the real data drive the visualization design. Do not design this speculatively. The student-facing page is `/lab/profile` (already exists as a profile page). Add a "Your Development" section below the current profile card.
 
 **Effort:** L → CC: ~1 hr + design | **Priority:** P2 | **Depends on:** Phase 1 video pipeline shipping + 4-6 weeks of real portrait accumulation
+
+---
+
+## TODO-21: Upgrade transcript capture to Deepgram
+
+**What:** Replace the Web Speech API transcript capture with Deepgram's real-time WebSocket API, capturing both participants from the audio stream directly rather than from each browser's local microphone input.
+
+**Why:** Web Speech API only works in Chrome/Edge. Any participant on Safari or Firefox produces no transcript, silently degrading portrait quality. Deepgram processes the audio stream server-side and is browser-agnostic — the session works the same regardless of what browser the student or teacher uses.
+
+**Pros:** Works in all browsers. Bidirectional from a single audio stream (no coordination between two browsers required). Better accuracy. Enables real-time word-level timestamps for future recording sync.
+
+**Cons:** Costs ~$0.0043/min per participant (~$0.52/hour session). Requires a Deepgram API key and a WebSocket relay (the browser connects to our server, which proxies to Deepgram — browser can't connect to Deepgram directly without exposing the API key). More complex than the current two-browser approach.
+
+**Context:** Current implementation: each participant's browser runs `SpeechRecognition`, posts chunks to `POST /api/session/[id]/transcript`. Replace with: teacher's browser sends audio via WebSocket to a Next.js route handler (`/api/session/[id]/stream`), which pipes to Deepgram and writes chunks directly to `transcript_chunks` table. Student browser does the same. The `transcript_chunks` table schema is already in place — Deepgram just becomes the writer instead of the browser.
+
+**Effort:** M → CC: ~1 hr | **Priority:** P2 | **Depends on:** Phase 1 video pipeline shipping + real sessions to validate the Web Speech API limitation in practice
+
+---
+
+## TODO-22: Daily.co paid plan for scale
+
+**What:** Upgrade from Daily.co free tier to a paid plan as session volume grows, unlocking server-side webhooks, cloud recording, and usage analytics.
+
+**Why:** The current free tier requires client-side transcript capture (Web Speech API) because Daily.co webhooks require a paid plan. At scale, server-side transcript capture (Deepgram WebSocket or Daily.co's native transcription) is more reliable and enables features that don't depend on both participants staying connected until session end.
+
+**Pros:** Server-side transcript delivery — no lost chunks if a browser closes mid-session. Daily.co's native transcription as an alternative to Deepgram. Cloud recording. Usage dashboards. SLA guarantees.
+
+**Cons:** Cost scales with usage (~$0.00099/participant-minute on paid plans). Only worth upgrading once session volume justifies it — the free tier handles low-volume coaching well.
+
+**Context:** The current architecture was deliberately designed to avoid the paid plan requirement (see transcript_chunks approach). When upgrading, the primary change is: replace the client-side Web Speech API + `POST /api/session/[id]/transcript` flow with Daily.co's `transcriptionStarted` webhook events writing directly to `transcript_chunks`. The table schema stays the same. Daily.co paid plan also enables `startRecording()` for TODO-19.
+
+**Effort:** S (integration) | **Priority:** P3 | **Depends on:** Session volume justifying cost + TODO-21 (Deepgram) evaluated first as a browser-agnostic alternative
