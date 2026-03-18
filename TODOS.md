@@ -467,7 +467,9 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 
 **Context:** Two monetization flows: (1) student subscribes to teacher's AI agent plan — recurring charge, platform takes %; (2) student books a live session — one-time charge, platform takes %. Teacher storefront (TODO-29) is the UI entry point. Build after teacher platform architecture PR ships. Stripe Connect docs: https://stripe.com/docs/connect.
 
-**Effort:** L human / M with CC | **Priority:** P1 | **Depends on:** teacher platform architecture PR (this plan)
+**Effort:** L human / M with CC | **Priority:** P1 | **Depends on:** marketplace-reframe plan (`/teachers/[slug]` storefront + platform homepage) must ship first. Once storefront is live, this is unblocked.
+
+**Update (2026-03-18):** Prerequisite noted. Marketplace-reframe plan (CEO review 2026-03-18) builds the storefront that Stripe Connect needs as its UI entry point.
 
 ---
 
@@ -481,7 +483,9 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 
 **Cons:** Needs Stripe Connect to have a working payment CTA. Preview mode requires sandboxed AI call that doesn't consume student quota.
 
-**Context:** Teacher profile data (name, subject, bio, agent_config) is built in the teacher platform architecture PR. The storefront is the public face of that profile. Slug derived from teacher name (e.g., "sam-ahn"). Build after TODO-28 (Stripe Connect) ships so the booking CTA works end-to-end.
+**Context:** Teacher profile data (name, subject, bio, agent_config) is built in the teacher platform architecture PR. The storefront is the public face of that profile. Slug derived from teacher name (e.g., "sam-a" for Sam Ahn). Build after TODO-28 (Stripe Connect) ships so the booking CTA works end-to-end.
+
+**Update (2026-03-18):** This TODO is superseded by the marketplace-reframe plan (CEO review 2026-03-18) which builds a fuller version: platform homepage, `/teachers/[slug]` storefront with migrated /academy content, AI preview widget, per-teacher blog, and self-serve teacher onboarding. Mark as IN PROGRESS — implementation plan exists.
 
 **Effort:** M human / S with CC | **Priority:** P1 | **Depends on:** TODO-28 (Stripe Connect), teacher platform architecture PR
 
@@ -532,3 +536,19 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 **Context:** Implementation: `GET /api/cron/weekly-digest` (new Vercel cron, Sundays 18:00 UTC). Query `notifications` table for events in past 7 days grouped by user_id. For each active user with events, build a role-grouped summary email using Resend. Template: same StoryLab email design language as other emails. Only send if user had at least 1 event in the past week. Add `digest_unsubscribed` boolean to a user preferences table or `teachers`/`student_profiles`.
 
 **Effort:** M human / ~15min CC | **Priority:** P2 | **Depends on:** notifications table ✅ (shipped 2026-03-18 — `20260318_notifications.sql` applied)
+
+---
+
+## TODO-33: Per-teacher accepting-new-students toggle
+
+**What:** Add `accepting_students` boolean to `teachers` table. Surface it on the teacher storefront ("Currently accepting new students" / "Waitlist only") and make it controllable from `/dashboard`.
+
+**Why:** Once multiple teachers exist on the platform, some will be at capacity. Students shouldn't be able to start onboarding with a teacher who can't take them — better to show honest availability upfront than to let students start and get turned away.
+
+**Pros:** Sets honest expectations. Teachers control their capacity. Prevents student frustration.
+
+**Cons:** Minor extra state to manage; teachers need to remember to toggle it.
+
+**Context:** One new column on `teachers` table: `accepting_students BOOLEAN DEFAULT true`. Show a badge on the teacher card and storefront. On teacher's `/dashboard`, add a toggle in settings. When `false`, hide or grey out the "Start with [Teacher]" CTA and show a waitlist message instead.
+
+**Effort:** S human / S with CC | **Priority:** P2 | **Depends on:** marketplace-reframe plan (teacher storefront must exist first)

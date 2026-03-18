@@ -1,5 +1,226 @@
-import { redirect } from "next/navigation";
+import Link from "next/link";
+import { TeacherCard } from "@/components/TeacherCard";
+import { createStaticClient } from "@/lib/supabase/server";
 
-export default function Home() {
-  redirect("/academy");
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const supabase = createStaticClient();
+  const { data: teachers } = await supabase
+    .from("teachers")
+    .select("id, name, slug, subject, photo_url, quote")
+    .eq("storefront_published", true)
+    .order("created_at", { ascending: true });
+
+  return (
+    <main>
+      {/* ── 1. HERO ─────────────────────────────────────────────────── */}
+      <section className="bg-[#2C4A3E] px-6 py-24 md:py-36 text-center">
+        <div className="mx-auto max-w-3xl">
+          <h1
+            className="text-[clamp(2.4rem,5vw,4rem)] font-bold leading-[1.1] tracking-tight text-white mb-8"
+            style={{ fontFamily: "var(--font-cooper, serif)" }}
+          >
+            AI should amplify teachers, not displace them.
+          </h1>
+          <p
+            className="text-lg leading-relaxed text-white/80 mb-10 max-w-2xl mx-auto"
+            style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
+          >
+            StoryLab is not a tutoring company. It is infrastructure for human expertise in education.
+          </p>
+          <Link
+            href="/teachers"
+            aria-label="Find a teacher on StoryLab"
+            className="inline-flex items-center rounded-[3px] bg-white px-7 py-3.5 text-base font-medium text-[#2C4A3E] hover:bg-[#DEEEE9] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+          >
+            Find a teacher →
+          </Link>
+        </div>
+      </section>
+
+      {/* ── 2. STUDENT SECTION ─────────────────────────────────────── */}
+      <section className="bg-[#DEEEE9] px-6 py-20 md:py-28">
+        <div className="mx-auto max-w-[880px]">
+          <p
+            className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-5"
+            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+          >
+            For Students
+          </p>
+          <h2
+            className="text-[2rem] leading-[1.2] tracking-tight text-[#2C4A3E] mb-8 max-w-2xl"
+            style={{ fontFamily: "var(--font-cooper, serif)" }}
+          >
+            Schools teach students to analyze other people&rsquo;s stories. Nobody teaches them to construct their own.
+          </h2>
+          <div
+            className="space-y-5 text-base leading-relaxed text-[#1A2E26] max-w-2xl"
+            style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
+          >
+            <p>
+              The college essay is the first high-stakes moment where that skill is required — and most students discover too late that they don&rsquo;t have it. The students who navigate this successfully are not necessarily more self-aware or more interesting than their peers. They have had more practice.
+            </p>
+            <p>
+              That expertise is currently gatekept behind private tutoring that costs $150–$500 per hour, discovered almost entirely through word-of-mouth among already-advantaged families. StoryLab changes that.
+            </p>
+          </div>
+          <div className="mt-10">
+            <Link
+              href="/teachers"
+              aria-label="Start learning with a StoryLab teacher"
+              className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-6 py-3 text-sm font-medium text-white hover:bg-[#3A6054] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
+              style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+            >
+              Start learning →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 3. TEACHER SECTION ─────────────────────────────────────── */}
+      <section className="bg-[#FAFAF8] px-6 py-20 md:py-28">
+        <div className="mx-auto max-w-[880px]">
+          <p
+            className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-5"
+            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+          >
+            For Teachers
+          </p>
+          <h2
+            className="text-[2rem] leading-[1.2] tracking-tight text-[#2C4A3E] mb-8 max-w-2xl"
+            style={{ fontFamily: "var(--font-cooper, serif)" }}
+          >
+            Your methodology is scaled. Your impact is no longer constrained by the number of hours in your day.
+          </h2>
+          <div
+            className="space-y-5 text-base leading-relaxed text-[#1A2E26] max-w-2xl"
+            style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
+          >
+            <p>
+              Great teachers retire. School counselors leave. Every departure takes decades of accumulated pedagogical expertise out of circulation permanently. There is no infrastructure for preserving or transferring that expertise.
+            </p>
+            <p>
+              StoryLab builds that infrastructure. Your voice. Your methodology. Reaching the students who need you most.
+            </p>
+          </div>
+          <div className="mt-10">
+            <Link
+              href="/teacher/onboarding"
+              aria-label="Become a teacher on StoryLab"
+              className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-6 py-3 text-sm font-medium text-white hover:bg-[#3A6054] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
+              style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+            >
+              Become a teacher →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 4. PLATFORM MANIFESTO ─────────────────────────────────── */}
+      <section className="bg-[#2C4A3E] px-6 py-20 md:py-28">
+        <div className="mx-auto max-w-[880px]">
+          <h2
+            className="text-[clamp(1.8rem,3.5vw,2.8rem)] leading-[1.15] tracking-tight text-white mb-8"
+            style={{ fontFamily: "var(--font-cooper, serif)" }}
+          >
+            A brilliant tutor in Flushing is invisible to a family in Seoul.
+          </h2>
+          <div
+            className="space-y-5 text-base leading-relaxed text-white/80 max-w-2xl"
+            style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
+          >
+            <p>
+              A college counselor with twenty years of transformative experience retires and takes every insight with them. The self-authorship gap is not randomly distributed — it falls hardest on first-generation students, immigrant families, and students whose cultural backgrounds didn&rsquo;t emphasize personal narrative.
+            </p>
+            <p>
+              StoryLab exists to fix this.
+            </p>
+          </div>
+
+          {/* Stat strip */}
+          <div className="mt-14 pt-8 border-t border-white/20">
+            <p
+              className="text-[0.85rem] font-medium tracking-widest text-[#E8D5B0] tabular-nums"
+              style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)", fontVariantNumeric: "tabular-nums" }}
+            >
+              1 teacher &nbsp;&middot;&nbsp; 47 students coached &nbsp;&middot;&nbsp; AI-powered
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 5. TEACHER GRID ──────────────────────────────────────── */}
+      <section className="bg-[#FAFAF8] px-6 py-20 md:py-28">
+        <div className="mx-auto max-w-[1100px]">
+          <p
+            className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-5"
+            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+          >
+            Our Teachers
+          </p>
+          <h2
+            className="text-[2rem] leading-[1.2] tracking-tight text-[#1A2E26] mb-12"
+            style={{ fontFamily: "var(--font-cooper, serif)" }}
+          >
+            Find the right teacher.
+          </h2>
+
+          {teachers && teachers.length > 0 ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {teachers.map((teacher) => (
+                <TeacherCard
+                  key={teacher.id}
+                  name={teacher.name}
+                  slug={teacher.slug}
+                  subject={teacher.subject}
+                  photoUrl={teacher.photo_url}
+                  quote={teacher.quote}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-[4px] border border-[#C0D9CB] bg-[#DEEEE9] p-10 text-center">
+              <p
+                className="text-base text-[#1A2E26]/60"
+                style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
+              >
+                Teachers coming soon.
+              </p>
+            </div>
+          )}
+
+          <p
+            className="mt-10 text-sm text-[#1A2E26]/50"
+            style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
+          >
+            More teachers coming soon.
+          </p>
+        </div>
+      </section>
+
+      {/* ── 6. PARCHMENT CTA STRIP ───────────────────────────────── */}
+      <section className="bg-[#E8D5B0] px-6 py-16">
+        <div className="mx-auto max-w-[1100px] flex flex-col sm:flex-row items-center justify-center gap-5">
+          <Link
+            href="/teachers"
+            aria-label="Browse all teachers"
+            className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-7 py-3.5 text-base font-medium text-white hover:bg-[#3A6054] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
+            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+          >
+            Browse teachers →
+          </Link>
+          <Link
+            href="/teacher/onboarding"
+            aria-label="Become a teacher on StoryLab"
+            className="inline-flex items-center rounded-[3px] border border-[#2C4A3E] bg-transparent px-7 py-3.5 text-base font-medium text-[#1A2E26] hover:bg-[#2C4A3E] hover:text-white transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
+            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+          >
+            Become a teacher →
+          </Link>
+        </div>
+      </section>
+    </main>
+  );
 }
