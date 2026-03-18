@@ -421,7 +421,7 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 
 ---
 
-## TODO-26: Teacher reply email notification to student
+## TODO-26: Teacher reply email notification to student ✅ DONE
 
 **What:** When Sam replies in the session message thread (admin dashboard), send the student an email with the reply body and their session join link.
 
@@ -434,6 +434,8 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 **Context:** When `POST /api/session/[id]/messages` is called with `sender_role: "teacher"`, look up the student's email from `students` table (via `session.student_id`) and send a Resend email. Subject: "Sam replied about your [date] session." Body: the reply text + join link. This is the mirror of the student-→-Sam notification built in the session lifecycle PR.
 
 **Effort:** S → CC: ~10 min | **Priority:** P3 | **Depends on:** session_messages table + message thread UI (session lifecycle PR)
+
+**Decision (2026-03-18):** Implemented. `app/api/session/[id]/messages/route.ts` — POST handler sends Resend email to student when `sender_role: "teacher"`. Session join link included. `session_messages` table and migration `20260318_session_messages.sql` applied.
 
 ---
 
@@ -529,4 +531,4 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 
 **Context:** Implementation: `GET /api/cron/weekly-digest` (new Vercel cron, Sundays 18:00 UTC). Query `notifications` table for events in past 7 days grouped by user_id. For each active user with events, build a role-grouped summary email using Resend. Template: same StoryLab email design language as other emails. Only send if user had at least 1 event in the past week. Add `digest_unsubscribed` boolean to a user preferences table or `teachers`/`student_profiles`.
 
-**Effort:** M human / ~15min CC | **Priority:** P2 | **Depends on:** notifications table (multi-role identity PR)
+**Effort:** M human / ~15min CC | **Priority:** P2 | **Depends on:** notifications table ✅ (shipped 2026-03-18 — `20260318_notifications.sql` applied)

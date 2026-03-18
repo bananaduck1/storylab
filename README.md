@@ -1,27 +1,55 @@
 # IvyStoryLab
 
-A full-stack web platform for a college admissions coaching company. It combines a polished marketing site, a thought-leadership blog, and a password-protected internal tool for tutors to track student progress — all in one Next.js app.
+A full-stack Next.js platform for a college admissions coaching company. It combines a polished marketing site, a student-facing AI essay coach, live video tutoring sessions, a multi-teacher agent marketplace, and a thought-leadership blog — all in one app.
 
 ---
 
 ## What It Does
 
 **Public Site (`/academy`, `/services`, `/results`, `/team`, `/faq`, `/contact`)**
-The main marketing presence. The academy page is a long-form, scroll-driven narrative featuring the founder's philosophy, student stories, tutor profiles, college acceptances, and testimonials.
+The main marketing presence. A long-form, scroll-driven narrative featuring the founder's philosophy, student stories, tutor profiles, college acceptances, and testimonials.
 
 **Blog (`/blog`)**
-A public thought-leadership blog with tag filtering and email subscriptions. Posts are authored through an internal admin panel and stored in Supabase. Readers can subscribe to updates via Resend.
+Public thought-leadership blog with tag filtering and email subscriptions. Posts are authored through an internal admin panel and stored in Supabase. Readers can subscribe via Resend.
+
+**Student AI Essay Coach (`/lab`)**
+A student-facing AI coaching tool powered by a teacher's custom agent. Features:
+- Personalized essay coaching across 4 modes: Common App, Transfer, Academic, Supplemental
+- Multi-turn conversation history with file upload (PDF, DOCX)
+- Behavioral constraint layer: session phases (OPENING → DIAGNOSING → COACHING → FEEDBACK)
+- RAG-powered playbook retrieval from the teacher's knowledge base
+- Student portrait notes — AI-generated session summaries that accumulate over time
+- Daily message quota enforcement (free / pro tiers)
+
+**Teacher Dashboard (`/dashboard`)**
+Teacher-facing hub for managing students, scheduling sessions, and configuring their AI agent. Features:
+- Student roster with linked lab accounts
+- Schedule and manage live video sessions
+- Session coaching sidebar (real-time nudges)
+- Agent settings and pedagogy upload
+
+**Live Video Coaching (`/session/[id]`)**
+In-platform video sessions via Daily.co with a live AI coaching companion. Features:
+- Web Speech API transcript capture, stored per-turn in `transcript_chunks`
+- AI coaching nudges (polls GPT-4o with transcript + student portrait)
+- Moment flagging for portrait and parent email generation
+- Pre-session messaging thread between teacher and student
+- Session completion: triggers portrait regen + parent email draft
 
 **Admin (`/admin`)**
-Protected route for creating, editing, and deleting blog posts. Requires Supabase Auth (email + password).
+Internal tools, admin-only (`samahn240@gmail.com`):
+- `/admin/dashboard` — Student tracker, session logs, portrait viewer, invite management
+- `/admin/platform` — Platform Pulse: live stats across all tables
+- `/admin/posts` — Blog post management (create, edit, delete, newsletter)
+- `/admin/teacher-config` — Teacher agent builder (identity, beliefs, voice, signature moves)
+- `/admin/students/[id]/view` — Read-only shadow view of any student's /lab data
+- `/admin/availability` — Booking slot management
 
-**Student Tracker — The Lab (`/lab`)**
-An internal-only tool for tutors. Features:
-- Student roster with development stage tracking (Exploration → Application Ready → Post-Admissions)
-- Session logging (essay work, generative sessions, parent calls)
-- AI-generated student portraits that auto-update after each session via GPT-4o
-- Essay storage and review
-- Supabase Auth for access control
+**Teacher Registration (`/teacher/register`)**
+Self-registration flow for new teachers. Creates a `teachers` row and routes to `/dashboard`.
+
+**Booking (`/academy/book`)**
+Parent consultation bookings via Stripe + Google Calendar. Separate from video sessions.
 
 ---
 
@@ -29,13 +57,16 @@ An internal-only tool for tutors. Features:
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 16 (App Router) |
+| Framework | Next.js (App Router) |
 | Language | TypeScript |
 | Styling | Tailwind CSS v4 (`@theme inline`) |
 | Database & Auth | Supabase (PostgreSQL + Row Level Security) |
-| AI | OpenAI GPT-4o (student portrait generation) |
-| Email | Resend (blog subscription confirmations) |
-| Deployment | Vercel |
+| AI | OpenAI GPT-4o (portrait, nudge, parent email) + Claude (chat coach) |
+| Video | Daily.co (WebRTC rooms + meeting tokens) |
+| Email | Resend (invites, session emails, blog subscriptions) |
+| Payments | Stripe (consultation bookings) |
+| Calendar | Google Calendar API (booking sync) |
+| Deployment | Vercel (with cron jobs) |
 
 ---
 
@@ -43,24 +74,47 @@ An internal-only tool for tutors. Features:
 
 ```
 app/
-  academy/          # Main marketing page + subpages (applications, transfer, humanities)
-  blog/             # Public blog index + individual post pages
-  admin/            # Admin panel for blog post management
-  lab/              # Internal student tracker (auth-protected)
-  ai-editor/        # AI writing assistant tool
-  contact/          # Contact form
-  team/             # Team page
-  services/         # Services page
-  results/          # Results/acceptances page
-  faq/              # FAQ page
-components/         # Shared UI (Navbar, Footer, LogoMarquee, TutorCard, etc.)
+  academy/              # Marketing pages + booking flow (/academy/book)
+  blog/                 # Public blog index + post pages
+  admin/
+    dashboard/          # Student tracker (admin-only)
+    platform/           # Platform Pulse stats
+    posts/              # Blog management
+    teacher-config/     # Teacher agent builder
+    students/[id]/view/ # Student lab shadow view
+    availability/       # Booking availability management
+  lab/                  # Student AI essay coach (auth-protected)
+    onboarding/         # 4-step onboarding form
+    profile/            # Profile update page
+  dashboard/            # Teacher dashboard + settings
+  session/[id]/         # Live video coaching sessions
+  teacher/register/     # Teacher self-registration
+  _components/          # Shared components (NotificationBell, etc.)
+components/             # Public site shared UI (Navbar, Footer, etc.)
 lib/
-  supabase.ts           # Server-side Supabase client (service role)
-  supabase-browser.ts   # Browser-side Supabase client (anon key)
-  supabase/server.ts    # SSR Supabase client with cookies
-app/api/lab/        # API routes: students, sessions, portraits, essays
+  supabase.ts               # Server Supabase client (service role)
+  supabase-browser.ts       # Browser Supabase client (anon key)
+  lab-auth.ts               # getCallerUser, getUserRoles, ADMIN_EMAIL
+  lab-profile.ts            # buildSystemPromptForUser, writePortraitNote
+  lab-quota.ts              # checkQuota — daily message limit enforcement
+  teacher.ts                # getCallerTeacher helper
+  behavioral-constraints.ts # Session phase inference + constraint blocks
+  knowledge-retrieval.ts    # RAG: retrievePlaybookByVector (teacher-scoped)
+  daily.ts                  # Daily.co: createDailyRoom, createMeetingToken
+  portrait-generation.ts    # AI portrait generation helper
+  agent-system-prompt.ts    # Sam Ahn fallback system prompt
+app/api/
+  lab/                  # chat, conversations, onboarding, profile, upload
+  session/[id]/         # token, nudge, flag, complete, transcript, messages
+  notifications/        # GET bell notifications + POST mark-read
+  admin/                # video-sessions, invite-student, lab-students, teacher-config
+  teacher/              # register, settings, invite-student
+  cron/                 # session-reminders (daily), sync-availability (daily)
 scripts/
-  seed-blog.ts      # Seed script for blog posts
+  seed-blog.ts          # Seed sample blog posts
+  eval-chat.ts          # AI behavioral compliance eval harness (all 4 modes)
+__tests__/lib/          # Unit tests: behavioral-constraints, lab-profile, lab-quota
+supabase/migrations/    # All applied DB migrations
 ```
 
 ---
@@ -75,7 +129,7 @@ npm install
 
 ### 2. Set up environment variables
 
-Create a `.env.local` file in the project root:
+Create a `.env.local` file:
 
 ```env
 # Supabase
@@ -83,43 +137,67 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
-# OpenAI (for AI portrait generation in /lab)
+# OpenAI (portrait generation, coaching nudges, parent email drafts)
 OPENAI_API_KEY=your_openai_api_key
 
-# Resend (for blog email subscriptions)
+# Resend (email: invites, session confirmations, blog subscriptions)
 RESEND_API_KEY=your_resend_api_key
+CONTACT_FROM_EMAIL=noreply@yourdomain.com
+
+# Daily.co (video rooms)
+DAILY_API_KEY=your_daily_api_key
+
+# Site URL (used in email join links)
+NEXT_PUBLIC_SITE_URL=https://yourdomain.com
+
+# Stripe (consultation bookings)
+STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+
+# Google Calendar (booking availability sync)
+GOOGLE_SERVICE_ACCOUNT_EMAIL=your_service_account@project.iam.gserviceaccount.com
+GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n..."
+GOOGLE_CALENDAR_ID=your_calendar_id
+
+# Cron (protects cron endpoints)
+CRON_SECRET=your_cron_secret
+
+# Optional
+LAB_DAILY_LIMIT=50        # Default: 50 messages/day
+MY_EMAIL=admin@yourdomain.com
 ```
 
 ### 3. Set up Supabase
 
-You'll need the following tables in your Supabase project:
+Apply all migrations from `supabase/migrations/` in order. Key tables:
 
-- `posts` — blog posts (`id`, `title`, `slug`, `excerpt`, `content`, `tags[]`, `published`, `published_at`, `created_at`)
-- `email_subscribers` — blog subscribers (`id`, `email`, `subscribed_at`)
-- `students` — student profiles
-- `sessions` — tutor session logs
-- `portraits` — versioned AI-generated student portraits
-- `essays` — student essay drafts
+| Table | Purpose |
+|---|---|
+| `posts` | Blog posts |
+| `email_subscribers` | Blog newsletter subscribers |
+| `students` | Student roster (admin-managed) |
+| `student_profiles` | AI coaching profile + portrait notes |
+| `conversations` | Essay coaching chat sessions |
+| `conversation_messages` | Individual chat messages |
+| `usage_logs` | Daily message quota tracking |
+| `teachers` | Teacher accounts + `agent_config` JSONB |
+| `knowledge_chunks` | Teacher RAG playbook (teacher-scoped) |
+| `sessions` | Video coaching sessions (Daily.co) |
+| `session_messages` | Pre/post-session thread |
+| `transcript_chunks` | Live session transcript chunks |
+| `notifications` | In-app bell notifications |
+| `availability` | Bookable consultation slots |
+| `bookings` | Completed consultation bookings |
+| `portraits` | Versioned AI-generated student portraits |
+| `essays` | Student essay drafts |
 
-RLS policies: `posts` allows public SELECT where `published = true`; `email_subscribers` allows public INSERT only.
-
-To seed sample blog posts:
-
-```bash
-npx tsx --env-file=.env.local scripts/seed-blog.ts
-```
-
-### 4. Create a Lab user
-
-Add a user in the Supabase dashboard under **Authentication → Users** with an email and password. This account is used to log in to `/lab`.
-
-### 5. Start the dev server
+### 4. Start the dev server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — it redirects to `/academy`.
+Open [http://localhost:3000](http://localhost:3000) — redirects to `/academy`.
 
 ---
 
@@ -129,8 +207,65 @@ Open [http://localhost:3000](http://localhost:3000) — it redirects to `/academ
 |---|---|
 | `/academy` | Main marketing page |
 | `/blog` | Public blog |
-| `/admin` | Blog admin (requires Supabase Auth) |
-| `/lab` | Internal student tracker (requires Supabase Auth) |
+| `/lab` | Student AI essay coach (requires auth) |
+| `/lab/onboarding` | New student setup (name, grade, schools, goals) |
+| `/lab/profile` | Update student profile |
+| `/dashboard` | Teacher dashboard (requires teacher role) |
+| `/session/[id]` | Live video coaching session |
+| `/teacher/register` | Teacher self-registration |
+| `/academy/book` | Consultation booking hub |
+| `/admin/dashboard` | Student tracker (admin-only) |
+| `/admin/platform` | Platform Pulse — live stats |
+| `/admin/posts` | Blog post management |
+| `/admin/teacher-config` | Teacher agent builder |
+| `/admin/availability` | Booking slot management |
 | `/contact` | Contact form |
 | `/results` | College acceptance results |
 | `/team` | Team page |
+
+---
+
+## Multi-Role Identity
+
+Users can hold multiple roles simultaneously. Role resolution is DB-based:
+
+- **Student** — row in `students` table with matching `user_id`
+- **Teacher** — row in `teachers` table with matching `user_id`
+- **Founder/Admin** — email matches `ADMIN_EMAIL` in `lib/lab-auth.ts`
+
+`getUserRoles(userId)` in `lib/lab-auth.ts` queries both tables in parallel and returns `{ isTeacher, isStudent }`. Teachers bypass the `/lab/onboarding` redirect and see LabChat with a "lifelong learner" banner instead.
+
+---
+
+## AI Coaching Architecture
+
+```
+Student message
+      │
+      ▼
+buildSystemPromptForUser(userId, phase, mode, callerIsTeacher)
+      │
+      ├── behavioral-constraints.ts  ← always prepended first (survives truncation)
+      ├── teacher.agent_config JSONB ← assembled from DB (fallback: lib/agent-system-prompt.ts)
+      ├── student_profiles context block
+      └── MODE_CONTEXT[mode] + portrait_notes + MODE_OPENING (new conv)
+      │
+      ▼
+retrievePlaybookByVector(query, teacherId) ← RAG from knowledge_chunks
+      │
+      ▼
+Claude API (streaming) → persisted to conversation_messages
+      │
+      └── after(): portrait note generation, usage_logs update, conversation title
+```
+
+---
+
+## Running Evals
+
+```bash
+# Set in .env.local: EVAL_USER_EMAIL + EVAL_USER_PASSWORD
+npx tsx --env-file=.env.local scripts/eval-chat.ts --mode all
+```
+
+Checks all 4 modes (common_app, transfer, academic, supplemental) for behavioral compliance: no bullet lists, ends with a question, quote present in feedback phase, one-problem focus.
