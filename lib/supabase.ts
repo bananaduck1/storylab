@@ -24,6 +24,17 @@ export type DevelopmentStage =
 
 export type SessionType = "essay_work" | "generative" | "parent_call";
 
+export interface Teacher {
+  id: string;
+  user_id: string;
+  name: string;
+  email: string;
+  subject: string | null;
+  agent_config: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Student {
   id: string;
   name: string;
@@ -38,6 +49,7 @@ export interface Student {
   email: string | null;
   invited_at: string | null;
   created_at: string;
+  teacher_id?: string | null;
 }
 
 export interface Session {
@@ -58,6 +70,16 @@ export interface Session {
   portrait_status?: string | null;
   flagged_moments?: Array<{ quote: string; timestamp_ms: number; flagged_at: string }> | null;
   parent_email_draft?: string | null;
+  reminder_sent_at?: string | null;
+  teacher_id?: string | null;
+}
+
+export interface SessionMessage {
+  id: string;
+  session_id: string;
+  sender_role: "teacher" | "student";
+  body: string;
+  created_at: string;
 }
 
 export interface Portrait {
@@ -65,6 +87,7 @@ export interface Portrait {
   student_id: string;
   generated_at: string;
   content_json: PortraitContent;
+  teacher_id?: string | null;
 }
 
 export interface PortraitContent {

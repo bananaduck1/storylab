@@ -1,6 +1,6 @@
 # TODOs
 
-Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24 all shipped.
+Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped.
 
 ---
 
@@ -418,3 +418,115 @@ Validate by running this against 10 Sam sessions and checking whether the extrac
 The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO-10 and TODO-23 first, then validate with real data.
 
 **Effort:** M → CC: ~1 hr | **Priority:** P3 | **Depends on:** TODO-23 + TODO-10 (eval harness) + 10+ real video sessions
+
+---
+
+## TODO-26: Teacher reply email notification to student
+
+**What:** When Sam replies in the session message thread (admin dashboard), send the student an email with the reply body and their session join link.
+
+**Why:** Closes the async communication loop — the student sees Sam's reply without needing to open the app. Without this, a student who sent "can I work on X?" has no signal that Sam saw it and replied "yes, perfect."
+
+**Pros:** Students stay informed passively. Reinforces that StoryLab is responsive. Reuses Resend (already installed).
+
+**Cons:** Could feel noisy if teacher replies frequently; mitigate with a single summary email rather than one-per-message if volume grows.
+
+**Context:** When `POST /api/session/[id]/messages` is called with `sender_role: "teacher"`, look up the student's email from `students` table (via `session.student_id`) and send a Resend email. Subject: "Sam replied about your [date] session." Body: the reply text + join link. This is the mirror of the student-→-Sam notification built in the session lifecycle PR.
+
+**Effort:** S → CC: ~10 min | **Priority:** P3 | **Depends on:** session_messages table + message thread UI (session lifecycle PR)
+
+---
+
+## TODO-27: Include pre-session notes in TODO-25 knowledge pipeline
+
+**What:** When `extractTeacherChunks()` runs after session complete (TODO-25), include the student's pre-session messages as additional context in the extraction prompt.
+
+**Why:** "I want to work on my grandma story today" tells the AI exactly what was being coached — the session transcript alone lacks this framing. Pre-session notes are the student's explicit statement of intent and are often the richest signal for why the session went the way it did.
+
+**Pros:** Improves chunk quality and relevance. Zero additional data collection — the notes are already stored.
+
+**Cons:** None meaningful — it's a prompt augmentation, not a structural change.
+
+**Context:** In `extractTeacherChunks(transcript, teacherId)`, fetch `session_messages` for the session (WHERE sender_role='student') and prepend them to the extraction prompt: "Student pre-session note: [body]. Transcript: [transcript]." Only include student messages (sender_role='student'), not teacher replies.
+
+**Effort:** S → CC: ~5 min | **Priority:** P3 | **Depends on:** session_messages table (session lifecycle PR) + TODO-25
+
+---
+
+## TODO-28: Stripe Connect + platform take-rate
+
+**What:** Implement Stripe Connect marketplace payments — teacher connected accounts, automatic platform fee extraction on each transaction, teacher payouts.
+
+**Why:** The marketplace model doesn't generate revenue without it. Teachers earn from AI subscriptions and live sessions; StoryLab takes a % cut automatically on every transaction.
+
+**Pros:** Unlocks the marketplace revenue model. Stripe Connect handles compliance, tax reporting, and international payouts. Platform fee is extracted automatically — no manual reconciliation.
+
+**Cons:** Stripe Connect is an "innovation token" — more complex than standard Stripe Checkout. Requires teacher onboarding into Connect (identity verification). One-way door: hard to swap payment providers later.
+
+**Context:** Two monetization flows: (1) student subscribes to teacher's AI agent plan — recurring charge, platform takes %; (2) student books a live session — one-time charge, platform takes %. Teacher storefront (TODO-29) is the UI entry point. Build after teacher platform architecture PR ships. Stripe Connect docs: https://stripe.com/docs/connect.
+
+**Effort:** L human / M with CC | **Priority:** P1 | **Depends on:** teacher platform architecture PR (this plan)
+
+---
+
+## TODO-29: Teacher storefront + student discovery
+
+**What:** Public `/teachers/[slug]` page — teacher profile, teaching philosophy, AI agent preview, pricing for AI subscription and live sessions, booking CTA.
+
+**Why:** The marketplace has no top of funnel without a teacher-facing storefront. Students need a way to discover teachers and understand what they're buying before committing.
+
+**Pros:** Turns teacher profiles into a sales surface. AI agent preview ("try a free message") is a low-friction conversion driver. Teacher slug is SEO-addressable.
+
+**Cons:** Needs Stripe Connect to have a working payment CTA. Preview mode requires sandboxed AI call that doesn't consume student quota.
+
+**Context:** Teacher profile data (name, subject, bio, agent_config) is built in the teacher platform architecture PR. The storefront is the public face of that profile. Slug derived from teacher name (e.g., "sam-ahn"). Build after TODO-28 (Stripe Connect) ships so the booking CTA works end-to-end.
+
+**Effort:** M human / S with CC | **Priority:** P1 | **Depends on:** TODO-28 (Stripe Connect), teacher platform architecture PR
+
+---
+
+## TODO-30: Pedagogy enrichment post-onboarding
+
+**What:** Teacher can upload session transcripts, recording clips, written notes, or rubrics from /dashboard/settings after onboarding — added to their `knowledge_chunks` and used to sharpen their AI agent over time.
+
+**Why:** A teacher's pedagogy isn't captured in a single 5-question wizard. The AI gets smarter the more teaching material it has. A great teacher should be able to feed it their best session, their most-used framework, their annotated student examples.
+
+**Pros:** Key differentiator for the AI mode — a teacher who trains their AI well has a genuinely better product than one who doesn't. Creates ongoing engagement with the platform. `knowledge_chunks` is already `teacher_id`-scoped and ready.
+
+**Cons:** Upload pipeline (especially audio/video) adds infrastructure complexity. Text and transcript upload is simple; recording processing requires Whisper or similar.
+
+**Context:** The `knowledge_chunks` table already has `teacher_id`. The existing admin teacher-config route (`/api/admin/teacher-config`) handles text chunks. Extend it to accept: (1) pasted transcript, (2) uploaded .txt/.docx file (mammoth already installed), (3) later: audio via Whisper. Surface in /dashboard/settings as a "Teaching Materials" section alongside the wizard.
+
+**Effort:** M human / S with CC | **Priority:** P2 | **Depends on:** teacher platform architecture PR
+
+---
+
+## TODO-31: Identity continuity — student learning arc into teacher profile
+
+**What:** When a student who's been using /lab becomes a teacher, optionally summarize their learning arc (essay topics, growth moments, what worked) and offer to inject it into their teacher profile background. Their own student experience informs their teaching methodology.
+
+**Why:** The most authentic teachers teach from their own learning experience. A student who grew up on StoryLab has a unique origin story — their /lab conversations are evidence of what the platform can do. Surfacing this when they set up their teacher profile makes the transition feel meaningful, not administrative.
+
+**Pros:** Deep product coherence — learning and teaching compound on each other. Differentiates teacher onboarding from competitors. Authentic data (real conversations) rather than a blank wizard.
+
+**Cons:** Requires consent UI (reading private conversations). Summary job complexity (LLM call over potentially hundreds of messages). Edge case: what if their student conversations are embarrassing? Must be optional and previewable.
+
+**Context:** The mechanic: when a student registers as a teacher (`POST /api/teacher/register`), if they have > N conversations in `conversation_messages`, show a step: "Your learning journey can inform your teaching. Want us to import highlights?" If yes, run a summarization job (GPT-4o over last 50 messages), store in `teachers.agent_config.student_background`. Injected into their AI system prompt alongside the wizard fields. Implementation: reuse existing `/api/lab/chat` summarization pattern. Consent stored as `teachers.identity_import_consented_at`.
+
+**Effort:** L human / ~1 hour CC | **Priority:** P3 | **Depends on:** multi-role identity PR shipping
+
+---
+
+## TODO-32: Role-aware weekly email digest
+
+**What:** A weekly cron email summarizing all roles: "This week in your StoryLab — 3 sessions taught, 2 AI conversations as a student, 1 new teacher joined the platform." Sent Sunday evenings, covers all active roles for the user.
+
+**Why:** Retention. A single beautiful email that reflects your whole relationship with the platform reinforces the lifelong learner identity. Better than 3 separate transactional emails that feel like noise.
+
+**Pros:** Strong retention mechanic. Positions StoryLab as a "relationship" not a tool. Notification center data (once built) makes this trivial to generate. One email = all roles.
+
+**Cons:** Requires notification center to exist first (TODO in multi-role PR). Cron complexity (weekly schedule, user timezone handling). Risk: digest feels spammy if there's nothing meaningful to report — add a threshold (only send if N meaningful events).
+
+**Context:** Implementation: `GET /api/cron/weekly-digest` (new Vercel cron, Sundays 18:00 UTC). Query `notifications` table for events in past 7 days grouped by user_id. For each active user with events, build a role-grouped summary email using Resend. Template: same StoryLab email design language as other emails. Only send if user had at least 1 event in the past week. Add `digest_unsubscribed` boolean to a user preferences table or `teachers`/`student_profiles`.
+
+**Effort:** M human / ~15min CC | **Priority:** P2 | **Depends on:** notifications table (multi-role identity PR)

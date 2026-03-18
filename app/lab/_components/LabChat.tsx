@@ -2,9 +2,11 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createBrowserClient } from "@supabase/ssr";
 import ReactMarkdown from "react-markdown";
 import remarkBreaks from "remark-breaks";
+import NotificationBell from "@/app/_components/NotificationBell";
 
 interface Conversation {
   id: string;
@@ -35,14 +37,20 @@ interface QuotaInfo {
 }
 
 interface LabChatProps {
-  profile: { full_name: string; grade: string };
+  profile: { full_name: string; grade: string } | null;
   conversations: Conversation[];
   activeConversationId: string;
   initialMessages: Message[];
   quota: QuotaInfo;
   successType?: "subscription" | "topup" | null;
-  /** False only for role=student users who haven't claimed a students record yet. */
+  /** False only for student users who haven't claimed a students record yet. */
   isLinked?: boolean;
+  /** True if this user also has a teacher profile — shows role switcher. */
+  isTeacher?: boolean;
+  /** True if this user is the platform founder — shows role switcher with Platform option. */
+  isFounder?: boolean;
+  /** True if teacher opens /lab but has no student_profile yet — show lifelong learner banner. */
+  showTeacherLearnerBanner?: boolean;
 }
 
 function formatRelativeDate(dateStr: string): string {
@@ -90,6 +98,9 @@ export default function LabChat({
   quota,
   successType,
   isLinked = true,
+  isTeacher = false,
+  isFounder = false,
+  showTeacherLearnerBanner = false,
 }: LabChatProps) {
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
@@ -483,7 +494,7 @@ export default function LabChat({
     ]);
   }
 
-  const firstName = profile.full_name.split(" ")[0];
+  const firstName = profile?.full_name.split(" ")[0] ?? "";
   const inputDisabled = loading || quotaRemaining <= 0;
   const activeConv = conversations.find((c) => c.id === activeConvId);
   const activeMode = activeConv?.essay_mode ?? "common_app";
@@ -533,15 +544,40 @@ export default function LabChat({
         {/* Sidebar header */}
         <div className="px-4 py-4 border-b border-zinc-100">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-zinc-900">StoryLab</span>
-            <button
-              className="md:hidden text-zinc-400 hover:text-zinc-600"
-              onClick={() => setSidebarOpen(false)}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-              </svg>
-            </button>
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-semibold text-zinc-900">StoryLab</span>
+              {/* Role context switcher — only shown for multi-role users */}
+              {(isTeacher || isFounder) && (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-500 font-medium">Learning</span>
+                  <Link
+                    href="/dashboard"
+                    className="text-xs px-2 py-0.5 rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"
+                  >
+                    Teaching
+                  </Link>
+                  {isFounder && (
+                    <Link
+                      href="/admin/dashboard"
+                      className="text-xs px-2 py-0.5 rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"
+                    >
+                      Platform
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <NotificationBell variant="light" />
+              <button
+                className="md:hidden text-zinc-400 hover:text-zinc-600"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -658,12 +694,27 @@ export default function LabChat({
 
       {/* Main chat area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Claim banner — shown to student-role users who haven't linked their account */}
+        {/* Claim banner — shown to student users who haven't linked their account */}
         {!isLinked && (
           <div className="bg-amber-50 border-b border-amber-200 px-4 py-2.5 flex items-center gap-3">
             <p className="text-sm text-amber-800 flex-1">
               Your teacher may have a profile on file for you. Ask them for your claim link to connect your accounts.
             </p>
+          </div>
+        )}
+
+        {/* Lifelong learner banner — shown to teachers who haven't started their own /lab journey */}
+        {showTeacherLearnerBanner && (
+          <div className="bg-zinc-50 border-b border-zinc-200 px-4 py-2.5 flex items-center justify-between gap-3">
+            <p className="text-sm text-zinc-600 flex-1">
+              StoryLab is for lifelong learners — teachers too. Start your own learning journey here.
+            </p>
+            <a
+              href="/lab/onboarding"
+              className="shrink-0 text-xs font-medium text-zinc-700 hover:text-zinc-900 underline underline-offset-2"
+            >
+              Set up your profile →
+            </a>
           </div>
         )}
 
@@ -696,7 +747,7 @@ export default function LabChat({
             </button>
             <div>
               <p className="text-sm font-medium text-zinc-900">{firstName}</p>
-              <p className="text-xs text-zinc-400">{profile.grade} grade</p>
+              {profile?.grade && <p className="text-xs text-zinc-400">{profile.grade} grade</p>}
             </div>
           </div>
           <div className="flex items-center gap-2">

@@ -109,7 +109,8 @@ export async function buildSystemPromptForUser(
   userId: string,
   isNewConversation?: boolean,
   phase: SessionPhase = "OPENING",
-  mode: EssayMode = "common_app"
+  mode: EssayMode = "common_app",
+  callerIsTeacher?: boolean
 ): Promise<{ systemPrompt: string; teacherName: string; teacherId: string | null }> {
   const { data: profile } = await getSupabase()
     .from("student_profiles")
@@ -124,7 +125,7 @@ export async function buildSystemPromptForUser(
   if (profile?.teacher_id) {
     const { data: teacher } = await getSupabase()
       .from("teachers")
-      .select("name, agent_config")
+      .select("name, subject, agent_config")
       .eq("id", profile.teacher_id)
       .maybeSingle();
 
@@ -183,6 +184,29 @@ Use this context to personalize your coaching. Address the student by first name
 ---`;
 
   let prompt = constraints + "\n\n---\n\n" + corePrompt + profileBlock;
+
+  // Peer context: when the learner is also a teacher on the platform, adjust register.
+  // Inject AFTER the profile block so it's visible but doesn't override core pedagogy.
+  // Query the caller's OWN teacher row (by user_id) — not profile.teacher_id, which is
+  // the coaching teacher assigned to this student and may be a different person.
+  if (callerIsTeacher) {
+    const { data: peerTeacherRow } = await getSupabase()
+      .from("teachers")
+      .select("subject, agent_config")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (peerTeacherRow) {
+      const subject = peerTeacherRow.subject?.trim() || "their subject";
+      const config = peerTeacherRow.agent_config as Record<string, unknown> | null;
+      const identity = typeof config?.identity === "string" && config.identity.trim()
+        ? ` Their teaching identity: "${config.identity.trim()}."`
+        : "";
+      prompt +=
+        `\n\n---\nPEER CONTEXT: This learner is also a coach on StoryLab who teaches ${subject}.${identity} ` +
+        `You can use craft vocabulary freely and assume they're comfortable with meta-level ` +
+        `discussion about their subject. Your core Socratic approach doesn't change — just your register.\n---`;
+    }
+  }
 
   if (isNewConversation) {
     const modeOpener = MODE_OPENING[mode];

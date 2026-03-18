@@ -4,6 +4,46 @@ import { getSupabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 
 /**
+ * The founder email. Centralised here so middleware and API routes
+ * import from one place instead of duplicating the string.
+ */
+export const ADMIN_EMAIL = "samahn240@gmail.com";
+
+/**
+ * Role resolution — DB-derived, supports multi-role users.
+ *
+ *   getUserRoles(userId)
+ *     ├── SELECT 1 FROM teachers WHERE user_id=?  ──▶ isTeacher
+ *     └── SELECT 1 FROM students WHERE user_id=?  ──▶ isStudent
+ *     (parallel queries, fail-closed: any error → all false)
+ *
+ *   isFounder: user.email === ADMIN_EMAIL  (checked at callsite, not here)
+ *
+ *   getUserRole() is DEPRECATED — use getUserRoles() for new code.
+ */
+export interface UserRoles {
+  isTeacher: boolean;
+  isStudent: boolean;
+}
+
+export async function getUserRoles(userId: string): Promise<UserRoles> {
+  try {
+    const supabase = getSupabase();
+    const [teacherRes, studentRes] = await Promise.all([
+      supabase.from("teachers").select("id").eq("user_id", userId).maybeSingle(),
+      supabase.from("students").select("id").eq("user_id", userId).maybeSingle(),
+    ]);
+    return {
+      isTeacher: !!teacherRes.data,
+      isStudent: !!studentRes.data,
+    };
+  } catch (err) {
+    console.error("[getUserRoles] DB lookup failed — failing closed:", err);
+    return { isTeacher: false, isStudent: false };
+  }
+}
+
+/**
  * Get the authenticated user from request cookies or a Bearer token.
  *
  * Auth resolution order:
@@ -40,7 +80,10 @@ export async function getCallerUser(): Promise<User | null> {
   return user;
 }
 
-/** Get the role from user metadata. Defaults to 'teacher' if unset (backwards compat). */
+/**
+ * @deprecated Use getUserRoles() for new code.
+ * Returns a single role string from user metadata for backwards compat.
+ */
 export function getUserRole(user: User): "teacher" | "student" {
   return user.user_metadata?.role === "student" ? "student" : "teacher";
 }

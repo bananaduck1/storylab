@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
 import { getCallerUser, getUserRole } from "@/lib/lab-auth";
+import { getCallerTeacher } from "@/lib/teacher";
 import { createDailyRoom } from "@/lib/daily";
 import { Resend } from "resend";
 import type { SessionType } from "@/lib/supabase";
@@ -17,6 +18,11 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (getUserRole(user) !== "teacher") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const teacher = await getCallerTeacher(user.id);
+  if (!teacher) {
+    return NextResponse.json({ error: "Teacher profile not found" }, { status: 403 });
   }
 
   const body = await req.json();
@@ -35,10 +41,10 @@ export async function POST(req: NextRequest) {
 
   const supabase = getSupabase();
 
-  // Fetch student for email + name
+  // Fetch student for email + name + user_id (for notifications)
   const { data: student, error: studentErr } = await supabase
     .from("students")
-    .select("id, name, email")
+    .select("id, name, email, user_id")
     .eq("id", student_id)
     .single();
 
@@ -57,6 +63,7 @@ export async function POST(req: NextRequest) {
       scheduled_at,
       session_type,
       status: "scheduled",
+      teacher_id: teacher.id,
     })
     .select()
     .single();
@@ -94,6 +101,16 @@ export async function POST(req: NextRequest) {
     .update({ daily_room_name: roomName, daily_room_url: roomUrl })
     .eq("id", session.id);
 
+  // Notify the student in-app (if they have a linked user account)
+  if (student.user_id) {
+    await supabase.from("notifications").insert({
+      user_id: student.user_id,
+      event_type: "session_scheduled",
+      body: `${teacher?.name.split(" ")[0] ?? "Your coach"} scheduled a session with you.`,
+      metadata: { session_id: session.id, scheduled_at },
+    });
+  }
+
   // Email student their join link (if they have an email)
   if (student.email) {
     const sessionDate = new Date(scheduled_at);
@@ -120,7 +137,7 @@ export async function POST(req: NextRequest) {
   <p style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #71717a; margin-bottom: 1.5rem;">StoryLab</p>
   <h1 style="font-size: 1.75rem; font-weight: 600; color: #18181b; margin-bottom: 1.5rem; line-height: 1.2;">Session scheduled.</h1>
   <p>Hi ${student.name},</p>
-  <p>Sam has scheduled a session with you. Here are the details:</p>
+  <p>${teacher?.name.split(" ")[0] ?? "Your coach"} has scheduled a session with you. Here are the details:</p>
 
   <div style="background: #f8faf5; border-left: 3px solid #2C4A3E; padding: 1.25rem 1.5rem; margin: 1.5rem 0; border-radius: 0 8px 8px 0;">
     <p style="margin: 0 0 0.5rem;"><strong>Date &amp; Time:</strong> ${formatted}</p>
@@ -128,7 +145,7 @@ export async function POST(req: NextRequest) {
   </div>
 
   <p>Click the link above at session time to join. No download required — it runs in your browser.</p>
-  <p>See you soon,<br/>Sam</p>
+  <p>See you soon,<br/>${teacher?.name.split(" ")[0] ?? "Your coach"}</p>
 
   <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 2rem 0;" />
   <p style="font-size: 0.8rem; color: #a1a1aa;">StoryLab &middot; ivystorylab.com</p>
@@ -140,5 +157,5 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ...session, daily_room_url: roomUrl }, { status: 201 });
+  return NextResponse.json({ ...session, daily_room_name: roomName, daily_room_url: roomUrl }, { status: 201 });
 }

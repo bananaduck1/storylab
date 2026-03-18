@@ -1,5 +1,5 @@
 import { NextRequest, after } from "next/server";
-import { getCallerUser } from "@/lib/lab-auth";
+import { getCallerUser, getUserRoles } from "@/lib/lab-auth";
 import { getSupabase } from "@/lib/supabase";
 import { buildSystemPromptForUser, writePortraitNote } from "@/lib/lab-profile";
 import { inferPhase, type EssayMode } from "@/lib/behavioral-constraints";
@@ -199,7 +199,9 @@ export async function POST(request: NextRequest) {
 
   // Pass isNewConversation so the function can inject the returning-session opener
   // when the student has portrait notes and this is their first message here.
-  const { systemPrompt, teacherName, teacherId } = await buildSystemPromptForUser(user.id, history.length === 0, phase, mode);
+  // callerIsTeacher: if the user is also a teacher on the platform, inject peer context.
+  const { isTeacher: callerIsTeacher } = await getUserRoles(user.id);
+  const { systemPrompt, teacherName, teacherId } = await buildSystemPromptForUser(user.id, history.length === 0, phase, mode, callerIsTeacher);
   let systemContent = systemPrompt;
 
   // ── embed once, retrieve playbook + case studies in parallel (Layer 3) ────

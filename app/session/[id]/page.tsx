@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCallerUser, getUserRole, getCallerStudentId } from "@/lib/lab-auth";
 import { getSupabase } from "@/lib/supabase";
 import PreSessionBrief from "./_components/PreSessionBrief";
+import PreSessionThread from "./_components/PreSessionThread";
 import VideoRoom from "./_components/VideoRoom";
 import type { Portrait } from "@/lib/supabase";
 
@@ -47,6 +48,15 @@ export default async function SessionPage({
     }
   }
 
+  // Fetch messages for thread (both roles)
+  const { data: messages } = await supabase
+    .from("session_messages")
+    .select("id, sender_role, body, created_at")
+    .eq("session_id", id)
+    .order("created_at", { ascending: true });
+
+  const threadMessages = messages ?? [];
+
   // For teacher: fetch student + portrait for pre-session brief
   let studentName = "";
   let portrait: Portrait | null = null;
@@ -68,15 +78,26 @@ export default async function SessionPage({
 
   const isTeacher = role === "teacher";
 
+  // Latest student message for pre-session brief
+  const latestStudentMessage = threadMessages
+    .filter((m) => m.sender_role === "student")
+    .at(-1)?.body ?? null;
+
   return (
     <div className="flex min-h-screen flex-col bg-zinc-950 text-white">
-      {isTeacher && (
+      {isTeacher ? (
         <PreSessionBrief
           sessionId={id}
           studentName={studentName}
           portrait={portrait}
           sessionType={session.session_type}
           scheduledAt={session.scheduled_at}
+          latestStudentMessage={latestStudentMessage}
+        />
+      ) : (
+        <PreSessionThread
+          sessionId={id}
+          initialMessages={threadMessages}
         />
       )}
       <VideoRoom

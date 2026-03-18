@@ -15,12 +15,14 @@ export default function PreSessionBrief({
   portrait,
   sessionType,
   scheduledAt,
+  latestStudentMessage,
 }: {
   sessionId: string;
   studentName: string;
   portrait: Portrait | null;
   sessionType: string;
   scheduledAt: string | null;
+  latestStudentMessage?: string | null;
 }) {
   const [dismissed, setDismissed] = useState(false);
 
@@ -54,6 +56,17 @@ export default function PreSessionBrief({
             </div>
 
             <h2 className="text-lg font-semibold text-white">{studentName}</h2>
+
+            {latestStudentMessage && (
+              <div className="rounded-lg border border-zinc-700 bg-zinc-800/60 px-4 py-3">
+                <p className="mb-1 text-xs font-medium uppercase tracking-wide text-zinc-500">
+                  Student note
+                </p>
+                <p className="text-sm leading-snug text-zinc-200 italic">
+                  &ldquo;{latestStudentMessage}&rdquo;
+                </p>
+              </div>
+            )}
 
             {c ? (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

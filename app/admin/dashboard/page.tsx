@@ -645,95 +645,410 @@ const STATUS_LABELS_VIDEO: Record<string, string> = {
   room_creation_failed: "Room Failed",
 };
 
-function SessionList({ sessions }: { sessions: Session[] }) {
+interface SessionMessage {
+  id: string;
+  sender_role: "teacher" | "student";
+  body: string;
+  created_at: string;
+}
+
+// ── session card with ⋯ menu and message thread ───────────────────────────────
+
+function SessionCard({
+  session: s,
+  onRemove,
+  onUpdate,
+}: {
+  session: Session;
+  onRemove: (id: string) => void;
+  onUpdate: (updated: Session) => void;
+}) {
+  const isVideo = !!s.daily_room_name;
+  const joinUrl = typeof window !== "undefined"
+    ? `${window.location.origin}/session/${s.id}`
+    : `/session/${s.id}`;
+
+  // ⋯ menu state
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Edit modal state
+  const [editOpen, setEditOpen] = useState(false);
+  const [editScheduledAt, setEditScheduledAt] = useState(
+    s.scheduled_at ? s.scheduled_at.slice(0, 16) : ""
+  );
+  const [editSessionType, setEditSessionType] = useState<SessionType>(s.session_type);
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState("");
+
+  // Cancel confirmation
+  const [cancelling, setCancelling] = useState(false);
+
+  // Message thread state
+  const [messages, setMessages] = useState<SessionMessage[] | null>(null);
+  const [threadOpen, setThreadOpen] = useState(false);
+  const [replyInput, setReplyInput] = useState("");
+  const [replySending, setReplySending] = useState(false);
+
+  // Message count (loaded eagerly for scheduled sessions)
+  const [msgCount, setMsgCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!isVideo) return;
+    fetch(`/api/session/${s.id}/messages`)
+      .then((r) => r.json())
+      .then((data: SessionMessage[]) => setMsgCount(data.length))
+      .catch(() => {});
+  }, [s.id, isVideo]);
+
+  // Close menu on outside click
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handler(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
+
+  // Close menu on Escape
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handler(e: KeyboardEvent) {
+      if (e.key === "Escape") setMenuOpen(false);
+    }
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [menuOpen]);
+
+  async function loadThread() {
+    const res = await fetch(`/api/session/${s.id}/messages`);
+    if (res.ok) {
+      const data: SessionMessage[] = await res.json();
+      setMessages(data);
+      setMsgCount(data.length);
+    }
+  }
+
+  async function openThread() {
+    if (!threadOpen) {
+      await loadThread();
+    }
+    setThreadOpen((o) => !o);
+  }
+
+  async function sendReply() {
+    if (!replyInput.trim() || replySending) return;
+    setReplySending(true);
+    const res = await fetch(`/api/session/${s.id}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ body: replyInput.trim() }),
+    });
+    setReplySending(false);
+    if (res.ok) {
+      setReplyInput("");
+      await loadThread();
+    }
+  }
+
+  async function handleEdit(e: React.FormEvent) {
+    e.preventDefault();
+    setEditSaving(true);
+    setEditError("");
+    const res = await fetch(`/api/admin/video-sessions/${s.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ scheduled_at: editScheduledAt, session_type: editSessionType }),
+    });
+    setEditSaving(false);
+    if (!res.ok) {
+      const d = await res.json();
+      setEditError(d.error ?? "Failed to update");
+      return;
+    }
+    const updated = await res.json();
+    onUpdate(updated);
+    setEditOpen(false);
+  }
+
+  async function handleCancel() {
+    if (!confirm("Cancel this session? The student will be notified.")) return;
+    setCancelling(true);
+    const res = await fetch(`/api/admin/video-sessions/${s.id}`, { method: "DELETE" });
+    setCancelling(false);
+    if (res.ok) {
+      onRemove(s.id);
+    } else {
+      alert("Couldn't cancel. Try again.");
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-zinc-200 bg-white p-4">
+      {/* Header row */}
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        <span className="text-xs font-medium text-zinc-900">
+          {s.scheduled_at
+            ? new Date(s.scheduled_at).toLocaleString("en-US", {
+                weekday: "short", month: "short", day: "numeric",
+                hour: "numeric", minute: "2-digit",
+              })
+            : formatDate(s.date)}
+        </span>
+        <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500">
+          {SESSION_TYPE_LABELS[s.session_type]}
+        </span>
+        {isVideo && (
+          <span className="rounded bg-blue-50 px-2 py-0.5 text-xs text-blue-500">Video</span>
+        )}
+        {s.status && STATUS_BADGES[s.status] && (
+          <span className={`rounded px-2 py-0.5 text-xs ${STATUS_BADGES[s.status]}`}>
+            {STATUS_LABELS_VIDEO[s.status] ?? s.status}
+          </span>
+        )}
+
+        {/* message count badge + ⋯ menu (video sessions only) */}
+        {isVideo && (
+          <div className="ml-auto flex items-center gap-2">
+            {msgCount != null && msgCount > 0 && (
+              <button
+                onClick={openThread}
+                aria-label={`${msgCount} message${msgCount !== 1 ? "s" : ""}`}
+                className="flex items-center gap-1 rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-white hover:bg-zinc-700 transition-colors"
+              >
+                <span>{msgCount}</span>
+                <span className="text-zinc-400">💬</span>
+              </button>
+            )}
+
+            {/* ⋯ menu */}
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setMenuOpen((o) => !o)}
+                aria-label="Session options"
+                aria-expanded={menuOpen}
+                aria-haspopup="menu"
+                className="flex h-8 w-8 items-center justify-center rounded text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors text-base"
+              >
+                ⋯
+              </button>
+
+              {menuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-full z-10 mt-1 min-w-[160px] rounded-lg border border-zinc-200 bg-white py-1 shadow-md"
+                >
+                  {s.status !== "completed" && (
+                    <button
+                      role="menuitem"
+                      onClick={() => { setMenuOpen(false); setEditOpen(true); }}
+                      className="w-full px-4 py-2 text-left text-sm text-zinc-700 hover:bg-zinc-50 transition-colors"
+                    >
+                      ✎ Edit date / type
+                    </button>
+                  )}
+                  <button
+                    role="menuitem"
+                    onClick={() => { navigator.clipboard.writeText(joinUrl); setMenuOpen(false); }}
+                    className="w-full px-4 py-2 text-left text-sm text-zinc-700 hover:bg-zinc-50 transition-colors"
+                  >
+                    🔗 Copy join link
+                  </button>
+                  <button
+                    role="menuitem"
+                    onClick={() => { setMenuOpen(false); openThread(); }}
+                    className="w-full px-4 py-2 text-left text-sm text-zinc-700 hover:bg-zinc-50 transition-colors"
+                  >
+                    💬 Messages
+                  </button>
+                  {s.status !== "completed" && (
+                    <button
+                      role="menuitem"
+                      onClick={() => { setMenuOpen(false); handleCancel(); }}
+                      disabled={cancelling}
+                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                    >
+                      {cancelling ? "Cancelling…" : "✕ Cancel session"}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Join link */}
+      {isVideo && s.status !== "completed" && (
+        <div className="mb-2">
+          <a href={joinUrl} target="_blank" rel="noopener noreferrer"
+            className="text-xs text-blue-600 hover:underline">
+            Join session →
+          </a>
+        </div>
+      )}
+
+      {/* Message thread (teacher view) */}
+      {threadOpen && (
+        <div className="mb-3 rounded-lg border border-zinc-100 bg-zinc-50 p-3">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-zinc-400">
+            Messages
+          </p>
+          <div
+            role="log"
+            aria-live="polite"
+            className="max-h-40 overflow-y-auto space-y-2 mb-3"
+          >
+            {messages === null ? (
+              <p className="text-xs text-zinc-400">Loading…</p>
+            ) : messages.length === 0 ? (
+              <p className="text-xs italic text-zinc-400">No messages yet.</p>
+            ) : (
+              messages.map((m) =>
+                m.sender_role === "student" ? (
+                  <div key={m.id} className="border-l-2 border-zinc-300 bg-white px-3 py-2 rounded-r text-sm text-zinc-800">
+                    {m.body}
+                  </div>
+                ) : (
+                  <div key={m.id} className="pl-4 text-sm italic text-zinc-500">
+                    <span className="text-xs text-zinc-400 not-italic mr-1">You</span>
+                    {m.body}
+                  </div>
+                )
+              )
+            )}
+          </div>
+          {/* Teacher reply */}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={replyInput}
+              onChange={(e) => setReplyInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") sendReply(); }}
+              placeholder="Reply…"
+              className="flex-1 rounded border border-zinc-200 px-3 py-1.5 text-sm focus:border-zinc-400 focus:outline-none"
+            />
+            <button
+              onClick={sendReply}
+              disabled={!replyInput.trim() || replySending}
+              className="rounded bg-zinc-800 px-3 py-1.5 text-xs text-white hover:bg-zinc-700 disabled:opacity-40 transition-colors"
+            >
+              {replySending ? "…" : "Send"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {s.flagged_moments && s.flagged_moments.length > 0 && (
+        <div className="mb-2">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-zinc-400">Essay Seeds</p>
+          <div className="space-y-1">
+            {s.flagged_moments.map((m, i) => (
+              <blockquote key={i} className="border-l-2 border-emerald-300 pl-2 text-xs italic text-zinc-600">
+                {m.quote}
+              </blockquote>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {s.parent_email_draft && (
+        <details className="mb-2">
+          <summary className="cursor-pointer text-xs font-medium text-emerald-700 hover:text-emerald-900">
+            Parent email draft ↓
+          </summary>
+          <div className="mt-2 rounded bg-emerald-50 p-3">
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-700">{s.parent_email_draft}</p>
+          </div>
+        </details>
+      )}
+
+      {s.key_observations && (
+        <div className="mb-2">
+          <p className="mb-0.5 text-xs font-semibold uppercase tracking-widest text-zinc-400">Observations</p>
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-700">{s.key_observations}</p>
+        </div>
+      )}
+      {s.raw_notes && !s.transcript && (
+        <details className="mt-2">
+          <summary className="cursor-pointer text-xs text-zinc-400 hover:text-zinc-600">Raw notes</summary>
+          <p className="mt-2 whitespace-pre-wrap text-xs leading-relaxed text-zinc-500">{s.raw_notes}</p>
+        </details>
+      )}
+
+      {/* Edit modal */}
+      {editOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+            <h3 className="mb-4 text-sm font-semibold text-zinc-900">Edit session</h3>
+            <form onSubmit={handleEdit} className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs text-zinc-500">Date &amp; Time</label>
+                <input
+                  type="datetime-local"
+                  value={editScheduledAt}
+                  onChange={(e) => setEditScheduledAt(e.target.value)}
+                  className="w-full rounded border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-400 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-zinc-500">Session type</label>
+                <select
+                  value={editSessionType}
+                  onChange={(e) => setEditSessionType(e.target.value as SessionType)}
+                  className="w-full rounded border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-400 focus:outline-none"
+                >
+                  {(Object.keys(SESSION_TYPE_LABELS) as SessionType[]).map((t) => (
+                    <option key={t} value={t}>{SESSION_TYPE_LABELS[t]}</option>
+                  ))}
+                </select>
+              </div>
+              {editError && <p className="text-xs text-red-500">{editError}</p>}
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="submit"
+                  disabled={editSaving}
+                  className="flex-1 rounded bg-zinc-900 py-2 text-sm text-white hover:bg-zinc-700 disabled:opacity-50 transition-colors"
+                >
+                  {editSaving ? "Saving…" : "Save"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditOpen(false)}
+                  className="flex-1 rounded border border-zinc-200 py-2 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SessionList({
+  sessions,
+  onRemove,
+  onUpdate,
+}: {
+  sessions: Session[];
+  onRemove: (id: string) => void;
+  onUpdate: (updated: Session) => void;
+}) {
   if (sessions.length === 0) {
     return <p className="text-xs text-zinc-400">No sessions yet.</p>;
   }
 
   return (
     <div className="space-y-4">
-      {sessions.map((s) => {
-        const isVideo = !!s.daily_room_name;
-        const joinUrl = typeof window !== "undefined"
-          ? `${window.location.origin}/session/${s.id}`
-          : `/session/${s.id}`;
-
-        return (
-          <div key={s.id} className="rounded-lg border border-zinc-200 bg-white p-4">
-            <div className="mb-2 flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-zinc-900">
-                {s.scheduled_at
-                  ? new Date(s.scheduled_at).toLocaleString("en-US", {
-                      weekday: "short", month: "short", day: "numeric",
-                      hour: "numeric", minute: "2-digit",
-                    })
-                  : formatDate(s.date)}
-              </span>
-              <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500">
-                {SESSION_TYPE_LABELS[s.session_type]}
-              </span>
-              {isVideo && (
-                <span className="rounded bg-blue-50 px-2 py-0.5 text-xs text-blue-500">Video</span>
-              )}
-              {s.status && STATUS_BADGES[s.status] && (
-                <span className={`rounded px-2 py-0.5 text-xs ${STATUS_BADGES[s.status]}`}>
-                  {STATUS_LABELS_VIDEO[s.status] ?? s.status}
-                </span>
-              )}
-            </div>
-
-            {isVideo && s.status !== "completed" && (
-              <div className="mb-2 flex items-center gap-3">
-                <a href={joinUrl} target="_blank" rel="noopener noreferrer"
-                  className="text-xs text-blue-600 hover:underline">
-                  Join session →
-                </a>
-                <button onClick={() => navigator.clipboard.writeText(joinUrl)}
-                  className="text-xs text-zinc-400 hover:text-zinc-600">
-                  Copy link
-                </button>
-              </div>
-            )}
-
-            {s.flagged_moments && s.flagged_moments.length > 0 && (
-              <div className="mb-2">
-                <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-zinc-400">Essay Seeds</p>
-                <div className="space-y-1">
-                  {s.flagged_moments.map((m, i) => (
-                    <blockquote key={i} className="border-l-2 border-emerald-300 pl-2 text-xs italic text-zinc-600">
-                      {m.quote}
-                    </blockquote>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {s.parent_email_draft && (
-              <details className="mb-2">
-                <summary className="cursor-pointer text-xs font-medium text-emerald-700 hover:text-emerald-900">
-                  Parent email draft ↓
-                </summary>
-                <div className="mt-2 rounded bg-emerald-50 p-3">
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-700">{s.parent_email_draft}</p>
-                </div>
-              </details>
-            )}
-
-            {s.key_observations && (
-              <div className="mb-2">
-                <p className="mb-0.5 text-xs font-semibold uppercase tracking-widest text-zinc-400">Observations</p>
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-700">{s.key_observations}</p>
-              </div>
-            )}
-            {s.raw_notes && !s.transcript && (
-              <details className="mt-2">
-                <summary className="cursor-pointer text-xs text-zinc-400 hover:text-zinc-600">Raw notes</summary>
-                <p className="mt-2 whitespace-pre-wrap text-xs leading-relaxed text-zinc-500">{s.raw_notes}</p>
-              </details>
-            )}
-          </div>
-        );
-      })}
+      {sessions.map((s) => (
+        <SessionCard key={s.id} session={s} onRemove={onRemove} onUpdate={onUpdate} />
+      ))}
     </div>
   );
 }
@@ -1253,6 +1568,14 @@ function StudentView({ student, lab }: { student: Student; lab: LabData | null }
     setSessions((prev) => [session, ...prev]);
   }
 
+  function handleSessionRemoved(id: string) {
+    setSessions((prev) => prev.filter((s) => s.id !== id));
+  }
+
+  function handleSessionUpdated(updated: Session) {
+    setSessions((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+  }
+
   function copyClaimLink() {
     navigator.clipboard.writeText(`${window.location.origin}/lab/claim/${student.id}`);
     setLinkCopied(true);
@@ -1300,6 +1623,16 @@ function StudentView({ student, lab }: { student: Student; lab: LabData | null }
             {STAGE_LABELS[student.development_stage]}
           </span>
           <div className="ml-auto flex items-center gap-2">
+            {lab && (
+              <a
+                href={`/admin/students/${student.id}/view`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded border border-zinc-300 px-2.5 py-1 text-xs text-zinc-600 hover:bg-zinc-50 transition-colors"
+              >
+                View /lab ↗
+              </a>
+            )}
             {student.user_id ? (
               <span className="text-xs text-emerald-600">Linked</span>
             ) : (
@@ -1410,7 +1743,11 @@ function StudentView({ student, lab }: { student: Student; lab: LabData | null }
               onScheduled={handleSessionAdded}
             />
             <div className="mt-2">
-              <SessionList sessions={sessions} />
+              <SessionList
+                sessions={sessions}
+                onRemove={handleSessionRemoved}
+                onUpdate={handleSessionUpdated}
+              />
             </div>
           </div>
         </div>

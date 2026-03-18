@@ -38,6 +38,12 @@ export function AdminNav() {
         >
           Availability
         </Link>
+        <Link
+          href="/admin/platform"
+          className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
+        >
+          Platform
+        </Link>
       </div>
       <button
         onClick={signOut}

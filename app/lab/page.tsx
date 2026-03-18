@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCallerUser } from "@/lib/lab-auth";
+import { getCallerUser, getUserRoles, ADMIN_EMAIL } from "@/lib/lab-auth";
 import { getSupabase } from "@/lib/supabase";
 import { checkQuota } from "@/lib/lab-quota";
 import LabChat from "./_components/LabChat";
@@ -19,10 +19,14 @@ export default async function LabPage(props: {
 
   const db = getSupabase();
 
-  const isStudent = user.user_metadata?.role === "student";
+  // DB-based role resolution — supports multi-role users (teacher + student simultaneously).
+  // isTeacher/isStudent are derived from DB rows, not user_metadata.
+  const roles = await getUserRoles(user.id);
+  const isFounder = user.email === ADMIN_EMAIL;
+  const { isTeacher, isStudent } = roles;
 
   // Fetch profile + conversations in parallel, then checkQuota reuses the profile row.
-  // For student-role users, also check if they have a linked students record.
+  // Always check for linked students record (any role may have one).
   const [{ data: profile }, { data: conversations }, linkedStudentRow] = await Promise.all([
     db.from("student_profiles").select("*").eq("user_id", user.id).maybeSingle(),
     db
@@ -31,9 +35,7 @@ export default async function LabPage(props: {
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false })
       .limit(50),
-    isStudent
-      ? db.from("students").select("id").eq("user_id", user.id).maybeSingle().then((r) => r.data)
-      : Promise.resolve(null),
+    db.from("students").select("id").eq("user_id", user.id).maybeSingle().then((r) => r.data),
   ]);
 
   // Upcoming video sessions for linked students
@@ -51,10 +53,11 @@ export default async function LabPage(props: {
   }
   const quota = await checkQuota(user.id, profile);
 
-  // isLinked: true if this student-role user has a linked students record
+  // isLinked: true if this user has a linked students record (or is a teacher/founder with no student record)
   const isLinked = isStudent ? !!linkedStudentRow : true;
 
-  if (!profile || !profile.onboarding_done) {
+  // Teachers bypass the onboarding redirect — they see LabChat with the learner banner instead.
+  if (!isTeacher && (!profile || !profile.onboarding_done)) {
     redirect("/lab/onboarding");
   }
 
@@ -115,6 +118,9 @@ export default async function LabPage(props: {
         quota={quotaState}
         successType={successType}
         isLinked={isLinked}
+        isTeacher={isTeacher}
+        isFounder={isFounder}
+        showTeacherLearnerBanner={isTeacher && (!profile || !profile.onboarding_done)}
       />
     </>
   );
