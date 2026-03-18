@@ -17,7 +17,7 @@ export async function GET() {
   return NextResponse.json(data ?? []);
 }
 
-const VALID_MODES = ["common_app", "transfer", "academic"] as const;
+const VALID_MODES = ["common_app", "transfer", "academic", "supplemental"] as const;
 type EssayMode = (typeof VALID_MODES)[number];
 
 export async function POST(req: NextRequest) {

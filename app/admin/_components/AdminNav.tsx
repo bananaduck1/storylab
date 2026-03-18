@@ -33,12 +33,6 @@ export function AdminNav() {
           Posts
         </Link>
         <Link
-          href="/admin/sessions"
-          className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
-        >
-          Sessions
-        </Link>
-        <Link
           href="/admin/availability"
           className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
         >

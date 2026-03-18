@@ -67,5 +67,12 @@ export async function POST(req: NextRequest) {
   }
 
   console.log("[admin/invite-student] sent", { studentId: student_id, email: student.email });
+
+  // Record invite timestamp (best-effort — don't fail the request if this errors)
+  await db
+    .from("students")
+    .update({ invited_at: new Date().toISOString() })
+    .eq("id", student_id);
+
   return NextResponse.json({ ok: true });
 }

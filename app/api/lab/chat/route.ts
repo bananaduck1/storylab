@@ -27,6 +27,7 @@ const DEBUG = process.env.LAB_DEBUG === "1";
 // Returns an empty string on failure so the caller's guard handles it cleanly.
 export async function generatePortraitNote(
   apiKey: string,
+  teacherName: string,
   recentUserMessages: string[],
   assistantSummary: string
 ): Promise<string> {
@@ -34,7 +35,7 @@ export async function generatePortraitNote(
     "Recent student messages:",
     ...recentUserMessages.map((m, i) => `[${i + 1}] ${m.slice(0, 300)}`),
     "",
-    "Sam's response (summary):",
+    `${teacherName}'s response (summary):`,
     assistantSummary.slice(0, 200),
   ].join("\n");
 
@@ -51,8 +52,8 @@ export async function generatePortraitNote(
         {
           role: "system",
           content:
-            "You are Sam's memory system. Given this coaching exchange, write 1–3 sentences " +
-            "about what Sam should remember about this student for the next session. " +
+            `You are ${teacherName}'s memory system. Given this coaching exchange, write 1–3 sentences ` +
+            `about what ${teacherName} should remember about this student for the next session. ` +
             "Be specific: note patterns, topics, personal details, emotional responses, " +
             "or where the student is stuck. Write in third person " +
             "(e.g., 'Student mentioned...', 'Student tends to...'). " +
@@ -198,7 +199,8 @@ export async function POST(request: NextRequest) {
 
   // Pass isNewConversation so the function can inject the returning-session opener
   // when the student has portrait notes and this is their first message here.
-  let systemContent = await buildSystemPromptForUser(user.id, history.length === 0, phase, mode);
+  const { systemPrompt, teacherName, teacherId } = await buildSystemPromptForUser(user.id, history.length === 0, phase, mode);
+  let systemContent = systemPrompt;
 
   // ── embed once, retrieve playbook + case studies in parallel (Layer 3) ────
   //
@@ -223,8 +225,8 @@ export async function POST(request: NextRequest) {
   try {
     const ragVector = await embedQuery(ragQuery);
     [playbookChunks, caseStudyChunks] = await Promise.all([
-      retrievePlaybookByVector(ragVector, 3),
-      retrieveCaseStudyByVector(ragVector, 2),
+      retrievePlaybookByVector(ragVector, 3, teacherId ?? undefined),
+      retrieveCaseStudyByVector(ragVector, 2, teacherId ?? undefined),
     ]);
   } catch {
     // best-effort RAG — proceed without it
@@ -380,7 +382,7 @@ export async function POST(request: NextRequest) {
                 message,
               ];
 
-              const note = await generatePortraitNote(apiKey, recentUserMessages, accumulated);
+              const note = await generatePortraitNote(apiKey, teacherName, recentUserMessages, accumulated);
 
               // Fetch current portrait to support rolling cap in writePortraitNote
               const { data: profileRow } = await db

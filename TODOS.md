@@ -1,6 +1,6 @@
 # TODOs
 
-Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3).
+Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24 all shipped.
 
 ---
 
@@ -52,7 +52,7 @@ Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review 
 
 ---
 
-## TODO-4: Deduplicate student_profiles fetch on /lab page load
+## TODO-4: Deduplicate student_profiles fetch on /lab page load ✅ DONE
 
 **What:** Refactor `checkQuota()` in `lib/lab-quota.ts` to accept an optional pre-fetched profile so `app/lab/page.tsx` doesn't read the same row twice per page load.
 
@@ -66,27 +66,13 @@ Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review 
 
 **Depends on:** Nothing. Independent refactor.
 
+**Decision (2026-03-18):** Already implemented. `lib/lab-quota.ts` has the `preloadedProfile?: ProfileSnapshot | null` parameter. `app/lab/page.tsx:52` passes the pre-fetched profile to `checkQuota(user.id, profile)`. Zero extra work needed.
+
 ---
 
-## TODO-5: System prompt XML restructuring
+## TODO-5: System prompt XML restructuring ✅ CLOSED
 
-**What:** Convert the quick-reference tables in Section 6 of `lib/agent-system-prompt.ts`
-(Symptom → First Move, Student State → Move) from plain markdown to structured XML tags
-(e.g., `<symptom>`, `<first_move>`).
-
-**Why:** GPT-4o parses structured XML tags more reliably than markdown tables in long system
-prompts. The behavioral `→ Agent:` directives may be compressed in the model's attention
-over a 600-line document.
-
-**Pros:** Higher signal-to-noise for the most actionable rules.
-**Cons:** Requires careful prompt regression testing — any change to the system prompt needs
-eval against baseline behavior before shipping.
-
-**Context:** Deferred because it's hard to isolate what fixed what if you change the prompt
-and the memory architecture simultaneously. Ship the portrait/RAG changes first, observe
-whether the agent still produces generic responses, then restructure the prompt if needed.
-
-**Effort:** M | **Priority:** P2 | **Depends on:** Portrait system shipping + 1 week of data
+**Decision (2026-03-18):** Superseded by TODO-23 (multi-tenant foundation). Once Sam's system prompt moves into a structured JSONB `agent_config` in the `teachers` table (with explicit fields for identity, core_beliefs, diagnostic_eye, voice, signature_moves), the sections are already structured — no XML restructuring of the flat file needed. The file `lib/agent-system-prompt.ts` becomes a fallback reference only. Close this.
 
 ---
 
@@ -110,24 +96,9 @@ has been running for a week. Let the real data drive the schema. Do not design s
 
 ---
 
-## TODO-7: Admin portrait visibility
+## TODO-7: Admin portrait visibility ✅ DONE
 
-**What:** Add a read-only display of `student_profiles.portrait_notes` to `/admin/dashboard`
-so Sam can inspect what the AI has learned about each /lab student.
-
-**Why:** Without visibility, there's no way to verify portrait quality or catch cases where
-the AI is writing unhelpful notes.
-
-**Pros:** Trust signal. Debugging tool.
-**Cons:** Exposes AI-written internal notes in the UI — need to make clear these are
-agent-generated, not Sam's own notes.
-
-**Context:** `/admin/dashboard` is at `app/admin/dashboard/page.tsx`. Note that admin uses
-a separate `students` table with its own `portraits` table (narratives), while /lab stores
-its notes in `student_profiles.portrait_notes`. These are different data sources. The admin
-view would need to join or query `student_profiles` by matching email/identity.
-
-**Effort:** S | **Priority:** P2 | **Depends on:** Portrait system shipping + real data to display
+`portrait_notes` is already rendered in `app/admin/dashboard/page.tsx` at line 1377-1378 as part of the lab data pane. Verified 2026-03-18.
 
 ---
 
@@ -172,7 +143,7 @@ Add this endpoint alongside any future "your coaching profile" UI.
 
 ---
 
-## TODO-10: Behavioral compliance eval harness
+## TODO-10: Behavioral compliance eval harness ✅ DONE
 
 **What:** A script (`scripts/eval-chat.ts`) that sends a set of scripted messages through the `/api/lab/chat` endpoint and grades each response for behavioral compliance: no bullet lists, ends with a question, quote present in feedback phase, one-problem focus.
 
@@ -184,6 +155,8 @@ Add this endpoint alongside any future "your coaching profile" UI.
 **Context:** The harness would run 5–10 pre-scripted conversation stubs (opening message only, 4-turn conversation ending with essay upload, etc.) and parse each response for: (1) no lines starting with `-` or `*`, (2) response ends with `?`, (3) at least one `>` blockquote line in feedback phase. Run as `npx tsx --env-file=.env.local scripts/eval-chat.ts`. Add to CI as an optional check.
 
 **Effort:** L | **Priority:** P2 | **Depends on:** Behavioral layer shipping
+
+**Decision (2026-03-18):** Implemented. `scripts/eval-chat.ts` — 4 compliance checks, all 4 modes supported, `--mode all` runs regression across every mode. Set `EVAL_USER_EMAIL` + `EVAL_USER_PASSWORD` in `.env.local` to run.
 
 ---
 
@@ -232,7 +205,7 @@ Add this endpoint alongside any future "your coaching profile" UI.
 
 ---
 
-## TODO-15: Invite history in admin student pane
+## TODO-15: Invite history in admin student pane ✅ DONE
 
 **What:** Show "Invited on [date] / Claimed on [date]" in the admin student pane so Sam knows the status of each outreach.
 
@@ -242,9 +215,11 @@ Add this endpoint alongside any future "your coaching profile" UI.
 
 **Effort:** S | **Priority:** P3 | **Depends on:** Invite email feature (student unification PR 1)
 
+**Decision (2026-03-18):** Implemented. Migration `20260318_invited_at.sql` adds the column. `app/api/admin/invite-student/route.ts` sets it on send. `lib/supabase.ts` Student interface updated. `app/admin/dashboard/page.tsx` shows invite date with `localInvitedAt` state for optimistic update.
+
 ---
 
-## TODO-16: Supplemental essay mode
+## TODO-16: Supplemental essay mode ✅ DONE
 
 **What:** A 4th essay mode covering "Why this school" essays, activity descriptions (150-word brevity coaching), and diversity/community essays — each sub-type with distinct Sam coaching moves.
 
@@ -257,6 +232,8 @@ Add this endpoint alongside any future "your coaching profile" UI.
 **Context:** Implementation is an extension of the essay modes system (this PR). The pattern is identical — add `"supplemental"` to the `EssayMode` union, add phase thresholds, add constraint overrides, add mode context. The constraint content needs to come from Sam's coaching doctrine on: (1) "Why this school" — what makes a compelling specific reason vs. a generic template? (2) Activity descriptions — how do you be memorable in 150 words? (3) Diversity/community — what's the frame? Write 3-5 bullets per sub-type, then hand to CC.
 
 **Effort:** S (code) / M (doctrine writing) | **Priority:** P2 | **Depends on:** Essay modes PR + Sam's supplemental pedagogy notes
+
+**Decision (2026-03-18):** Implemented with placeholder doctrine (S1-S9 constraints). `lib/behavioral-constraints.ts`, `lib/lab-profile.ts` (MODE_CONTEXT + MODE_OPENING), `app/lab/_components/LabChat.tsx` all updated. Sam to refine the S1-S9 bullets with his actual supplemental pedagogy.
 
 ---
 
@@ -353,3 +330,91 @@ Add this endpoint alongside any future "your coaching profile" UI.
 **Context:** The current architecture was deliberately designed to avoid the paid plan requirement (see transcript_chunks approach). When upgrading, the primary change is: replace the client-side Web Speech API + `POST /api/session/[id]/transcript` flow with Daily.co's `transcriptionStarted` webhook events writing directly to `transcript_chunks`. The table schema stays the same. Daily.co paid plan also enables `startRecording()` for TODO-19.
 
 **Effort:** S (integration) | **Priority:** P3 | **Depends on:** Session volume justifying cost + TODO-21 (Deepgram) evaluated first as a browser-agnostic alternative
+
+---
+
+## TODO-23: Multi-tenant foundation ✅ DONE
+
+**What:** Add `teachers` table + `teacher_id` foreign key to `knowledge_chunks` and `student_profiles`. Move Sam's hardcoded system prompt from `lib/agent-system-prompt.ts` into a `teachers.agent_config` JSONB row. Update `buildSystemPromptForUser` and `retrievePlaybookByVector` to be teacher-scoped.
+
+**Why:** The entire platform is currently single-tenant — Sam is baked into files, not a database row. Adding a second teacher requires either a painful migration or a parallel codebase. Every Sam-specific improvement built before this migration becomes partial technical debt that must be generalized later. This is the one-way door that makes the platform vision possible.
+
+**Pros:** Unlocks multi-teacher architecture. Every future improvement (eval harness, portrait quality, knowledge base growth) automatically applies to all teachers. Teacher agent builder (TODO-24) depends on this.
+
+**Cons:** Touches core chat pipeline — requires careful testing that Sam's agent behavior is identical before and after. Migration must backfill all existing `knowledge_chunks` and `student_profiles` with Sam's teacher_id.
+
+**Context:**
+Migration:
+```sql
+CREATE TABLE teachers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users,
+  name TEXT NOT NULL,
+  agent_config JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE knowledge_chunks ADD COLUMN teacher_id UUID REFERENCES teachers(id);
+ALTER TABLE student_profiles ADD COLUMN teacher_id UUID REFERENCES teachers(id);
+-- Insert Sam as teachers row 1, then backfill
+```
+`agent_config` JSONB schema: `{ identity, core_beliefs, diagnostic_eye, voice, signature_moves[] }` — maps directly to Sections 0-5 of `lib/agent-system-prompt.ts`.
+
+`buildSystemPromptForUser` in `lib/lab-profile.ts` loads teacher row and assembles prompt from `agent_config` fields. Keep `lib/agent-system-prompt.ts` as a fallback reference until DB-loading is validated in production.
+
+`retrievePlaybookByVector` in `lib/knowledge-retrieval.ts` takes optional `teacherId` parameter and adds WHERE filter to the Supabase RPC call. Add `teacher_id` index on `knowledge_chunks` before backfill.
+
+**Critical gap to handle:** If `teachers.agent_config` is null/malformed, `buildSystemPromptForUser` must fall back to the hardcoded Sam prompt and log a warning — a missing config producing a blank system prompt is a silent failure.
+
+**Effort:** M → CC: ~1 hr | **Priority:** P1 | **Depends on:** Nothing. Do this before further Sam-specific infrastructure investment.
+
+**Decision (2026-03-18):** Implemented. Migration `20260318_teachers.sql` applied — teachers table created, Sam backfilled, knowledge_chunks + student_profiles have teacher_id, match_knowledge_chunks RPC updated. `lib/lab-profile.ts` returns `{ systemPrompt, teacherName, teacherId }` and loads from `agent_config`. `lib/knowledge-retrieval.ts` passes `filter_teacher_id` to RPC. `app/api/lab/chat/route.ts` wired up end-to-end.
+
+---
+
+## TODO-24: Teacher agent builder MVP ✅ DONE
+
+**What:** A form at `/admin/teacher-config` (Sam-only initially, generalizable to any teacher) that lets a teacher configure their agent by filling in structured fields: identity, core beliefs, diagnostic eye, voice, signature moves. Saves to `teachers.agent_config` JSONB. This is the "Notion-style builder" for the teacher marketplace vision.
+
+**Why:** The explicit customization path is how new teachers (with no session data yet) shape their agent from day 1. Even for Sam, formalizing his config in a UI means his agent can be refined without a code deploy. It's also the spec for how the teacher marketplace onboards future teachers.
+
+**Pros:** Unlocks the explicit customization path. Makes teacher agent configuration a product experience, not a code change. Even Sam benefits — he can tune his voice/moves without touching `lib/agent-system-prompt.ts`. Provides the UI structure for teacher onboarding when the marketplace opens.
+
+**Cons:** Requires TODO-23 first. Form fields must map cleanly to the `agent_config` JSONB schema. Need to sanitize for prompt injection (a teacher writing "Ignore all previous instructions" in the identity field).
+
+**Context:** The `agent_config` JSONB schema from TODO-23:
+```
+{
+  identity: string,          // Section 0 of Sam's prompt — who are you, what's your story
+  core_beliefs: string,      // Section 1 — what do you believe about your subject
+  diagnostic_eye: string,    // Section 2 — what do you notice in bad drafts
+  voice: string,             // Sections 3-5 — how you talk, your tone, your moves
+  signature_moves: string[]  // 3-5 specific coaching interventions you always make
+}
+```
+UI: `/admin/teacher-config` — a form with one textarea per field, each with a short prompt/example. Sam fills in his version first. On save, calls `PATCH /api/admin/teacher-config` which validates the JSONB and writes to `teachers`. Add a "Preview" button that shows what the assembled system prompt looks like.
+
+Sanitization: strip any "ignore previous instructions"-style content. Validate max field lengths (identity ≤ 5000 chars, each belief ≤ 2000 chars, each move ≤ 500 chars).
+
+**Effort:** M → CC: ~2 hr | **Priority:** P1 | **Depends on:** TODO-23
+
+**Decision (2026-03-18):** Implemented. `app/api/admin/teacher-config/route.ts` — GET + PATCH with injection detection and length validation. `app/admin/teacher-config/page.tsx` — 5-section form (identity, core_beliefs, diagnostic_eye, voice, signature_moves ×5) with preview toggle. Accessible at `/admin/teacher-config`.
+
+---
+
+## TODO-25: Session → teacher knowledge pipeline
+
+**What:** After each completed video session, extract coaching patterns and technique examples from the session transcript and add them as `knowledge_chunks` tagged to the teacher's `teacher_id`. This is the implicit learning path — the agent improves from session data without the teacher doing any work.
+
+**Why:** The explicit builder (TODO-24) captures what teachers *can articulate*. The implicit pipeline captures what they *actually do* — which is often richer and more consistent. Over time, a teacher with 100 sessions has an agent that embodies their real coaching patterns, not just their stated philosophy.
+
+**Pros:** The core product promise: more sessions → better agent. Creates a data flywheel. Differentiates from generic "build an AI agent" tools — this one improves automatically.
+
+**Cons:** Requires real session data to validate the extraction approach. The extraction quality depends on transcript quality (which depends on TODO-21 Deepgram). Do not build speculatively — wait for 10+ real sessions to understand what patterns are actually worth extracting.
+
+**Context:** The pipeline: `POST /api/session/[id]/complete` already triggers portrait regen. Add a step that calls a `extractTeacherChunks(transcript, teacherId)` function. This function calls GPT-4o with the transcript + teacher's existing `agent_config` and asks: "What coaching moves, analogies, or diagnostic observations from this session are worth adding to this teacher's knowledge base?" Writes results as `knowledge_chunks` with `teacher_id` set and `chunk_type = "playbook"`.
+
+Validate by running this against 10 Sam sessions and checking whether the extracted chunks improve RAG quality (use the eval harness from TODO-10 as a before/after measure).
+
+The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO-10 and TODO-23 first, then validate with real data.
+
+**Effort:** M → CC: ~1 hr | **Priority:** P3 | **Depends on:** TODO-23 + TODO-10 (eval harness) + 10+ real video sessions

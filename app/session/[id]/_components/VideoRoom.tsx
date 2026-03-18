@@ -80,6 +80,13 @@ export default function VideoRoom({
 
     async function initCall() {
       try {
+        // Destroy any lingering Daily.co instance — happens when React Strict Mode
+        // double-invokes effects (mount → cleanup → mount) or on fast page navigation.
+        const existing = DailyIframe.getCallInstance();
+        if (existing) {
+          await existing.destroy();
+        }
+
         const tokenRes = await fetch(`/api/session/${sessionId}/token`);
         if (!tokenRes.ok) {
           const j = await tokenRes.json();

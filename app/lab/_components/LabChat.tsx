@@ -10,7 +10,7 @@ interface Conversation {
   id: string;
   title: string;
   updated_at: string;
-  essay_mode?: "common_app" | "transfer" | "academic";
+  essay_mode?: "common_app" | "transfer" | "academic" | "supplemental";
 }
 
 interface Message {
@@ -119,7 +119,7 @@ export default function LabChat({
   const [checkingOut, setCheckingOut] = useState<"subscribe" | "topup" | "portal" | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameTitle, setRenameTitle] = useState("");
-  const [selectedMode, setSelectedMode] = useState<"common_app" | "transfer" | "academic">("common_app");
+  const [selectedMode, setSelectedMode] = useState<"common_app" | "transfer" | "academic" | "supplemental">("common_app");
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -207,7 +207,7 @@ export default function LabChat({
     router.replace("/login");
   }
 
-  async function newConversation(mode?: "common_app" | "transfer" | "academic") {
+  async function newConversation(mode?: "common_app" | "transfer" | "academic" | "supplemental") {
     const essay_mode = mode ?? selectedMode;
     try {
       const res = await fetch("/api/lab/conversations", {
@@ -488,10 +488,11 @@ export default function LabChat({
   const activeConv = conversations.find((c) => c.id === activeConvId);
   const activeMode = activeConv?.essay_mode ?? "common_app";
 
-  const MODE_LABELS: Record<"common_app" | "transfer" | "academic", string> = {
+  const MODE_LABELS: Record<"common_app" | "transfer" | "academic" | "supplemental", string> = {
     common_app: "Common App",
     transfer: "Transfer",
     academic: "Academic",
+    supplemental: "Supplemental",
   };
 
   return (
@@ -739,7 +740,7 @@ export default function LabChat({
                   {/* Mode picker — only shown before the first message */}
                   <div className="inline-flex flex-col items-start gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-5 py-4">
                     <p className="text-xs font-medium text-zinc-500 mb-1">Essay type</p>
-                    {(["common_app", "transfer", "academic"] as const).map((m) => (
+                    {(["common_app", "transfer", "academic", "supplemental"] as const).map((m) => (
                       <label key={m} className="flex items-center gap-2.5 cursor-pointer">
                         <input
                           type="radio"

@@ -36,12 +36,13 @@ export async function embedQuery(query: string): Promise<number[]> {
 // Use this when you need to embed once and retrieve multiple chunk types in parallel.
 async function retrieveByVector(
   vector: number[],
-  options?: { chunkType?: ChunkType; limit?: number }
+  options?: { chunkType?: ChunkType; limit?: number; teacherId?: string }
 ): Promise<string[]> {
   const { data, error } = await getSupabase().rpc("match_knowledge_chunks", {
     query_embedding: vector,
     match_count: options?.limit ?? 5,
     filter_chunk_type: options?.chunkType ?? null,
+    filter_teacher_id: options?.teacherId ?? null,
   });
 
   if (error) throw new Error(`Knowledge retrieval error: ${error.message}`);
@@ -51,24 +52,24 @@ async function retrieveByVector(
 
 // Vector-based typed retrievals — for callers that embed once and retrieve in parallel.
 // The chat route uses these to avoid a second embedQuery call.
-export const retrievePlaybookByVector = (vector: number[], limit = 3) =>
-  retrieveByVector(vector, { chunkType: "playbook", limit });
+export const retrievePlaybookByVector = (vector: number[], limit = 3, teacherId?: string) =>
+  retrieveByVector(vector, { chunkType: "playbook", limit, teacherId });
 
-export const retrieveCaseStudyByVector = (vector: number[], limit = 2) =>
-  retrieveByVector(vector, { chunkType: "case_study", limit });
+export const retrieveCaseStudyByVector = (vector: number[], limit = 2, teacherId?: string) =>
+  retrieveByVector(vector, { chunkType: "case_study", limit, teacherId });
 
 // Full pipeline (embed + retrieve) — for callers that don't need embed-once optimization.
 export async function retrieveKnowledge(
   query: string,
-  options?: { chunkType?: ChunkType; limit?: number }
+  options?: { chunkType?: ChunkType; limit?: number; teacherId?: string }
 ): Promise<string[]> {
   const embedding = await embedQuery(query);
   return retrieveByVector(embedding, options);
 }
 
 // String-based typed convenience wrappers — use when embed-once isn't needed.
-export const retrievePlaybook = (query: string, limit = 3) =>
-  retrieveKnowledge(query, { chunkType: "playbook", limit });
+export const retrievePlaybook = (query: string, limit = 3, teacherId?: string) =>
+  retrieveKnowledge(query, { chunkType: "playbook", limit, teacherId });
 
-export const retrieveCaseStudy = (query: string, limit = 5) =>
-  retrieveKnowledge(query, { chunkType: "case_study", limit });
+export const retrieveCaseStudy = (query: string, limit = 5, teacherId?: string) =>
+  retrieveKnowledge(query, { chunkType: "case_study", limit, teacherId });

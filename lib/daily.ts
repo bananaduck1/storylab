@@ -22,14 +22,14 @@ export interface DailyMeetingToken {
 
 /**
  * Create a Daily.co room.
- * Room expires 24 hours after `scheduled_at` (or now if not provided).
+ * Room expires 7 days after `scheduled_at` (or now if not provided).
  */
 export async function createDailyRoom(
   name: string,
   scheduledAt?: Date
 ): Promise<DailyRoom> {
   const base = scheduledAt ?? new Date();
-  const exp = Math.floor(base.getTime() / 1000) + 60 * 60 * 24; // +24h
+  const exp = Math.floor(base.getTime() / 1000) + 60 * 60 * 24 * 7; // +7 days
 
   const res = await fetch(`${DAILY_BASE}/rooms`, {
     method: "POST",
@@ -66,7 +66,7 @@ export async function createMeetingToken(
   scheduledAt?: Date
 ): Promise<DailyMeetingToken> {
   const base = scheduledAt ?? new Date();
-  const exp = Math.floor(base.getTime() / 1000) + 60 * 60 * 24; // +24h
+  const exp = Math.floor(base.getTime() / 1000) + 60 * 60 * 24 * 7; // +7 days
 
   const res = await fetch(`${DAILY_BASE}/meeting-tokens`, {
     method: "POST",

@@ -14,12 +14,13 @@
 //   common_app   |  ≤ 2    |  ≤ 8
 //   transfer     |  ≤ 2    |  ≤ 5
 //   academic     |  ≤ 1    |  ≤ 3
+//   supplemental |  ≤ 1    |  ≤ 4
 //
 // Constraints are prepended to the top of the system prompt on every turn
 // so they survive context-window truncation (narrative tail gets cut, not rules).
 
 export type SessionPhase = "OPENING" | "DIAGNOSING" | "COACHING" | "FEEDBACK";
-export type EssayMode = "common_app" | "transfer" | "academic";
+export type EssayMode = "common_app" | "transfer" | "academic" | "supplemental";
 
 interface PhaseThresholds {
   opening: number;
@@ -27,9 +28,10 @@ interface PhaseThresholds {
 }
 
 const PHASE_THRESHOLDS: Record<EssayMode, PhaseThresholds> = {
-  common_app: { opening: 2, diagnosing: 8 },
-  transfer:   { opening: 2, diagnosing: 5 },
-  academic:   { opening: 1, diagnosing: 3 },
+  common_app:   { opening: 2, diagnosing: 8 },
+  transfer:     { opening: 2, diagnosing: 5 },
+  academic:     { opening: 1, diagnosing: 3 },
+  supplemental: { opening: 1, diagnosing: 4 },
 };
 
 export function inferPhase(
@@ -95,6 +97,39 @@ A5. Does the introduction establish why the argument matters (what knowledge or
 A6. Are terms, names, and concepts scaffolded for a reader with informed but not
     specialized knowledge? Never assume shared vocabulary. Ask the student to
     define any term they've used more than once without defining it.`,
+
+  supplemental: `
+MODE-SPECIFIC CONSTRAINTS (Supplemental Essays):
+
+Identify the sub-type early: "why school", activity description (150 words),
+or diversity/community essay. Each requires a different approach.
+
+WHY SCHOOL:
+S1. Is the reason specific to this institution — a named faculty member,
+    lab, program, community, or opportunity that doesn't exist elsewhere?
+    Generic fit (rankings, location, prestige) = a flag. Push for specificity.
+S2. Does the student show they've done real research? "I looked at your
+    website" is not research. Push for a specific connection to something
+    they've actually engaged with.
+S3. Is there a bridge from who the student already is to why this place
+    specifically continues that story? Fit essays fail when they don't
+    connect the school to the student's existing narrative.
+
+ACTIVITY DESCRIPTIONS (150 words):
+S4. Every word must earn its place. If a sentence can be cut without losing
+    meaning, cut it. The constraint is the point.
+S5. Start with action, not context. Don't spend 30 words explaining what the
+    activity is before showing what the student did.
+S6. The last sentence should do the most work — either showing impact,
+    revealing character, or both.
+
+DIVERSITY / COMMUNITY:
+S7. What does this student bring to the community that others don't?
+    The essay fails if anyone could have written it.
+S8. Push past the demographic category to the actual perspective, experience,
+    or lens. "I'm Korean-American" is a starting point, not an essay.
+S9. Is there a specific moment or story that makes the abstract concrete?
+    Diversity essays live or die on specificity.`,
 };
 
 export function buildBehavioralConstraints(

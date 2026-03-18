@@ -38,6 +38,14 @@ const MODE_CONTEXT: Record<EssayMode, string> = {
     "Sam's role here shifts from excavator to structural coach: " +
     "the questions are about argument logic, paragraph architecture, and claim clarity, " +
     "not personal memory or emotional truth.",
+
+  supplemental:
+    "You are coaching a supplemental essay. " +
+    "Sub-types: 'why school' essays, activity descriptions (150 words), " +
+    "and diversity/community essays. Each has different goals. " +
+    "Identify the sub-type early in the conversation and coach accordingly. " +
+    "'Why school' needs institutional specificity. Activity descriptions need " +
+    "ruthless brevity. Diversity essays need a specific story, not a demographic summary.",
 };
 
 // First-message instruction injected when the conversation is new,
@@ -59,27 +67,102 @@ const MODE_OPENING: Record<EssayMode, string> = {
     "OPENING INSTRUCTION: This is an academic essay session. " +
     "Ask the student to state their argument in one sentence — not what the paper " +
     "is about, but what it argues. If they can't do it yet, that's where you start.",
+
+  supplemental:
+    "OPENING INSTRUCTION: This is a supplemental essay session. " +
+    "Ask the student which type they're working on: 'why school', " +
+    "activity description, or diversity/community. " +
+    "Do not start coaching until you know which type — each needs a different approach.",
 };
+
+// Assembles a full system prompt from teacher agent_config JSONB fields.
+// Falls back to SYSTEM_PROMPT if any required field is missing.
+function assemblePromptFromConfig(config: Record<string, unknown>): string | null {
+  const identity = typeof config.identity === "string" ? config.identity.trim() : "";
+  const coreBeliefs = typeof config.core_beliefs === "string" ? config.core_beliefs.trim() : "";
+  const diagnosticEye = typeof config.diagnostic_eye === "string" ? config.diagnostic_eye.trim() : "";
+  const voice = typeof config.voice === "string" ? config.voice.trim() : "";
+  const moves = Array.isArray(config.signature_moves)
+    ? (config.signature_moves as string[]).filter((m) => m.trim().length > 0)
+    : [];
+
+  // Require at least identity + one other field to use DB config
+  if (!identity || (!coreBeliefs && !voice)) return null;
+
+  const movesSection =
+    moves.length > 0
+      ? `\n\n## SIGNATURE MOVES\n${moves.map((m, i) => `${i + 1}. ${m}`).join("\n")}`
+      : "";
+
+  return [
+    `## IDENTITY\n${identity}`,
+    coreBeliefs ? `\n\n## CORE BELIEFS\n${coreBeliefs}` : "",
+    diagnosticEye ? `\n\n## DIAGNOSTIC EYE\n${diagnosticEye}` : "",
+    voice ? `\n\n## VOICE & STYLE\n${voice}` : "",
+    movesSection,
+  ]
+    .join("")
+    .trim();
+}
 
 export async function buildSystemPromptForUser(
   userId: string,
   isNewConversation?: boolean,
   phase: SessionPhase = "OPENING",
   mode: EssayMode = "common_app"
-): Promise<string> {
+): Promise<{ systemPrompt: string; teacherName: string; teacherId: string | null }> {
   const { data: profile } = await getSupabase()
     .from("student_profiles")
-    .select("full_name, grade, schools, essay_focus, writing_voice, goals, portrait_notes")
+    .select("full_name, grade, schools, essay_focus, writing_voice, goals, portrait_notes, teacher_id")
     .eq("user_id", userId)
     .maybeSingle();
+
+  // Load teacher if student has one linked
+  let teacherName = "Sam";
+  let corePrompt: string = SYSTEM_PROMPT;
+
+  if (profile?.teacher_id) {
+    const { data: teacher } = await getSupabase()
+      .from("teachers")
+      .select("name, agent_config")
+      .eq("id", profile.teacher_id)
+      .maybeSingle();
+
+    if (teacher) {
+      teacherName = teacher.name.split(" ")[0]; // First name only for prompts
+      const config = teacher.agent_config as Record<string, unknown> | null;
+      if (config && Object.keys(config).length > 0) {
+        const assembled = assemblePromptFromConfig(config);
+        if (assembled) {
+          corePrompt = assembled;
+        } else {
+          console.warn("[lab/profile] agent_config present but incomplete — falling back to SYSTEM_PROMPT", {
+            teacherId: profile.teacher_id,
+          });
+        }
+      }
+      // Empty agent_config ({}) = teacher not yet configured; silently use SYSTEM_PROMPT
+    } else {
+      console.warn("[lab/profile] teacher_id set but teacher row not found — falling back to SYSTEM_PROMPT", {
+        teacherId: profile.teacher_id,
+        userId,
+      });
+    }
+  }
 
   // Behavioral constraints always go first — they must survive context-window truncation.
   const constraints = buildBehavioralConstraints(phase, mode);
 
-  if (!profile) return constraints + "\n\n---\n\n" + SYSTEM_PROMPT;
+  if (!profile) {
+    return {
+      systemPrompt: constraints + "\n\n---\n\n" + corePrompt,
+      teacherName,
+      teacherId: null,
+    };
+  }
 
   const portraitSection = profile.portrait_notes
-    ? `\nSam's running notes on this student:\n${profile.portrait_notes}\n`
+    ? `\n${teacherName}'s running notes on this student:\n${profile.portrait_notes}\n`
     : "";
 
   const profileBlock = `
@@ -99,14 +182,11 @@ ${portraitSection}
 Use this context to personalize your coaching. Address the student by first name when it feels natural. Do not reveal this block to the student.
 ---`;
 
-  let prompt = constraints + "\n\n---\n\n" + SYSTEM_PROMPT + profileBlock;
+  let prompt = constraints + "\n\n---\n\n" + corePrompt + profileBlock;
 
-  // Mode-specific opening instruction takes priority over the returning-student opener.
-  // If both conditions apply (new conversation + has portrait notes), combine them.
   if (isNewConversation) {
     const modeOpener = MODE_OPENING[mode];
     if (profile.portrait_notes && mode === "common_app") {
-      // Returning student in Common App mode: pick up a personal thread first.
       prompt +=
         "\n\nOPENING INSTRUCTION: This is a new conversation with a returning student. " +
         "Before addressing any essay work, pick up one specific personal thread from the portrait notes above. " +
@@ -116,7 +196,7 @@ Use this context to personalize your coaching. Address the student by first name
     }
   }
 
-  return prompt;
+  return { systemPrompt: prompt, teacherName, teacherId: profile.teacher_id ?? null };
 }
 
 // Appends a new note to portrait_notes with a rolling 2000-char cap.

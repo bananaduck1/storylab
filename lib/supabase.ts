@@ -36,6 +36,7 @@ export interface Student {
   seed_notes: string | null;
   user_id: string | null;
   email: string | null;
+  invited_at: string | null;
   created_at: string;
 }
 

@@ -1222,7 +1222,7 @@ function AgentSessionTab({ student }: { student: Student }) {
 
 // ── student view ──────────────────────────────────────────────────────────────
 
-type Tab = "portrait" | "log" | "session";
+type Tab = "portrait" | "log";
 
 function StudentView({ student, lab }: { student: Student; lab: LabData | null }) {
   const [tab, setTab] = useState<Tab>("portrait");
@@ -1232,6 +1232,7 @@ function StudentView({ student, lab }: { student: Student; lab: LabData | null }
   const [linkCopied, setLinkCopied] = useState(false);
   const [inviteSent, setInviteSent] = useState(false);
   const [inviting, setInviting] = useState(false);
+  const [localInvitedAt, setLocalInvitedAt] = useState<string | null>(student.invited_at ?? null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -1268,6 +1269,7 @@ function StudentView({ student, lab }: { student: Student; lab: LabData | null }
     setInviting(false);
     if (res.ok) {
       setInviteSent(true);
+      setLocalInvitedAt(new Date().toISOString());
       setTimeout(() => setInviteSent(false), 3000);
     }
   }
@@ -1283,7 +1285,6 @@ function StudentView({ student, lab }: { student: Student; lab: LabData | null }
   const tabs: { id: Tab; label: string }[] = [
     { id: "portrait", label: "Portrait" },
     { id: "log", label: "Session Log" },
-    { id: "session", label: "Session" },
   ];
 
   return (
@@ -1325,6 +1326,19 @@ function StudentView({ student, lab }: { student: Student; lab: LabData | null }
           <p className="mb-3 text-xs text-zinc-400">
             {student.cultural_background}
             {student.family_language_pref ? ` · ${student.family_language_pref}` : ""}
+          </p>
+        )}
+        {/* Invite status */}
+        {!student.user_id && (localInvitedAt || inviteSent) && (
+          <p className="mb-3 text-xs text-zinc-400">
+            Invited{" "}
+            {localInvitedAt
+              ? new Date(localInvitedAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                })
+              : "just now"}{" "}
+            · Not yet claimed
           </p>
         )}
         {/* Tabs */}
@@ -1401,9 +1415,6 @@ function StudentView({ student, lab }: { student: Student; lab: LabData | null }
           </div>
         </div>
 
-        <div className={`h-full ${tab !== "session" ? "hidden" : ""}`}>
-          <TeacherSessionTab student={student} onSessionSaved={handleSessionAdded} />
-        </div>
       </div>
     </div>
   );

@@ -52,7 +52,7 @@ export async function PATCH(
     updates.title = body.title.trim();
   }
 
-  const VALID_MODES = ["common_app", "transfer", "academic"];
+  const VALID_MODES = ["common_app", "transfer", "academic", "supplemental"];
   if (VALID_MODES.includes(body.essay_mode)) {
     updates.essay_mode = body.essay_mode;
   }
