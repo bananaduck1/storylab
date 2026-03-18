@@ -1,6 +1,6 @@
 # TODOs
 
-Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x3).
+Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4).
 
 ---
 
@@ -241,3 +241,35 @@ Add this endpoint alongside any future "your coaching profile" UI.
 **Context:** Add `invited_at TIMESTAMPTZ` to the `students` table. Set it when the invite email is sent. The admin student pane already shows sessions and portrait; add a small status line: `Invited: Mar 17 | Claimed: Mar 18` (or `Not yet claimed`). Requires the invite email feature from student unification PR 1.
 
 **Effort:** S | **Priority:** P3 | **Depends on:** Invite email feature (student unification PR 1)
+
+---
+
+## TODO-16: Supplemental essay mode
+
+**What:** A 4th essay mode covering "Why this school" essays, activity descriptions (150-word brevity coaching), and diversity/community essays — each sub-type with distinct Sam coaching moves.
+
+**Why:** Supplementals are a massive part of the application process and have completely different goals from the 3 core modes. A student writing a 150-word activity description needs ruthless brevity coaching, not Socratic narrative excavation. "Why school" essays fail when they sound like templates — Sam has specific instincts about what makes them specific.
+
+**Pros:** Covers the full application lifecycle. High-value for students in active application season. Code change is trivial (~30 min) once the pedagogy is defined.
+
+**Cons:** Requires Sam to articulate coaching doctrine for each sub-type in writing (3-5 constraint bullets each). The bottleneck is content, not code.
+
+**Context:** Implementation is an extension of the essay modes system (this PR). The pattern is identical — add `"supplemental"` to the `EssayMode` union, add phase thresholds, add constraint overrides, add mode context. The constraint content needs to come from Sam's coaching doctrine on: (1) "Why this school" — what makes a compelling specific reason vs. a generic template? (2) Activity descriptions — how do you be memorable in 150 words? (3) Diversity/community — what's the frame? Write 3-5 bullets per sub-type, then hand to CC.
+
+**Effort:** S (code) / M (doctrine writing) | **Priority:** P2 | **Depends on:** Essay modes PR + Sam's supplemental pedagogy notes
+
+---
+
+## TODO-17: Mode-specific eval harness cases
+
+**What:** Extend `scripts/eval-chat.ts` with mode-specific test runs — scripted messages in Academic mode (verify Sam gives structural/argument guidance, not Socratic excavation) and Transfer mode (verify Sam focuses on fit/institutional reasoning, not identity narrative).
+
+**Why:** The eval harness (TODO-10) only tests behavioral compliance in Common App mode. A prompt change that improves Academic mode could silently regress Common App behavior. Without mode-specific evals, you can't tell.
+
+**Pros:** Makes prompt iteration safe across all modes. Catches cross-mode regressions. Cheap to run (a few API calls per mode).
+
+**Cons:** Adds test cases to maintain as modes evolve. Requires defining "what does good look like" for each mode's responses.
+
+**Context:** The eval harness already exists at `scripts/eval-chat.ts`. Extend it by adding a `--mode` flag that changes the conversation's `essay_mode` before running the eval suite. Add 3-5 scripted messages per new mode and grade-check for mode-appropriate behavior (e.g., Academic mode: no "tell me about yourself" questions, structural framing present in coaching responses). Run as `npx tsx --env-file=.env.local scripts/eval-chat.ts --mode academic`.
+
+**Effort:** S | **Priority:** P2 | **Depends on:** Essay modes PR + eval harness (TODO-10 ✅)

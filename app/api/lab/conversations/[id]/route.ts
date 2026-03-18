@@ -45,12 +45,25 @@ export async function PATCH(
   const conv = await getOwnedConversation(id, user.id);
   if (!conv) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const { title } = await req.json();
-  if (!title?.trim()) return NextResponse.json({ error: "title required" }, { status: 400 });
+  const body = await req.json();
+  const updates: Record<string, string> = {};
+
+  if (body.title?.trim()) {
+    updates.title = body.title.trim();
+  }
+
+  const VALID_MODES = ["common_app", "transfer", "academic"];
+  if (VALID_MODES.includes(body.essay_mode)) {
+    updates.essay_mode = body.essay_mode;
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
+  }
 
   const { data, error } = await getSupabase()
     .from("conversations")
-    .update({ title: title.trim() })
+    .update(updates)
     .eq("id", id)
     .select()
     .single();

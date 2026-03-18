@@ -2,23 +2,45 @@
 //
 // Phase state machine (inferred from conversation history — no DB required):
 //
-//   historyLen=0-2, no file ──► OPENING
-//   historyLen=3-8, no file ──► DIAGNOSING
-//   historyLen=9+,  no file ──► COACHING
+//   historyLen=0-T_open, no file ──► OPENING
+//   historyLen=T_open+1-T_diag, no file ──► DIAGNOSING
+//   historyLen=T_diag+1+, no file ──► COACHING
 //   file attached (any len) ──► FEEDBACK
+//
+// Phase thresholds vary by essay mode:
+//
+//   EssayMode    | opening | diagnosing
+//   -------------|---------|----------
+//   common_app   |  ≤ 2    |  ≤ 8
+//   transfer     |  ≤ 2    |  ≤ 5
+//   academic     |  ≤ 1    |  ≤ 3
 //
 // Constraints are prepended to the top of the system prompt on every turn
 // so they survive context-window truncation (narrative tail gets cut, not rules).
 
 export type SessionPhase = "OPENING" | "DIAGNOSING" | "COACHING" | "FEEDBACK";
+export type EssayMode = "common_app" | "transfer" | "academic";
 
-const OPENING_TURNS = 2;    // history.length <= this → OPENING
-const DIAGNOSING_TURNS = 8; // history.length <= this → DIAGNOSING
+interface PhaseThresholds {
+  opening: number;
+  diagnosing: number;
+}
 
-export function inferPhase(historyLen: number, hasFile: boolean): SessionPhase {
+const PHASE_THRESHOLDS: Record<EssayMode, PhaseThresholds> = {
+  common_app: { opening: 2, diagnosing: 8 },
+  transfer:   { opening: 2, diagnosing: 5 },
+  academic:   { opening: 1, diagnosing: 3 },
+};
+
+export function inferPhase(
+  historyLen: number,
+  hasFile: boolean,
+  mode: EssayMode = "common_app"
+): SessionPhase {
   if (hasFile) return "FEEDBACK";
-  if (historyLen <= OPENING_TURNS) return "OPENING";
-  if (historyLen <= DIAGNOSING_TURNS) return "DIAGNOSING";
+  const { opening, diagnosing } = PHASE_THRESHOLDS[mode];
+  if (historyLen <= opening) return "OPENING";
+  if (historyLen <= diagnosing) return "DIAGNOSING";
   return "COACHING";
 }
 
@@ -29,7 +51,56 @@ const PHASE_GUIDANCE: Record<SessionPhase, string> = {
   FEEDBACK:   "Quote before comment. One issue. One question. Stop.",
 };
 
-export function buildBehavioralConstraints(phase: SessionPhase): string {
+// Mode-specific constraints added after the universal constraint block.
+// Transfer inherits Common App personal statement principles — the narrative
+// depth, specificity, and voice work applies equally to both. Transfer-specific
+// constraints layer on top, focused on institutional fit and transition framing.
+const MODE_CONSTRAINTS: Record<EssayMode, string> = {
+  common_app: "",
+
+  transfer: `
+MODE-SPECIFIC CONSTRAINTS (Transfer Essay):
+T1. Does the essay name what the current institution cannot provide — specifically,
+    not bitterly? If the student is venting, redirect toward what they're moving
+    toward, not what they're leaving behind.
+T2. Is the school-specific content tied to something only available at the target
+    institution (a person, a lab, a program, a community) — or could it apply to
+    any peer institution? Generic fit = a flag. Push for specificity.
+T3. Is there a personal motivation that precedes and sustains the intellectual one?
+    Intellectual drive alone isn't enough. Find the human story underneath.
+T4. Does the student show the inside of their intellectual work — the process,
+    the doubt, the question — not just summarize outcomes and achievements?
+T5. Does every introduced thread (motif, tension, format choice) get followed
+    through to the end? Dropped threads signal an unfinished draft.
+NOTE: Transfer essays also benefit from the same narrative principles as Common App
+personal statements — the same depth of specificity, voice, and scene-setting apply.
+Apply those instincts here alongside the transfer-specific constraints above.`,
+
+  academic: `
+MODE-SPECIFIC CONSTRAINTS (Academic / Argumentative Essay):
+A1. Does each topic sentence announce what the paragraph proves — not just what
+    comes next chronologically? If a topic sentence could be cut without losing
+    the argument's logic, it's a signpost, not a claim. Flag it.
+A2. Are the richest ideas in topic sentence position, not buried mid-paragraph?
+    When the student's best thinking appears in sentence 3, that's a structural
+    problem. Name where the buried idea lives and ask them to surface it.
+A3. Flag passive voice wherever it obscures who did what and why. Academic writing
+    hides agency in passive constructions. Name the specific sentence and ask
+    who the actor is.
+A4. Is every significant claim accompanied by its motivation — the "why" answered
+    before the reader has to ask? Claims without motivation read as assertion.
+A5. Does the introduction establish why the argument matters (what knowledge or
+    understanding it produces) — not just what it will do? "This paper will argue"
+    is not a stakes statement.
+A6. Are terms, names, and concepts scaffolded for a reader with informed but not
+    specialized knowledge? Never assume shared vocabulary. Ask the student to
+    define any term they've used more than once without defining it.`,
+};
+
+export function buildBehavioralConstraints(
+  phase: SessionPhase,
+  mode: EssayMode = "common_app"
+): string {
   const phaseLines = (Object.keys(PHASE_GUIDANCE) as SessionPhase[])
     .map((p) =>
       p === phase
@@ -51,10 +122,12 @@ FEEDBACK PHASE — ADDITIONAL CONSTRAINTS:
 `
       : "";
 
+  const modeBlock = MODE_CONSTRAINTS[mode];
+
   return `SESSION CONSTRAINTS — THESE OVERRIDE EVERYTHING ELSE:
 
-1. NO BULLET LISTS. Ever. Not for clarity, not for structure.
-   If you feel the urge to use bullets, write a sentence instead.
+1. BULLET LISTS: Use bullets only to visualize essay structure (2-4 items max).
+   Never use bullets to explain, respond, or coach — write sentences instead.
 2. ONE PROBLEM PER RESPONSE. Identify one thing. Address it.
    The student cannot hold five problems at once.
 3. END WITH A QUESTION. Every single response. No exceptions.
@@ -79,7 +152,7 @@ FEEDBACK PHASE — ADDITIONAL CONSTRAINTS:
    instead of answering directly. One move only. If the student is still stuck after a
    redirect, return to questioning. Redirecting is not teaching. Do not narrate your
    methodology.
-${feedbackBlock}
+${feedbackBlock}${modeBlock}
 CURRENT SESSION PHASE:
 ${phaseLines}`;
 }

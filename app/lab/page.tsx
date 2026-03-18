@@ -27,7 +27,7 @@ export default async function LabPage(props: {
     db.from("student_profiles").select("*").eq("user_id", user.id).maybeSingle(),
     db
       .from("conversations")
-      .select("id, title, updated_at")
+      .select("id, title, updated_at, essay_mode")
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false })
       .limit(50),
@@ -67,6 +67,7 @@ export default async function LabPage(props: {
       id: activeConvId,
       title: "New conversation",
       updated_at: new Date().toISOString(),
+      essay_mode: "common_app",
     });
   } else {
     activeConvId = convList[0].id;

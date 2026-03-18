@@ -10,6 +10,7 @@ export interface LabData {
   portrait_notes: string | null;
   session_phase: string;
   lab_last_active: string;
+  essay_mode: string;
 }
 
 export interface UnifiedStudent {
@@ -31,6 +32,7 @@ export interface LabOnlyProfile {
   portrait_notes: string | null;
   session_phase: string;
   lab_last_active: string;
+  essay_mode: string;
 }
 
 export interface UnifiedResponse {
@@ -41,18 +43,35 @@ export interface UnifiedResponse {
 export async function GET(): Promise<NextResponse> {
   const db = getSupabase();
 
-  // Fetch all students and all student_profiles in parallel
-  const [{ data: students, error: studentsErr }, { data: profiles, error: profilesErr }] =
-    await Promise.all([
-      db.from("students").select("id, name, grade, email, user_id, development_stage").order("name"),
-      db
-        .from("student_profiles")
-        .select("user_id, full_name, grade, portrait_notes, session_phase, updated_at")
-        .order("updated_at", { ascending: false }),
-    ]);
+  // Fetch all students, all student_profiles, and the most recent essay_mode per user in parallel.
+  // The conversations query uses DISTINCT ON to get the latest conversation per user.
+  const [
+    { data: students, error: studentsErr },
+    { data: profiles, error: profilesErr },
+    { data: recentConvs },
+  ] = await Promise.all([
+    db.from("students").select("id, name, grade, email, user_id, development_stage").order("name"),
+    db
+      .from("student_profiles")
+      .select("user_id, full_name, grade, portrait_notes, session_phase, updated_at")
+      .order("updated_at", { ascending: false }),
+    db
+      .from("conversations")
+      .select("user_id, essay_mode, updated_at")
+      .order("updated_at", { ascending: false })
+      .limit(500),
+  ]);
 
   if (studentsErr) return NextResponse.json({ error: studentsErr.message }, { status: 500 });
   if (profilesErr) return NextResponse.json({ error: profilesErr.message }, { status: 500 });
+
+  // Build user_id → most recent essay_mode map (first occurrence = most recent due to ordering)
+  const modeMap = new Map<string, string>();
+  for (const c of recentConvs ?? []) {
+    if (!modeMap.has(c.user_id)) {
+      modeMap.set(c.user_id, c.essay_mode ?? "common_app");
+    }
+  }
 
   // Build user_id → profile map
   const profileMap = new Map<string, LabData>(
@@ -65,6 +84,7 @@ export async function GET(): Promise<NextResponse> {
         portrait_notes: p.portrait_notes,
         session_phase: p.session_phase ?? "opening",
         lab_last_active: p.updated_at,
+        essay_mode: modeMap.get(p.user_id) ?? "common_app",
       },
     ])
   );
@@ -93,6 +113,7 @@ export async function GET(): Promise<NextResponse> {
       portrait_notes: p.portrait_notes,
       session_phase: p.session_phase ?? "opening",
       lab_last_active: p.updated_at,
+      essay_mode: modeMap.get(p.user_id) ?? "common_app",
     }));
 
   return NextResponse.json({ students: unifiedStudents, labOnly });

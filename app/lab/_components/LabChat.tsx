@@ -10,6 +10,7 @@ interface Conversation {
   id: string;
   title: string;
   updated_at: string;
+  essay_mode?: "common_app" | "transfer" | "academic";
 }
 
 interface Message {
@@ -118,11 +119,33 @@ export default function LabChat({
   const [checkingOut, setCheckingOut] = useState<"subscribe" | "topup" | "portal" | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameTitle, setRenameTitle] = useState("");
+  const [selectedMode, setSelectedMode] = useState<"common_app" | "transfer" | "academic">("common_app");
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isFirstMount = useRef(true);
+  const isModeFirstRender = useRef(true);
+
+  // When the mode picker changes on an empty conversation, PATCH the conversation
+  // so the server uses the correct mode constraints from the very first message.
+  useEffect(() => {
+    if (isModeFirstRender.current) {
+      isModeFirstRender.current = false;
+      return;
+    }
+    if (messages.length > 0) return;
+    fetch(`/api/lab/conversations/${activeConvId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ essay_mode: selectedMode }),
+    }).catch(() => {/* best-effort */});
+    // Update the conversation list optimistically so the mode badge stays accurate
+    setConversations((prev) =>
+      prev.map((c) => (c.id === activeConvId ? { ...c, essay_mode: selectedMode } : c))
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMode]);
 
   // Dismiss success banner after 6 s and clear the URL param
   useEffect(() => {
@@ -147,6 +170,12 @@ export default function LabChat({
       return;
     }
     const convIdAtSwitch = activeConvId;
+    // Sync mode picker to the switched conversation's mode
+    const switchedConv = conversations.find((c) => c.id === convIdAtSwitch);
+    if (switchedConv?.essay_mode) {
+      isModeFirstRender.current = true; // suppress the PATCH effect on auto-sync
+      setSelectedMode(switchedConv.essay_mode);
+    }
     async function loadMessages() {
       setLoadingConv(true);
       setConvLoadError(null);
@@ -178,12 +207,13 @@ export default function LabChat({
     router.replace("/login");
   }
 
-  async function newConversation() {
+  async function newConversation(mode?: "common_app" | "transfer" | "academic") {
+    const essay_mode = mode ?? selectedMode;
     try {
       const res = await fetch("/api/lab/conversations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: "New conversation" }),
+        body: JSON.stringify({ title: "New conversation", essay_mode }),
       });
       if (res.ok) {
         const conv = await res.json();
@@ -455,6 +485,14 @@ export default function LabChat({
 
   const firstName = profile.full_name.split(" ")[0];
   const inputDisabled = loading || quotaRemaining <= 0;
+  const activeConv = conversations.find((c) => c.id === activeConvId);
+  const activeMode = activeConv?.essay_mode ?? "common_app";
+
+  const MODE_LABELS: Record<"common_app" | "transfer" | "academic", string> = {
+    common_app: "Common App",
+    transfer: "Transfer",
+    academic: "Academic",
+  };
 
   return (
     <div
@@ -509,7 +547,7 @@ export default function LabChat({
         {/* New chat button */}
         <div className="px-3 pt-3 pb-2">
           <button
-            onClick={newConversation}
+            onClick={() => newConversation()}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-600 hover:bg-zinc-100 transition-colors border border-zinc-200 bg-white"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -661,6 +699,11 @@ export default function LabChat({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {messages.length > 0 && (
+              <span className="text-xs px-2 py-0.5 rounded-full border border-zinc-200 bg-zinc-50 text-zinc-500">
+                {MODE_LABELS[activeMode]}
+              </span>
+            )}
             <QuotaChip
               remaining={quotaRemaining}
               limit={quotaLimit}
@@ -690,9 +733,26 @@ export default function LabChat({
                   <div className="w-10 h-10 rounded-full bg-zinc-900 flex items-center justify-center mx-auto mb-4">
                     <span className="text-white text-sm font-semibold">S</span>
                   </div>
-                  <p className="text-zinc-500 text-sm">
+                  <p className="text-zinc-500 text-sm mb-6">
                     Hi {firstName}! I&apos;m Sam, your essay coach. What would you like to work on today?
                   </p>
+                  {/* Mode picker — only shown before the first message */}
+                  <div className="inline-flex flex-col items-start gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-5 py-4">
+                    <p className="text-xs font-medium text-zinc-500 mb-1">Essay type</p>
+                    {(["common_app", "transfer", "academic"] as const).map((m) => (
+                      <label key={m} className="flex items-center gap-2.5 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="essay_mode"
+                          value={m}
+                          checked={selectedMode === m}
+                          onChange={() => setSelectedMode(m)}
+                          className="accent-zinc-900"
+                        />
+                        <span className="text-sm text-zinc-700">{MODE_LABELS[m]}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
               )}
               {messages.map((msg) => (

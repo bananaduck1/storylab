@@ -2,7 +2,7 @@ import { NextRequest, after } from "next/server";
 import { getCallerUser } from "@/lib/lab-auth";
 import { getSupabase } from "@/lib/supabase";
 import { buildSystemPromptForUser, writePortraitNote } from "@/lib/lab-profile";
-import { inferPhase } from "@/lib/behavioral-constraints";
+import { inferPhase, type EssayMode } from "@/lib/behavioral-constraints";
 import {
   embedQuery,
   retrievePlaybookByVector,
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
   // ── validate conversation ownership ──────────────────────────────────────
   const { data: conv } = await db
     .from("conversations")
-    .select("id")
+    .select("id, essay_mode")
     .eq("id", conversation_id)
     .eq("user_id", user.id)
     .maybeSingle();
@@ -192,12 +192,13 @@ export async function POST(request: NextRequest) {
   // ── build system prompt (Layer 0: constraints + Layer 1: identity + Layer 2: student) ──
   // inferPhase determines Sam's behavioral mode for this turn. File attachment always
   // triggers FEEDBACK phase regardless of conversation length.
-  const phase = inferPhase(history.length, !!safeFileText);
-  console.log("[lab/chat] phase", { phase, historyLen: history.length, hasFile: !!safeFileText });
+  const mode = (conv.essay_mode ?? "common_app") as EssayMode;
+  const phase = inferPhase(history.length, !!safeFileText, mode);
+  console.log("[lab/chat] phase", { phase, mode, historyLen: history.length, hasFile: !!safeFileText });
 
   // Pass isNewConversation so the function can inject the returning-session opener
   // when the student has portrait notes and this is their first message here.
-  let systemContent = await buildSystemPromptForUser(user.id, history.length === 0, phase);
+  let systemContent = await buildSystemPromptForUser(user.id, history.length === 0, phase, mode);
 
   // ── embed once, retrieve playbook + case studies in parallel (Layer 3) ────
   //
@@ -207,9 +208,14 @@ export async function POST(request: NextRequest) {
   //
   // We embed the query once and pass the vector to both typed retrievals
   // to avoid a duplicate embeddings API call.
-  const ragQuery = safeFileText
+  // Prefix the RAG query with the mode label so cosine similarity biases
+  // toward mode-relevant playbook chunks (e.g. "transfer essay: ..." retrieves
+  // fit-framing techniques over personal narrative excavation techniques).
+  const ragBaseQuery = safeFileText
     ? `${message}\n\n${safeFileText.slice(0, 1500)}`
     : message;
+  const ragQuery =
+    mode !== "common_app" ? `${mode.replace("_", " ")} essay: ${ragBaseQuery}` : ragBaseQuery;
 
   let playbookChunks: string[] = [];
   let caseStudyChunks: string[] = [];

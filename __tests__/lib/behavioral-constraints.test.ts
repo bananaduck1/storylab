@@ -48,7 +48,7 @@ describe("buildBehavioralConstraints", () => {
   it("always contains the core hard constraints", () => {
     for (const phase of phases) {
       const text = buildBehavioralConstraints(phase);
-      expect(text).toContain("NO BULLET LISTS");
+      expect(text).toContain("BULLET LISTS:");
       expect(text).toContain("ONE PROBLEM PER RESPONSE");
       expect(text).toContain("END WITH A QUESTION");
       expect(text).toContain("NO SUMMARY ENDINGS");

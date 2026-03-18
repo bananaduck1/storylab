@@ -39,6 +39,7 @@ interface LabData {
   portrait_notes: string | null;
   session_phase: string;
   lab_last_active: string;
+  essay_mode?: string;
 }
 
 interface LabOnlyProfile {
@@ -48,7 +49,14 @@ interface LabOnlyProfile {
   portrait_notes: string | null;
   session_phase: string;
   lab_last_active: string;
+  essay_mode?: string;
 }
+
+const MODE_LABELS: Record<string, string> = {
+  common_app: "Common App",
+  transfer: "Transfer",
+  academic: "Academic",
+};
 
 function formatDate(iso: string) {
   return new Date(iso + "T00:00:00").toLocaleDateString("en-US", {
@@ -1198,6 +1206,11 @@ function StudentView({ student, lab }: { student: Student; lab: LabData | null }
                     <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-500">
                       {PHASE_LABELS[lab.session_phase] ?? lab.session_phase}
                     </span>
+                    {lab.essay_mode && (
+                      <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-500">
+                        {MODE_LABELS[lab.essay_mode] ?? lab.essay_mode}
+                      </span>
+                    )}
                     <span className="text-xs text-zinc-400">
                       Last active {new Date(lab.lab_last_active).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </span>
