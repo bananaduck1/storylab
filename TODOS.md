@@ -1,6 +1,6 @@
 # TODOs
 
-Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4).
+Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3).
 
 ---
 
@@ -273,3 +273,51 @@ Add this endpoint alongside any future "your coaching profile" UI.
 **Context:** The eval harness already exists at `scripts/eval-chat.ts`. Extend it by adding a `--mode` flag that changes the conversation's `essay_mode` before running the eval suite. Add 3-5 scripted messages per new mode and grade-check for mode-appropriate behavior (e.g., Academic mode: no "tell me about yourself" questions, structural framing present in coaching responses). Run as `npx tsx --env-file=.env.local scripts/eval-chat.ts --mode academic`.
 
 **Effort:** S | **Priority:** P2 | **Depends on:** Essay modes PR + eval harness (TODO-10 ✅)
+
+---
+
+## TODO-18: SSE real-time coaching sidebar
+
+**What:** Upgrade the live coaching sidebar from 30-second polling to Server-Sent Events (SSE) so AI coaching nudges appear within ~5 seconds of the student finishing a sentence.
+
+**Why:** The v1 polling implementation has up to 30 seconds of latency between what's said and when the nudge appears. SSE makes the coaching companion feel genuinely real-time — the nudge "she just said piano again" lands while the teacher still has the opening to respond.
+
+**Pros:** ~5s nudge latency vs. 30s. More responsive feel. Demonstrates the product's intelligence in a visceral way.
+
+**Cons:** SSE requires a persistent connection from teacher's browser to server. More complex than polling — requires careful handling of connection drops, reconnects, and Vercel edge function timeouts. Next.js App Router supports SSE via `ReadableStream` in route handlers.
+
+**Context:** The v1 sidebar polls `GET /api/session/[id]/nudge` every 30s using `setInterval`. The SSE upgrade replaces the polling endpoint with a streaming `GET /api/session/[id]/nudge-stream` that keeps the connection open and pushes events as new transcript chunks arrive. The challenge is triggering the push: options are (a) Supabase Realtime subscription server-side watching `transcript_chunks` inserts, or (b) webhook-driven internal pub/sub (Redis or in-memory). Revisit after v1 is running with real sessions and you have a sense of what nudge latency actually feels like in practice.
+
+**Effort:** M → CC: ~30 min | **Priority:** P2 | **Depends on:** Live coaching polling sidebar shipping (Phase 1)
+
+---
+
+## TODO-19: Session recording storage
+
+**What:** Store the video recording of each tutoring session in Supabase Storage, linked to the session record. Teacher can re-listen with transcript synced (click a word, jump to that moment in the recording).
+
+**Why:** A transcript captures what was said, but not how — tone, hesitation, energy. Being able to re-listen to a specific moment ("she said it really quietly, like she was embarrassed") gives the teacher a deeper read. Also useful for training new tutors on coaching technique.
+
+**Pros:** Full session fidelity. Teacher training tool. Future: student can watch their own breakthrough moments.
+
+**Cons:** Adds storage costs (~$0.004-0.008/session/month in Supabase Storage). More importantly: requires a consent flow for recording minors, FERPA/COPPA compliance review, and explicit parental consent at booking time. Daily.co supports cloud recording at $0.003/participant-minute ($0.36/hour), or client-side recording + upload.
+
+**Context:** Do NOT build this until legal/consent requirements are reviewed for recording minors. The transcript alone captures all the AI value this plan is built on. Recording is a quality-of-life upgrade for the teacher, not a core product requirement. When ready: Daily.co's `startRecording()` API is the simplest path. Store the resulting `.mp4` in Supabase Storage under `session-recordings/{session_id}.mp4`. Add a `recording_url` column to `sessions`. The playback UI pairs the recording with the `transcript_chunks` table for sync.
+
+**Effort:** M → CC: ~30 min + legal review | **Priority:** P2 | **Depends on:** Legal/consent review for recording minor students; Phase 1 video pipeline shipping
+
+---
+
+## TODO-20: Student intellectual arc visualization
+
+**What:** A visual timeline in `/lab/profile` showing how the student's thinking has evolved across tutoring sessions over time. Drawn from the portrait version history (`portraits` table already stores versioned snapshots). Example: "March: discovering specific detail → April: learning to generalize → May: finding your thesis."
+
+**Why:** The intellectual development tracking is the core product promise of StoryLab. Making it visible to the student themselves transforms it from an internal teacher tool into a student-facing growth experience — which is a retention and engagement driver for /lab subscribers, and a differentiator when pitching families.
+
+**Pros:** High emotional value. Makes the "compound development record" thesis tangible. Could be included in a student's application portfolio. Parents love seeing this.
+
+**Cons:** Requires real portrait data to be non-trivial. With 2 sessions, the "timeline" is meaningless. With 20 sessions over 6 months, it becomes genuinely moving. Also requires design work to avoid feeling like a generic progress bar or checklist — the intellectual arc should read like a narrative, not a metric.
+
+**Context:** The `portraits` table already stores versioned portraits. The visualization reads portrait history in chronological order and extracts the `current_growth_edge` field from each version to show progression. Start by reading 20+ real portrait histories after the video pipeline has been running for 4-6 weeks — let the real data drive the visualization design. Do not design this speculatively. The student-facing page is `/lab/profile` (already exists as a profile page). Add a "Your Development" section below the current profile card.
+
+**Effort:** L → CC: ~1 hr + design | **Priority:** P2 | **Depends on:** Phase 1 video pipeline shipping + 4-6 weeks of real portrait accumulation

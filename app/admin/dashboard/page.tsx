@@ -532,7 +532,118 @@ function PortraitSection({
   );
 }
 
+// ── schedule video session form ───────────────────────────────────────────────
+
+function ScheduleVideoSessionForm({
+  studentId,
+  onScheduled,
+}: {
+  studentId: string;
+  onScheduled: (session: Session) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    session_type: "generative" as SessionType,
+    scheduled_at: "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  function set(key: string, value: string) {
+    setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.scheduled_at) { setError("Please pick a date and time."); return; }
+    setSaving(true);
+    setError("");
+
+    const res = await fetch("/api/admin/video-sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ student_id: studentId, ...form }),
+    });
+
+    if (!res.ok) {
+      const j = await res.json();
+      setError(j.error ?? "Failed to schedule session");
+      setSaving(false);
+      return;
+    }
+
+    const session = await res.json();
+    onScheduled(session);
+    setOpen(false);
+    setForm({ session_type: "generative", scheduled_at: "" });
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="mt-2 flex items-center gap-1.5 rounded border border-dashed border-blue-300 px-3 py-2 text-xs text-blue-500 hover:border-blue-400 hover:text-blue-700"
+      >
+        <span>▶</span> Schedule Video Session
+      </button>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-4 space-y-3">
+      <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">Schedule Video Session</p>
+      <div className="space-y-1">
+        <label className="text-xs text-zinc-600">Date &amp; Time</label>
+        <input
+          type="datetime-local"
+          value={form.scheduled_at}
+          onChange={(e) => set("scheduled_at", e.target.value)}
+          className="w-full rounded border border-zinc-300 bg-white px-3 py-2 text-sm"
+          required
+        />
+      </div>
+      <div className="space-y-1">
+        <label className="text-xs text-zinc-600">Session Type</label>
+        <select
+          value={form.session_type}
+          onChange={(e) => set("session_type", e.target.value as SessionType)}
+          className="w-full rounded border border-zinc-300 bg-white px-3 py-2 text-sm"
+        >
+          {Object.entries(SESSION_TYPE_LABELS).map(([v, l]) => (
+            <option key={v} value={v}>{l}</option>
+          ))}
+        </select>
+      </div>
+      {error && <p className="text-xs text-red-500">{error}</p>}
+      <div className="flex gap-2">
+        <button type="submit" disabled={saving}
+          className="rounded bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+          {saving ? "Scheduling…" : "Schedule & Send Link"}
+        </button>
+        <button type="button" onClick={() => setOpen(false)}
+          className="rounded border border-zinc-300 px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-50">
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
 // ── session list ──────────────────────────────────────────────────────────────
+
+const STATUS_BADGES: Record<string, string> = {
+  scheduled: "bg-blue-100 text-blue-600",
+  in_progress: "bg-green-100 text-green-700",
+  abandoned: "bg-amber-100 text-amber-600",
+  room_creation_failed: "bg-red-100 text-red-600",
+};
+const STATUS_LABELS_VIDEO: Record<string, string> = {
+  scheduled: "Scheduled",
+  in_progress: "In Progress",
+  completed: "Completed",
+  abandoned: "Abandoned",
+  room_creation_failed: "Room Failed",
+};
 
 function SessionList({ sessions }: { sessions: Session[] }) {
   if (sessions.length === 0) {
@@ -541,41 +652,88 @@ function SessionList({ sessions }: { sessions: Session[] }) {
 
   return (
     <div className="space-y-4">
-      {sessions.map((s) => (
-        <div
-          key={s.id}
-          className="rounded-lg border border-zinc-200 bg-white p-4"
-        >
-          <div className="mb-2 flex items-center gap-3">
-            <span className="text-xs font-medium text-zinc-900">
-              {formatDate(s.date)}
-            </span>
-            <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500">
-              {SESSION_TYPE_LABELS[s.session_type]}
-            </span>
-          </div>
-          {s.key_observations && (
-            <div className="mb-2">
-              <p className="mb-0.5 text-xs font-semibold uppercase tracking-widest text-zinc-400">
-                Observations
-              </p>
-              <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-700">
-                {s.key_observations}
-              </p>
+      {sessions.map((s) => {
+        const isVideo = !!s.daily_room_name;
+        const joinUrl = typeof window !== "undefined"
+          ? `${window.location.origin}/session/${s.id}`
+          : `/session/${s.id}`;
+
+        return (
+          <div key={s.id} className="rounded-lg border border-zinc-200 bg-white p-4">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <span className="text-xs font-medium text-zinc-900">
+                {s.scheduled_at
+                  ? new Date(s.scheduled_at).toLocaleString("en-US", {
+                      weekday: "short", month: "short", day: "numeric",
+                      hour: "numeric", minute: "2-digit",
+                    })
+                  : formatDate(s.date)}
+              </span>
+              <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500">
+                {SESSION_TYPE_LABELS[s.session_type]}
+              </span>
+              {isVideo && (
+                <span className="rounded bg-blue-50 px-2 py-0.5 text-xs text-blue-500">Video</span>
+              )}
+              {s.status && STATUS_BADGES[s.status] && (
+                <span className={`rounded px-2 py-0.5 text-xs ${STATUS_BADGES[s.status]}`}>
+                  {STATUS_LABELS_VIDEO[s.status] ?? s.status}
+                </span>
+              )}
             </div>
-          )}
-          {s.raw_notes && (
-            <details className="mt-2">
-              <summary className="cursor-pointer text-xs text-zinc-400 hover:text-zinc-600">
-                Raw notes
-              </summary>
-              <p className="mt-2 whitespace-pre-wrap text-xs leading-relaxed text-zinc-500">
-                {s.raw_notes}
-              </p>
-            </details>
-          )}
-        </div>
-      ))}
+
+            {isVideo && s.status !== "completed" && (
+              <div className="mb-2 flex items-center gap-3">
+                <a href={joinUrl} target="_blank" rel="noopener noreferrer"
+                  className="text-xs text-blue-600 hover:underline">
+                  Join session →
+                </a>
+                <button onClick={() => navigator.clipboard.writeText(joinUrl)}
+                  className="text-xs text-zinc-400 hover:text-zinc-600">
+                  Copy link
+                </button>
+              </div>
+            )}
+
+            {s.flagged_moments && s.flagged_moments.length > 0 && (
+              <div className="mb-2">
+                <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-zinc-400">Essay Seeds</p>
+                <div className="space-y-1">
+                  {s.flagged_moments.map((m, i) => (
+                    <blockquote key={i} className="border-l-2 border-emerald-300 pl-2 text-xs italic text-zinc-600">
+                      {m.quote}
+                    </blockquote>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {s.parent_email_draft && (
+              <details className="mb-2">
+                <summary className="cursor-pointer text-xs font-medium text-emerald-700 hover:text-emerald-900">
+                  Parent email draft ↓
+                </summary>
+                <div className="mt-2 rounded bg-emerald-50 p-3">
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-700">{s.parent_email_draft}</p>
+                </div>
+              </details>
+            )}
+
+            {s.key_observations && (
+              <div className="mb-2">
+                <p className="mb-0.5 text-xs font-semibold uppercase tracking-widest text-zinc-400">Observations</p>
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-700">{s.key_observations}</p>
+              </div>
+            )}
+            {s.raw_notes && !s.transcript && (
+              <details className="mt-2">
+                <summary className="cursor-pointer text-xs text-zinc-400 hover:text-zinc-600">Raw notes</summary>
+                <p className="mt-2 whitespace-pre-wrap text-xs leading-relaxed text-zinc-500">{s.raw_notes}</p>
+              </details>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -1232,6 +1390,10 @@ function StudentView({ student, lab }: { student: Student; lab: LabData | null }
               studentId={student.id}
               onAdded={handleSessionAdded}
               onPortraitUpdated={setPortrait}
+            />
+            <ScheduleVideoSessionForm
+              studentId={student.id}
+              onScheduled={handleSessionAdded}
             />
             <div className="mt-2">
               <SessionList sessions={sessions} />

@@ -35,6 +35,20 @@ export default async function LabPage(props: {
       ? db.from("students").select("id").eq("user_id", user.id).maybeSingle().then((r) => r.data)
       : Promise.resolve(null),
   ]);
+
+  // Upcoming video sessions for linked students
+  let upcomingSession: { id: string; scheduled_at: string } | null = null;
+  if (isStudent && linkedStudentRow?.id) {
+    const { data: nextSession } = await db
+      .from("sessions")
+      .select("id, scheduled_at")
+      .eq("student_id", linkedStudentRow.id)
+      .in("status", ["scheduled", "in_progress"])
+      .order("scheduled_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    upcomingSession = nextSession ?? null;
+  }
   const quota = await checkQuota(user.id, profile);
 
   // isLinked: true if this student-role user has a linked students record
@@ -89,14 +103,60 @@ export default async function LabPage(props: {
   };
 
   return (
-    <LabChat
-      profile={profile}
-      conversations={convList}
-      activeConversationId={activeConvId}
-      initialMessages={initialMessages}
-      quota={quotaState}
-      successType={successType}
-      isLinked={isLinked}
-    />
+    <>
+      {upcomingSession && (
+        <UpcomingSessionBanner session={upcomingSession} />
+      )}
+      <LabChat
+        profile={profile}
+        conversations={convList}
+        activeConversationId={activeConvId}
+        initialMessages={initialMessages}
+        quota={quotaState}
+        successType={successType}
+        isLinked={isLinked}
+      />
+    </>
+  );
+}
+
+function UpcomingSessionBanner({
+  session,
+}: {
+  session: { id: string; scheduled_at: string };
+}) {
+  const sessionDate = new Date(session.scheduled_at);
+  const now = new Date();
+  const minutesUntil = Math.round((sessionDate.getTime() - now.getTime()) / 60000);
+  const isNow = minutesUntil <= 10 && minutesUntil > -60;
+
+  const timeLabel = isNow
+    ? "Your session is starting now"
+    : `Your session starts ${sessionDate.toLocaleString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      })}`;
+
+  return (
+    <div className={`flex items-center justify-between px-4 py-3 text-sm ${
+      isNow
+        ? "bg-emerald-950 border-b border-emerald-800 text-emerald-200"
+        : "bg-zinc-900 border-b border-zinc-800 text-zinc-300"
+    }`}>
+      <span>{timeLabel}</span>
+      <a
+        href={`/session/${session.id}`}
+        className={`rounded px-3 py-1.5 text-xs font-medium ${
+          isNow
+            ? "bg-emerald-700 text-white hover:bg-emerald-600"
+            : "bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
+        }`}
+      >
+        {isNow ? "Join now →" : "View session →"}
+      </a>
+    </div>
   );
 }

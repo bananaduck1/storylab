@@ -47,6 +47,16 @@ export interface Session {
   raw_notes: string | null;
   key_observations: string | null;
   created_at: string;
+  // Video session fields (nullable for legacy manual sessions)
+  status?: string; // 'scheduled' | 'in_progress' | 'completed' | 'abandoned' | 'room_creation_failed'
+  scheduled_at?: string | null;
+  daily_room_name?: string | null;
+  daily_room_url?: string | null;
+  transcript?: string | null;
+  transcript_quality?: string | null;
+  portrait_status?: string | null;
+  flagged_moments?: Array<{ quote: string; timestamp_ms: number; flagged_at: string }> | null;
+  parent_email_draft?: string | null;
 }
 
 export interface Portrait {

@@ -17,9 +17,10 @@ export async function middleware(request: NextRequest) {
 
   // Determine which section we're protecting
   const isLab = pathname.startsWith("/lab") || pathname.startsWith("/api/lab");
-  const isAdmin = pathname.startsWith("/admin");
+  const isAdmin = pathname.startsWith("/admin") || pathname.startsWith("/api/admin");
+  const isSession = pathname.startsWith("/session") || pathname.startsWith("/api/session");
 
-  if (!isLab && !isAdmin) {
+  if (!isLab && !isAdmin && !isSession) {
     return NextResponse.next();
   }
 
@@ -71,9 +72,20 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
+  // /session routes: any authenticated user (page handles role-based rendering)
+  if (isSession) {
+    if (!user) {
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+    return response;
+  }
+
   return response;
 }
 
 export const config = {
-  matcher: ["/lab/:path*", "/api/lab/:path*", "/admin/:path*"],
+  matcher: ["/lab/:path*", "/api/lab/:path*", "/admin/:path*", "/api/admin/:path*", "/session/:path*", "/api/session/:path*"],
 };
