@@ -1,6 +1,6 @@
 # TODOs
 
-Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35. Updated 2026-03-19 — teacher profile builder review (x2 new: TODO-36, TODO-37; TODO-34 and TODO-35 superseded by accepted scope). Added 2026-03-19: TODO-38 (enterprise/districts demo flow), TODO-39 (student learning dashboard — 10x vision). Added 2026-03-19: TODO-40 (student platform research), TODO-41 (primary_emphasis section ordering). Added 2026-03-19: TODO-42 (B2B institutional hub — private school/org communities), TODO-43 (AI translation layer — cross-language tutoring). Updated 2026-03-19: TODO-42 and TODO-43 expanded with full implementation nuance from /plan-ceo-review SELECTIVE EXPANSION (chosen direction: TODO-42 = Approach C full multi-tenant subdomains; TODO-43 = build ladder A→C→B). Added 2026-03-19: TODO-44 (international teacher payout support). Stripe Connect plan reviewed 2026-03-19 — scope: Connect Express + 20% take-rate + earnings widget + admin revenue table. Implemented 2026-03-19: TODO-28 (Stripe Connect) shipped. Updated 2026-03-19 — B2B institutional hub CEO review: added TODO-46 (Phase 2 subdomains + branding), TODO-47 (SSO integration), TODO-48 (org analytics caching).
+Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35. Updated 2026-03-19 — teacher profile builder review (x2 new: TODO-36, TODO-37; TODO-34 and TODO-35 superseded by accepted scope). Added 2026-03-19: TODO-38 (enterprise/districts demo flow), TODO-39 (student learning dashboard — 10x vision). Added 2026-03-19: TODO-40 (student platform research), TODO-41 (primary_emphasis section ordering). Added 2026-03-19: TODO-42 (B2B institutional hub — private school/org communities), TODO-43 (AI translation layer — cross-language tutoring). Updated 2026-03-19: TODO-42 and TODO-43 expanded with full implementation nuance from /plan-ceo-review SELECTIVE EXPANSION (chosen direction: TODO-42 = Approach C full multi-tenant subdomains; TODO-43 = build ladder A→C→B). Added 2026-03-19: TODO-44 (international teacher payout support). Stripe Connect plan reviewed 2026-03-19 — scope: Connect Express + 20% take-rate + earnings widget + admin revenue table. Implemented 2026-03-19: TODO-28 (Stripe Connect) shipped. Updated 2026-03-19 — B2B institutional hub CEO review: added TODO-46 (Phase 2 subdomains + branding), TODO-47 (SSO integration), TODO-48 (org analytics caching). Added 2026-03-19: TODO-49 (sales-led org pricing — contact Sam flow), TODO-50 (org pricing tier tracking).
 
 ---
 
@@ -839,3 +839,39 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 **Effort:** S human / S CC+gstack
 **Priority:** P3 — trigger when first large org (50+ students) hits the platform
 **Depends on:** TODO-42 (B2B institutional hub, Phase 1)
+
+---
+
+## TODO-49: Sales-led org pricing — replace direct Stripe checkout with "contact us" flow
+
+**What:** Replace the "Subscribe" → Stripe Checkout button in `/org/[slug]/admin` with a "Contact us to get started" CTA that routes to a short intake form or direct email to Sam. Sam negotiates price and manually creates a custom Stripe subscription per org via the Stripe Dashboard (or a thin internal API).
+
+**Why:** Org pricing will be "speak to sales" — no fixed public price. This means a single `STRIPE_ORG_PRICE_ID` is the wrong model. Each school contract is negotiated based on cohort size, budget, and fit. A uniform price treats a well-resourced school the same as an underfunded one, which is both a mission problem and a sales problem.
+
+**Pros:** Pricing flexibility is the natural solution to the equity concern — Sam can quote Exeter full rate and a Title I public school at cost or discounted. Every org deal is a relationship conversation, not a self-serve click. Avoids the need to maintain a public pricing page.
+
+**Cons:** Manual per-org subscription creation adds admin overhead for Sam as volume grows. Not an issue at early stage (10–20 orgs); becomes a problem at 100+ orgs.
+
+**Context:** Current implementation (`app/api/org/subscribe/route.ts`) issues a Stripe Checkout session against `STRIPE_ORG_PRICE_ID`. This route can stay as internal tooling for when Sam creates subscriptions on behalf of an org, but shouldn't be the user-facing path. The admin billing tab UI should show a "Get started — contact us" CTA with Sam's email or a simple intake form, plus a status indicator once a subscription is active (webhook already handles that via `org_subscriptions` table). No change needed to the webhook or DB layer.
+
+**Effort:** S human / S CC+gstack
+**Priority:** P2 — do before first org signs up; the self-serve checkout is a placeholder
+**Depends on:** TODO-42 (B2B institutional hub, Phase 1)
+
+---
+
+## TODO-50: Org pricing tier tracking — record deal context per org
+
+**What:** Add a `pricing_tier` field (or equivalent metadata) to the `organizations` table so Sam can record what pricing category each org was given and why. Values: `'standard'` | `'reduced'` | `'sponsored'`. Store a short `deal_notes` text field alongside it for Sam's internal context (e.g., "Title I school, 80% discount," "strategic partnership").
+
+**Why:** Once pricing is negotiated case-by-case, the decision rationale lives only in Sam's memory or email. When the org comes up for renewal, or when a third party eventually handles sales, the pricing history is lost. Capturing tier + notes at signup creates a paper trail and makes equity-based discounting intentional rather than ad hoc.
+
+**Pros:** Lightweight (two columns). Makes the pricing philosophy legible to future Sam or a sales hire. Enables Sam to see at a glance which orgs are subsidized when planning revenue projections. Could eventually feed into analytics (what % of orgs are on reduced pricing).
+
+**Cons:** Adds a manual data-entry step to org creation. Low risk — fields are nullable, no enforcement logic needed.
+
+**Context:** The equity concern is: a flat rate treats Exeter the same as an underfunded public school. "Speak to sales" (TODO-49) solves the pricing side. This TODO captures the *tracking* side. Schema addition: `ALTER TABLE organizations ADD COLUMN pricing_tier TEXT CHECK (pricing_tier IN ('standard', 'reduced', 'sponsored')); ALTER TABLE organizations ADD COLUMN deal_notes TEXT;` — add to a new migration. Surface in the Sam-only org creation flow (`POST /api/org`) as optional fields.
+
+**Effort:** XS human / XS CC+gstack
+**Priority:** P3 — add when the second or third org is signed; not needed for first deal
+**Depends on:** TODO-49 (sales-led org pricing)
