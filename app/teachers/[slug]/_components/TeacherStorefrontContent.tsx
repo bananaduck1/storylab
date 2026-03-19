@@ -20,6 +20,15 @@ const caseStudySummaries = [
     color: "bg-[#2C4A3E]",
     teaser:
       "His first essay hit every note: leadership, service, resilience. By the second paragraph, you could predict every sentence coming. That was the problem.",
+    fullTitle: "The Predictable Essay",
+    fullBefore: `Jason's first draft was technically impressive. He'd written about leading the debate team through a losing season — finding resilience, growing as a leader, turning things around. The structure was clean. The sentences were polished. Every adult who read it said it was good.
+
+That was the problem. Every sentence predicted the next. The essay moved exactly the way you expected it to: adversity → reflection → growth. There was no texture, no surprise, no moment where you felt you were actually inside his mind. You could have written it about almost any student.`,
+    fullAfter: `The essay that got Jason into Dartmouth was about twenty minutes he spent alone in a parking lot after a tournament loss — not strategizing for next time, not converting the experience into a lesson. Just standing there, replaying the round in his head, letting himself actually feel what it felt like to fail.
+
+It was about the specific way he processes a loss. The cold air. The sound of other teams celebrating nearby. The strange calm that came after he stopped trying to make the loss mean something and just let it exist.
+
+Admissions officers don't remember the essays about resilience. They remember the essays that show them what it actually feels like to be you.`,
   },
   {
     slug: "sarah",
@@ -31,6 +40,15 @@ const caseStudySummaries = [
     color: "bg-[#2A3F5A]",
     teaser:
       "Her essay was beautifully written — clean, controlled, and emotionally distant. After 600 words, you didn't know her any better than at the top of the page.",
+    fullTitle: "The Beautiful Distance",
+    fullBefore: `Sarah was a genuinely talented writer. Her essay about her grandmother was the most technically accomplished draft I'd seen that season. Every sentence was precise. Every image earned. Every adult in her life loved it.
+
+But after 600 words, you still didn't know Sarah. The essay was controlled in a way that kept you at arm's length — careful, measured, protected. She was writing about something rather than from inside it. She was showing you a relationship without showing you what that relationship cost her.`,
+    fullAfter: `The essay that got Sarah into Princeton was about a specific Tuesday afternoon. Her grandmother had called her by the wrong name — then caught herself immediately, and they'd both pretended it hadn't happened.
+
+That moment in the room. The silence afterward. The way Sarah realized she was trying to protect her grandmother from something her grandmother already knew. The particular shame of loving someone and not knowing what to do with it.
+
+It was the essay she'd been afraid to write. Not because the subject was too personal — but because it required her to admit something she'd been quietly carrying. When she finally wrote it, it was the most honest thing on her application.`,
   },
   {
     slug: "mia",
@@ -42,8 +60,19 @@ const caseStudySummaries = [
     color: "bg-[#3A4A2A]",
     teaser:
       "Her counselor told her not to write about filmmaking. So she wrote about everything else — and none of it was the thing that actually made her, her.",
+    fullTitle: "The Wrong Essay",
+    fullBefore: `Mia's counselor told her not to write about filmmaking. Too niche. Wouldn't resonate with most readers. So she wrote five other drafts. One about resilience after her parents' divorce. One about community and a library volunteering program. One about professional growth from a summer internship.
+
+Every essay was fine. None of them was Mia. You could read all five and not know what she actually cared about. The essays were written to seem relatable to an imagined reader — which is exactly the wrong instinct.`,
+    fullAfter: `The essay that got Mia into Northwestern was about the gap between what she sees in her head and what she can actually make with a camera.
+
+Not a story of success or mastery. A story of a problem she hasn't solved — and may never solve. The specific frustration of knowing exactly what you want a shot to feel like and not being able to get there. And why that gap, instead of stopping her, is the thing that keeps her coming back.
+
+Her counselor was wrong. Every admissions officer who read it immediately recognized someone with a real relationship to a craft. That recognition — of a person who actually cares about something, deeply, in a specific way — is what gets students admitted.`,
   },
 ];
+
+type CaseStudy = typeof caseStudySummaries[number];
 
 const philosophy: {
   number: string;
@@ -61,7 +90,7 @@ const philosophy: {
     ),
     difference: (
       <>
-        We train students, even those with STEM backgrounds, to infuse{" "}
+        I train students, even those with STEM backgrounds, to infuse{" "}
         <strong className="font-semibold text-emerald-800">humanistic thinking and reflection</strong>{" "}
         in their applications.
       </>
@@ -78,7 +107,7 @@ const philosophy: {
     ),
     difference: (
       <>
-        We push students beyond surface-level &ldquo;I-learned-x&rdquo; sentences to write{" "}
+        I push students beyond surface-level &ldquo;I-learned-x&rdquo; sentences to write{" "}
         <strong className="font-semibold text-emerald-800">radically vulnerable narratives</strong>{" "}
         admissions officers can&rsquo;t forget.
       </>
@@ -96,7 +125,7 @@ const philosophy: {
     ),
     difference: (
       <>
-        We teach students{" "}
+        I teach students{" "}
         <strong className="font-semibold text-emerald-800">the process of writing itself</strong>,
         which sets them up for success long after the admissions process is over.
       </>
@@ -113,7 +142,7 @@ const philosophy: {
     ),
     difference: (
       <>
-        Long before 12th grade, we push students away from{" "}
+        Long before 12th grade, I push students away from{" "}
         <strong className="font-semibold text-emerald-800">cliché narratives</strong> and coach them
         to build{" "}
         <strong className="font-semibold text-emerald-800">strong relationships with teachers</strong>.
@@ -187,18 +216,108 @@ const tutors: Tutor[] = [
 
 const sections = [
   { id: "hero", label: "Welcome" },
-  { id: "founder", label: "Our Story" },
-  { id: "thesis", label: "Our Mission" },
-  { id: "preview", label: "Try AI Coach" },
+  { id: "founder", label: "My Story" },
+  { id: "thesis", label: "My Mission" },
   { id: "philosophy", label: "Philosophy" },
   { id: "why", label: "Why It Matters" },
   { id: "cases", label: "Student Stories" },
-  { id: "paths", label: "Programs" },
-  { id: "tutors", label: "Our Team" },
   { id: "acceptances", label: "Acceptances" },
-  { id: "testimonials", label: "Results" },
-  { id: "cta", label: "Get Started" },
+  { id: "testimonials", label: "What Families Say" },
+  { id: "paths", label: "My Offerings" },
+  { id: "preview", label: "Try My AI Coach" },
 ];
+
+// ─── Case Study Modal ─────────────────────────────────────────────────────────
+
+function CaseStudyModal({
+  student,
+  onClose,
+}: {
+  student: CaseStudy;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${student.name}'s case study`}
+    >
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Panel */}
+      <div className="relative z-10 w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white shadow-2xl">
+        {/* Header */}
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-zinc-100 bg-white px-8 py-5">
+          <div className="flex items-center gap-3">
+            <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full ${student.color} text-sm font-semibold text-white`}>
+              {student.initial}
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-zinc-900">{student.name}</p>
+              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-0.5 text-xs font-medium text-emerald-700">
+                {student.outcome}
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-full p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+            aria-label="Close"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-8 py-8 space-y-10">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 mb-3">
+              The problem
+            </p>
+            <h2
+              className="text-2xl font-semibold tracking-tight text-zinc-950 mb-5"
+              style={{ fontFamily: "var(--font-cooper, serif)" }}
+            >
+              {student.fullTitle}
+            </h2>
+            <div className="space-y-4 text-base leading-relaxed text-zinc-600 whitespace-pre-line">
+              {student.fullBefore}
+            </div>
+          </div>
+
+          <div className="border-t border-zinc-100 pt-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2C4A3E] mb-3">
+              What changed
+            </p>
+            <div className="space-y-4 text-base leading-relaxed text-zinc-700 whitespace-pre-line">
+              {student.fullAfter}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
@@ -266,10 +385,10 @@ function PhilosophyScrollSection({
       <div className="md:hidden px-6 py-16">
         <div className="mx-auto max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-            Our Approach
+            My Approach
           </p>
           <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
-            Our Philosophy
+            My Philosophy
           </p>
           <div className="relative mt-4 mb-4 h-80 overflow-hidden rounded-xl">
             <Image src="/in%20the%20crowd.png" alt="" fill className="object-contain" />
@@ -281,7 +400,7 @@ function PhilosophyScrollSection({
           </div>
           <div className="my-10 border-t border-zinc-200" />
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
-            The StoryLab Difference
+            How I&rsquo;m Different
           </p>
           <div className="relative mt-4 mb-4 h-80 overflow-hidden rounded-xl">
             <Image src="/photo-1.png" alt="" fill className="object-contain" />
@@ -304,7 +423,7 @@ function PhilosophyScrollSection({
           <div className="grid grid-cols-[2fr_3fr] items-center gap-16">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-                Our Approach
+                My Approach
               </p>
               <div className="mt-4" style={{ display: "grid" }}>
                 <h2
@@ -313,7 +432,7 @@ function PhilosophyScrollSection({
                     step === 0 ? "opacity-100" : "opacity-0"
                   }`}
                 >
-                  Our Philosophy
+                  My Philosophy
                 </h2>
                 <h2
                   style={{ gridArea: "1 / 1" }}
@@ -321,7 +440,7 @@ function PhilosophyScrollSection({
                     step === 1 ? "opacity-100" : "opacity-0"
                   }`}
                 >
-                  The StoryLab Difference
+                  How I&rsquo;m Different
                 </h2>
               </div>
               <div className="mt-6" style={{ display: "grid" }}>
@@ -421,7 +540,7 @@ function WhyItMattersScrollSection({
             Preparing for college is preparing for the real world.
           </h2>
           <p className="mt-4 text-base leading-relaxed text-zinc-500">
-            In an era where AI can perform most technical skills, the people who succeed are the ones who can think clearly, write persuasively, and make meaning. We train that.
+            In an era where AI can perform most technical skills, the people who succeed are the ones who can think clearly, write persuasively, and make meaning. I train that.
           </p>
         </div>
         <div className="mx-auto mt-12 max-w-3xl space-y-10 px-6">
@@ -466,7 +585,7 @@ function WhyItMattersScrollSection({
               Preparing for college is preparing for the real world.
             </h2>
             <p className="mt-4 text-base leading-relaxed text-zinc-500">
-              In an era where AI can perform most technical skills, the people who succeed are the ones who can think clearly, write persuasively, and make meaning. We train that.
+              In an era where AI can perform most technical skills, the people who succeed are the ones who can think clearly, write persuasively, and make meaning. I train that.
             </p>
           </div>
           <div style={{ display: "grid" }}>
@@ -567,6 +686,7 @@ interface TeacherStorefrontContentProps {
 export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBookings = false }: TeacherStorefrontContentProps) {
   const sectionRefs = useRef<(HTMLElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [selectedStudent, setSelectedStudent] = useState<CaseStudy | null>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -593,6 +713,14 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
     <>
       <ProgressDots activeIndex={activeIndex} onDotClick={scrollToSection} />
 
+      {/* Case study modal */}
+      {selectedStudent && (
+        <CaseStudyModal
+          student={selectedStudent}
+          onClose={() => setSelectedStudent(null)}
+        />
+      )}
+
       <div>
         {/* ── 0. HERO ─────────────────────────────────────────────────── */}
         <section
@@ -601,7 +729,6 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
           className="scroll-snap-section section-reveal bg-[#2C4A3E]"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16 md:py-24">
-            {/* 2-column on desktop: photo left, content right */}
             <div className="grid items-center gap-12 md:grid-cols-2">
               {/* Left: Photo */}
               <div className="relative aspect-square overflow-hidden rounded-[4px] max-w-sm mx-auto md:max-w-none md:mx-0">
@@ -637,7 +764,7 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
                   className="text-lg italic leading-relaxed text-white/80 mb-8"
                   style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
                 >
-                  Your story is already there. We find it together.
+                  Your story is already there. Let me help you find it.
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <a
@@ -666,7 +793,7 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
           </div>
         </section>
 
-        {/* ── 1. FOUNDER'S STORY ──────────────────────────────────────── */}
+        {/* ── 1. MY STORY ─────────────────────────────────────────────── */}
         <section
           ref={(el) => { sectionRefs.current[1] = el; }}
           id="founder"
@@ -684,7 +811,7 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
               </div>
               <div className="md:order-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-                  Founder&rsquo;s Story
+                  My Story
                 </p>
                 <h2 className="mt-5 text-3xl font-semibold leading-[1.2] tracking-tight text-zinc-950 sm:text-4xl">
                   Hi, I&rsquo;m Sam.
@@ -728,7 +855,7 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
           <div className="grid w-full md:grid-cols-2">
             <div className="flex items-center px-8 py-6 md:px-16">
               <p className="text-4xl font-bold leading-tight tracking-tight text-zinc-950 sm:text-5xl">
-                In an application field where it&rsquo;s harder to stand out than ever, we give
+                In an application field where it&rsquo;s harder to stand out than ever, I give
                 students the tools to tell a killer story.
               </p>
             </div>
@@ -742,42 +869,19 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
           </div>
         </section>
 
-        {/* ── 3. AI PREVIEW WIDGET ─────────────────────────────────────── */}
-        <section
-          ref={(el) => { sectionRefs.current[3] = el; }}
-          className="scroll-snap-section section-reveal bg-[#FAFAF8] px-6 py-16 md:py-24"
-        >
-          <div className="mx-auto max-w-6xl">
-            <div className="mx-auto max-w-2xl mb-10 text-center">
-              <p
-                className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-3"
-              >
-                Experience the coaching
-              </p>
-              <h2
-                className="text-2xl font-semibold tracking-tight text-[#1A2E26]"
-                style={{ fontFamily: "var(--font-cooper, serif)" }}
-              >
-                One free message. No account required.
-              </h2>
-            </div>
-            <AiPreviewWidget teacherSlug={teacherSlug} teacherName={teacherName} />
-          </div>
-        </section>
-
-        {/* ── 4. PHILOSOPHY (scroll-driven) ───────────────────────────── */}
+        {/* ── 3. PHILOSOPHY (scroll-driven) ───────────────────────────── */}
         <PhilosophyScrollSection
+          sectionRefCallback={(el) => { sectionRefs.current[3] = el; }}
+        />
+
+        {/* ── 4. WHY IT MATTERS (scroll-driven) ───────────────────────── */}
+        <WhyItMattersScrollSection
           sectionRefCallback={(el) => { sectionRefs.current[4] = el; }}
         />
 
-        {/* ── 5. WHY IT MATTERS (scroll-driven) ───────────────────────── */}
-        <WhyItMattersScrollSection
-          sectionRefCallback={(el) => { sectionRefs.current[5] = el; }}
-        />
-
-        {/* ── 6. STUDENT STORIES ──────────────────────────────────────── */}
+        {/* ── 5. STUDENT STORIES ──────────────────────────────────────── */}
         <section
-          ref={(el) => { sectionRefs.current[6] = el; }}
+          ref={(el) => { sectionRefs.current[5] = el; }}
           id="cases"
           className="scroll-snap-section section-reveal min-h-[100svh] bg-white/50 py-24"
         >
@@ -787,19 +891,19 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
                 Student Stories
               </p>
               <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-                Meet some of our students.
+                Meet some of my students.
               </h2>
               <p className="mt-4 text-base leading-relaxed text-zinc-500">
-                Every student who arrives at StoryLab has something real to say. They just haven&rsquo;t found it&nbsp;yet.
+                Every student who arrives has something real to say. They just haven&rsquo;t found it&nbsp;yet.
               </p>
             </div>
 
             <div className="mt-14 grid gap-6 md:grid-cols-3">
               {caseStudySummaries.map((s) => (
-                <Link
+                <button
                   key={s.slug}
-                  href={`/teachers/${teacherSlug}/students?student=${s.slug}`}
-                  className="group flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white transition-all hover:border-zinc-300 hover:shadow-lg"
+                  onClick={() => setSelectedStudent(s)}
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white text-left transition-all hover:border-zinc-300 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
                 >
                   <div className="flex items-center gap-4 border-b border-zinc-100 px-6 py-5">
                     <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${s.color} text-base font-semibold text-white`}>
@@ -812,29 +916,85 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
                   </div>
                   <div className="flex flex-1 flex-col p-6">
                     <p className="flex-1 text-sm leading-relaxed text-zinc-600">{s.teaser}</p>
-                    <div className="mt-8">
+                    <div className="mt-8 flex items-center justify-between">
                       <span className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-medium text-emerald-700">
                         {s.outcome}
                       </span>
+                      <span className="text-xs font-medium text-zinc-400 group-hover:text-zinc-700 transition-colors">
+                        Read story →
+                      </span>
                     </div>
                   </div>
-                </Link>
+                </button>
               ))}
             </div>
           </div>
         </section>
 
-        {/* ── 7. THREE PATHS ──────────────────────────────────────────── */}
+        {/* ── 6. ACCEPTANCES ──────────────────────────────────────────── */}
+        <section
+          ref={(el) => { sectionRefs.current[6] = el; }}
+          id="acceptances"
+          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center bg-white/50"
+        >
+          <div className="mx-auto w-full max-w-6xl px-6 py-16">
+            <h2 className="text-center text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+              My students&rsquo; acceptances
+            </h2>
+            <div className="mt-12">
+              <LogoMarquee />
+            </div>
+          </div>
+        </section>
+
+        {/* ── 7. TESTIMONIALS ─────────────────────────────────────────── */}
         <section
           ref={(el) => { sectionRefs.current[7] = el; }}
+          id="testimonials"
+          className="scroll-snap-section section-reveal min-h-[100svh] py-24"
+        >
+          <div className="mx-auto w-full max-w-6xl px-6">
+            <div className="max-w-xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
+                What Families Say
+              </p>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+                In their own words.
+              </h2>
+            </div>
+
+            <div className="mt-12 grid gap-6 md:grid-cols-2">
+              {testimonials.map((t, i) => (
+                <figure
+                  key={i}
+                  className={`flex flex-col rounded-2xl border p-8 ${
+                    t.type === "parent" ? "border-zinc-300 bg-zinc-50" : "border-zinc-200 bg-white"
+                  }`}
+                >
+                  <blockquote className="flex-1 text-base leading-relaxed text-zinc-600">
+                    &ldquo;{t.quote}&rdquo;
+                  </blockquote>
+                  <figcaption className="mt-6 flex items-center gap-3">
+                    <div className="h-px flex-1 bg-zinc-200" />
+                    <p className="text-xs font-medium text-zinc-400">{t.attribution}</p>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 8. MY OFFERINGS ─────────────────────────────────────────── */}
+        <section
+          ref={(el) => { sectionRefs.current[8] = el; }}
           id="paths"
           className="scroll-snap-section section-reveal flex min-h-[100svh] items-center"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
-            <h2 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-              Three paths. One foundation.
+            <h2 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl mb-10">
+              My Offerings
             </h2>
-            <div className="mt-10 grid gap-6 md:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-3">
               {[
                 {
                   href: `/teachers/${teacherSlug}/humanities`,
@@ -870,11 +1030,34 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
           </div>
         </section>
 
-        {/* ── 8. OUR TUTORS ───────────────────────────────────────────── */}
+        {/* ── 9. AI PREVIEW WIDGET ─────────────────────────────────────── */}
         <section
-          ref={(el) => { sectionRefs.current[8] = el; }}
-          id="tutors"
-          className="hidden scroll-snap-section section-reveal min-h-[100svh] bg-white/50 py-16"
+          ref={(el) => { sectionRefs.current[9] = el; }}
+          id="preview"
+          className="scroll-snap-section section-reveal bg-[#FAFAF8] px-6 py-16 md:py-24"
+        >
+          <div className="mx-auto max-w-6xl">
+            <div className="mx-auto max-w-2xl mb-10 text-center">
+              <p
+                className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-3"
+              >
+                Experience the coaching
+              </p>
+              <h2
+                className="text-2xl font-semibold tracking-tight text-[#1A2E26]"
+                style={{ fontFamily: "var(--font-cooper, serif)" }}
+              >
+                One free message. No account required.
+              </h2>
+            </div>
+            <AiPreviewWidget teacherSlug={teacherSlug} teacherName={teacherName} />
+          </div>
+        </section>
+
+        {/* ── HIDDEN: OUR TUTORS (not shown on storefront) ────────────── */}
+        <section
+          className="hidden"
+          aria-hidden="true"
         >
           <TutorStickySection
             tutors={tutors}
@@ -883,87 +1066,6 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
             ctaHref="/team"
             ctaLabel="Meet the full team"
           />
-        </section>
-
-        {/* ── 9. ACCEPTANCES ──────────────────────────────────────────── */}
-        <section
-          ref={(el) => { sectionRefs.current[9] = el; }}
-          id="acceptances"
-          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center bg-white/50"
-        >
-          <div className="mx-auto w-full max-w-6xl px-6 py-16">
-            <h2 className="text-center text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-              Our students&rsquo; acceptances
-            </h2>
-            <div className="mt-12">
-              <LogoMarquee />
-            </div>
-          </div>
-        </section>
-
-        {/* ── 10. TESTIMONIALS ─────────────────────────────────────────── */}
-        <section
-          ref={(el) => { sectionRefs.current[10] = el; }}
-          id="testimonials"
-          className="scroll-snap-section section-reveal min-h-[100svh] py-24"
-        >
-          <div className="mx-auto w-full max-w-6xl px-6">
-            <div className="max-w-xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-                What Families Say
-              </p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-                In their own words.
-              </h2>
-            </div>
-
-            <div className="mt-12 grid gap-6 md:grid-cols-2">
-              {testimonials.map((t, i) => (
-                <figure
-                  key={i}
-                  className={`flex flex-col rounded-2xl border p-8 ${
-                    t.type === "parent" ? "border-zinc-300 bg-zinc-50" : "border-zinc-200 bg-white"
-                  }`}
-                >
-                  <blockquote className="flex-1 text-base leading-relaxed text-zinc-600">
-                    &ldquo;{t.quote}&rdquo;
-                  </blockquote>
-                  <figcaption className="mt-6 flex items-center gap-3">
-                    <div className="h-px flex-1 bg-zinc-200" />
-                    <p className="text-xs font-medium text-zinc-400">{t.attribution}</p>
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-
-          </div>
-        </section>
-
-        {/* ── 11. CTA ─────────────────────────────────────────────────── */}
-        <section
-          ref={(el) => { sectionRefs.current[11] = el; }}
-          id="cta"
-          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center"
-        >
-          <div className="mx-auto w-full max-w-6xl px-6 py-16">
-            <div className="mx-auto max-w-3xl rounded-3xl border border-zinc-200 bg-white p-10 text-center sm:p-14">
-              <h2 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-                We take limited students each cycle.
-              </h2>
-              <p className="mt-6 text-lg leading-relaxed text-zinc-600">
-                Writing develops slowly. The earlier you start, the more options you have. Schedule a
-                consultation to discuss fit and timing.
-              </p>
-              <div className="mt-10">
-                <Link
-                  href={acceptingBookings ? `/teachers/${teacherSlug}/book` : `/teachers/${teacherSlug}`}
-                  className="inline-flex items-center justify-center rounded-[3px] bg-[#2C4A3E] px-8 py-4 text-base font-medium text-white hover:bg-[#3A6054]"
-                >
-                  {acceptingBookings ? "Book a session" : "Start learning"}
-                </Link>
-              </div>
-            </div>
-          </div>
         </section>
 
       </div>

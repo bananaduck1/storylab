@@ -1,6 +1,6 @@
 # TODOs
 
-Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped.
+Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35.
 
 ---
 
@@ -552,3 +552,35 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 **Context:** One new column on `teachers` table: `accepting_students BOOLEAN DEFAULT true`. Show a badge on the teacher card and storefront. On teacher's `/dashboard`, add a toggle in settings. When `false`, hide or grey out the "Start with [Teacher]" CTA and show a waitlist message instead.
 
 **Effort:** S human / S with CC | **Priority:** P2 | **Depends on:** marketplace-reframe plan (teacher storefront must exist first)
+
+---
+
+## TODO-34: Help teachers price their AI agents and themselves
+
+**What:** Build a pricing guidance flow within the teacher onboarding/settings that helps teachers determine: (1) what to charge per session (live coaching), and (2) how to price AI agent access for students (subscription vs. per-session).
+
+**Why:** Teachers have no reference point for pricing their knowledge. Getting this wrong destroys retention — too high scares parents off, too low devalues the teacher and the platform. A guided tool that benchmarks against comparable tutors, estimates hours-to-recoup, and suggests tiered pricing (e.g. "AI access: $30/mo, live session: $250/hr") would meaningfully increase teacher confidence and platform GMV.
+
+**Pros:** Removes a major friction point in teacher activation. Aligned financial incentives = more engaged teachers. Gives platform leverage to set norms (prevent race-to-bottom pricing).
+
+**Cons:** Pricing is sensitive — teachers may resist being told what to charge. Requires market data or benchmarks to be credible.
+
+**Context:** Currently `pricing_config` on the `teachers` table holds a `sessionPrice` JSONB field set during onboarding Step 3. The field is filled manually with no guidance. The onboarding step that collects this lives in `app/teacher/onboarding/page.tsx` (Step 3, pricing section). AI agent pricing is not surfaced to teachers at all — they have no visibility into what students pay for `/lab` access or how that revenue flows to them.
+
+**Depends on:** Revenue share model being defined (currently undefined). Platform pricing page.
+
+---
+
+## TODO-35: Help teachers build their teacher profiles
+
+**What:** Build a guided profile completion flow in `/dashboard/settings` that walks teachers through: photo upload, bio writing, subject tags, quote/headline, accepting_bookings toggle, and Google Calendar setup. Show a live preview of their storefront as they fill it in. Include a completeness score ("Your profile is 60% complete").
+
+**Why:** Teachers currently have no guidance on what makes a great storefront. The profile wizard in `/teacher/onboarding` captures minimal info and teachers likely skip it or fill it poorly. A compelling storefront (photo, bio, specific subject framing) is the #1 driver of parent bookings. A bad profile = zero bookings even with good availability.
+
+**Pros:** Directly drives teacher activation and first booking. A live preview removes the "what does this look like?" anxiety. Completeness score creates a gamified motivation loop.
+
+**Cons:** Photo upload requires storage setup (Supabase Storage bucket for teacher photos). Live preview requires a client-side rendering of the storefront component.
+
+**Context:** The teacher settings page is at `app/dashboard/settings/page.tsx`. The storefront is rendered by `app/teachers/[slug]/_components/TeacherStorefrontContent.tsx`. The `teachers` table has: `name`, `slug`, `subject`, `bio`, `photo_url`, `quote`, `storefront_published`, `accepting_bookings`, `google_calendar_id`, `pricing_config`. Currently `photo_url` is set manually (admin side only). The teacher onboarding wizard (`app/teacher/onboarding/page.tsx`) only captures basic info and does not have a preview.
+
+**Depends on:** Supabase Storage bucket for teacher photo uploads (not yet configured). TODO-34 (pricing guidance) could be woven into this same flow.
