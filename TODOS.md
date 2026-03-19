@@ -659,20 +659,20 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 
 ---
 
-## TODO-40: Research existing student platforms (Google Classroom, etc.)
+## TODO-40: Competitive landscape research — every platform StoryLab competes with
 
-**What:** Audit the current landscape of student-facing platforms — Google Classroom, Canvas, Schoology, Notion, and others — to understand what students already use, what they tolerate, and where those platforms fall short.
+**What:** Map the full competitive landscape across three tiers: (1) student workflow platforms (Google Classroom, Canvas, Schoology, Notion, Blackboard), (2) tutoring/coaching marketplaces (Wyzant, Varsity Tutors, Tutor.com, Lessonface, Superprof), (3) AI-native edtech (Khan Academy Khanmigo, Synthesis, Kira, Numerade, Chegg). For each: what it does, who it's for, where it falls short, and what StoryLab does that it can't.
 
-**Why:** Before designing the 10x student dashboard (TODO-39), we need to know what we're differentiating from. Students have strong existing habits around Google Classroom and similar tools. Understanding those habits tells us what to integrate with, what to replace, and what to avoid building (commodity features students already have elsewhere).
+**Why:** StoryLab competes differently at each tier — Google Classroom at the student workflow layer, Wyzant at the teacher marketplace layer, Khanmigo at the AI tutor layer. Before designing the 10x student dashboard (TODO-39) or the enterprise/districts pitch (TODO-38), we need a clear picture of what we're differentiating from at each level. The strategic question isn't just "what do students use" — it's "where is the white space no one has claimed."
 
-**Pros:** Prevents us from reinventing the wheel (e.g., homework submission) and sharpens the wedge — we build what Google Classroom can't (relationship-aware AI coaching, narrative arc over time, teacher/student co-ownership of progress).
+**Pros:** Sharpens the product wedge at every layer. Prevents building commodity features that incumbents already own. Gives the enterprise demo (TODO-38) a crisp "why us" narrative. Sets up TODO-39 scoping to be 10x better.
 
-**Cons:** Research work, no code shipped. But this is a 2–3 hour exercise with CC and sets up the TODO-39 implementation to be 10x better scoped.
+**Cons:** Research work, no code shipped. Scope can expand — needs a time-box. The right output is a 1-page competitive matrix, not a 40-page report.
 
-**Context:** The key question is: where does the student's workflow currently live, and what is the highest-friction moment we can eliminate? Google Classroom owns homework distribution; Notion owns personal notes; email owns feedback. The opportunity is the AI coach + teacher relationship layer that none of them have.
+**Context:** Key distinctions to track: (a) K-12 vs. college focus (Canvas skews college; Google Classroom skews K-12); (b) AI-native vs. AI-bolted-on; (c) teacher-centric vs. student-centric vs. institutional. StoryLab's current differentiation is the combination of a teacher's storefront + relationship-aware AI coaching + narrative arc over time — that combination doesn't exist anywhere in the market. The research should confirm that gap or find where it doesn't hold.
 
 **Effort:** S human / S CC+gstack
-**Priority:** P3 — do before starting TODO-39 implementation
+**Priority:** P3 — do before TODO-38 (enterprise demo) or TODO-39 (student dashboard) implementation
 **Depends on:** Nothing — can be done anytime as a research spike
 
 ---
