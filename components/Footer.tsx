@@ -1,22 +1,30 @@
 import Link from "next/link";
 
-const EMAIL_SAM = "mailto:storylab.ivy@gmail.com";
-
 export function Footer() {
   return (
-    <footer className="border-t border-zinc-200/70 bg-wash">
+    <footer className="bg-[#2C4A3E]">
       <div className="mx-auto w-full max-w-6xl px-6 py-12">
         <div className="grid gap-10 md:grid-cols-12 md:gap-8">
           <div className="md:col-span-5">
-            <p className="text-sm font-semibold tracking-wide text-zinc-950">
+            <p
+              className="text-base font-semibold text-white"
+              style={{ fontFamily: "var(--font-cooper, serif)" }}
+            >
               StoryLab
             </p>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <p
+              className="mt-2 text-sm text-white/60 leading-relaxed max-w-xs"
+              style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
+            >
+              Infrastructure for human expertise in education.
+            </p>
+            <div className="mt-6">
               <Link
-                href="/contact"
-                className="inline-flex items-center justify-center rounded-full bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-sm shadow-zinc-900/15 hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/30"
+                href="/teachers"
+                className="inline-flex items-center justify-center rounded-[3px] bg-[#DEEEE9] px-5 py-3 text-sm font-medium text-[#1A2E26] hover:bg-white transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
               >
-                Get started
+                Find a teacher →
               </Link>
             </div>
           </div>
@@ -24,33 +32,57 @@ export function Footer() {
           <div className="md:col-span-7">
             <div className="grid gap-8 sm:grid-cols-2">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-zinc-600">
-                  Explore
+                <p
+                  className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-white/50"
+                  style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+                >
+                  Platform
                 </p>
                 <ul className="mt-4 space-y-3 text-sm">
                   <li>
-                    <Link className="text-zinc-700 hover:text-zinc-950" href="/faq">
-                      FAQ
+                    <Link
+                      className="text-white/70 hover:text-white transition-colors"
+                      href="/teachers"
+                      style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+                    >
+                      Teachers
                     </Link>
                   </li>
                   <li>
-                    <Link className="text-zinc-700 hover:text-zinc-950" href="/contact">
-                      Contact
+                    <Link
+                      className="text-white/70 hover:text-white transition-colors"
+                      href="/teacher/onboarding"
+                      style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+                    >
+                      Become a teacher
                     </Link>
                   </li>
                 </ul>
               </div>
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-zinc-600">
-                  Notes
+                <p
+                  className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-white/50"
+                  style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+                >
+                  Company
                 </p>
-                <p className="mt-4 text-sm leading-relaxed text-zinc-600">
-                  We do not guarantee outcomes.
-                </p>
-                <p className="mt-4 text-sm text-zinc-600">
-                  <span className="text-zinc-500">© </span>
-                  {new Date().getFullYear()} StoryLab. All rights reserved.
+                <ul className="mt-4 space-y-3 text-sm">
+                  <li>
+                    <a
+                      href="mailto:storylab.ivy@gmail.com"
+                      className="text-white/70 hover:text-white transition-colors"
+                      style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+                    >
+                      Contact
+                    </a>
+                  </li>
+                </ul>
+                <p
+                  className="mt-8 text-xs text-white/40"
+                  style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+                >
+                  © {new Date().getFullYear()} StoryLab. All rights reserved.
                 </p>
               </div>
             </div>
@@ -60,4 +92,3 @@ export function Footer() {
     </footer>
   );
 }
-
