@@ -26,72 +26,12 @@ export function Navbar() {
           {/* Desktop nav */}
           <div className="hidden items-center gap-6 md:flex">
             <nav aria-label="Primary" className="flex items-center gap-6">
-              {/* Teachers link */}
               <Link
                 href="/teachers"
                 className="text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/30"
                 style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
               >
                 Teachers
-              </Link>
-
-              {/* Academy with hover dropdown */}
-              <div className="relative group after:absolute after:content-[''] after:left-0 after:right-0 after:top-full after:h-3">
-                <Link
-                  href="/teachers/sam-a"
-                  className="flex items-center gap-1 text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/30"
-                  style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
-                >
-                  Academy
-                  <svg
-                    aria-hidden="true"
-                    className="mt-px h-3.5 w-3.5 text-zinc-400 transition-transform duration-150 group-hover:rotate-180"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </Link>
-
-                {/* Dropdown panel */}
-                <div className="absolute left-1/2 top-full -translate-x-1/2 pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
-                  <div className="w-56 overflow-hidden rounded-xl border border-[#C0D9CB] bg-white shadow-lg">
-                    <Link
-                      href="/teachers/sam-a/humanities"
-                      className="block px-4 py-3 text-sm text-zinc-700 hover:bg-[#DEEEE9] transition-colors"
-                    >
-                      Humanities Foundations
-                    </Link>
-                    <Link
-                      href="/teachers/sam-a/applications"
-                      className="block px-4 py-3 text-sm text-zinc-700 hover:bg-[#DEEEE9] transition-colors border-t border-[#C0D9CB]/50"
-                    >
-                      College Applications
-                    </Link>
-                    <Link
-                      href="/teachers/sam-a/transfer"
-                      className="block px-4 py-3 text-sm text-zinc-700 hover:bg-[#DEEEE9] transition-colors border-t border-[#C0D9CB]/50"
-                    >
-                      Transfer Applications
-                    </Link>
-                    <Link
-                      href="/teachers/sam-a/pricing"
-                      className="block px-4 py-3 text-sm text-zinc-700 hover:bg-[#DEEEE9] transition-colors border-t border-[#C0D9CB]/50"
-                    >
-                      Pricing
-                    </Link>
-                  </div>
-                </div>
-              </div>
-
-              <Link
-                href="/blog"
-                className="text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/30"
-                style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
-              >
-                Blog
               </Link>
 
               {/* Become a teacher CTA */}
@@ -137,20 +77,6 @@ export function Navbar() {
               onClick={() => setMobileOpen(false)}
             >
               Teachers
-            </Link>
-            <Link
-              href="/teachers/sam-a"
-              className="block px-2 py-3 text-sm font-medium text-zinc-900 hover:text-[#2C4A3E] border-b border-[#C0D9CB]/40"
-              onClick={() => setMobileOpen(false)}
-            >
-              Academy
-            </Link>
-            <Link
-              href="/blog"
-              className="block px-2 py-3 text-sm font-medium text-zinc-900 hover:text-[#2C4A3E] border-b border-[#C0D9CB]/40"
-              onClick={() => setMobileOpen(false)}
-            >
-              Blog
             </Link>
             <Link
               href="/teacher/onboarding"
