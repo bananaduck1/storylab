@@ -1,6 +1,6 @@
 # TODOs
 
-Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35. Updated 2026-03-19 — teacher profile builder review (x2 new: TODO-36, TODO-37; TODO-34 and TODO-35 superseded by accepted scope). Added 2026-03-19: TODO-38 (enterprise/districts demo flow), TODO-39 (student learning dashboard — 10x vision). Added 2026-03-19: TODO-40 (student platform research), TODO-41 (primary_emphasis section ordering).
+Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35. Updated 2026-03-19 — teacher profile builder review (x2 new: TODO-36, TODO-37; TODO-34 and TODO-35 superseded by accepted scope). Added 2026-03-19: TODO-38 (enterprise/districts demo flow), TODO-39 (student learning dashboard — 10x vision). Added 2026-03-19: TODO-40 (student platform research), TODO-41 (primary_emphasis section ordering). Added 2026-03-19: TODO-42 (B2B institutional hub — private school/org communities), TODO-43 (AI translation layer — cross-language tutoring).
 
 ---
 
@@ -692,3 +692,39 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 **Effort:** M human / S CC+gstack
 **Priority:** P2 — needed before onboarding teacher #2
 **Depends on:** Teacher profile builder (shipped)
+
+---
+
+## TODO-42: B2B institutional hub — private school/org communities
+
+**What:** A gated, white-label version of StoryLab for schools and institutions. Each organization gets its own private community: their teachers, their students, their branding — not visible to the public. Access controlled by invite code or domain. Configurable per institution (which features are on, what subjects, what pricing model).
+
+**Why:** The public marketplace is one growth vector. The B2B channel is a different, potentially larger one — a school buys a StoryLab subscription and deploys it to 500 students at once. That's a very different sales motion (one contract → many users) and a very different retention profile (institutional lock-in vs. individual churn). The two models can coexist: public marketplace for consumer, institutional hub for B2B.
+
+**Pros:** Dramatically larger contract sizes. Institutional relationships are sticky — once a school adopts a platform, switching costs are high. Opens the door to the districts/enterprise pitch (TODO-38). Natural expansion path: start with one private school, prove the model, expand to district.
+
+**Cons:** B2B sales is slower and more relationship-driven than consumer. Requires multi-tenancy at the data layer (isolation between institutions). Customization per institution adds product complexity. Need to figure out the right pricing model (per-seat, per-school, per-district).
+
+**Context:** The core architecture already supports multi-teacher, multi-student. What's missing is: (1) an `organizations` table that groups teachers + students under a shared tenant, (2) an invite/access-code flow for students to join a specific org, (3) an org-level admin view for whoever runs the school's StoryLab deployment, (4) optional white-labeling (logo, colors). The public marketplace and institutional hub can share 90% of the same infrastructure.
+
+**Effort:** XL human / L CC+gstack
+**Priority:** P2 — strategic; do after teacher #2 onboarding validates the multi-teacher model
+**Depends on:** Multi-teacher platform (shipped), teacher profile builder (shipped)
+
+---
+
+## TODO-43: AI translation layer — cross-language tutoring
+
+**What:** Real-time or near-real-time translation woven into the tutoring experience, so a student and teacher who don't share a native language can work together fluently. A student in Flushing (Chinese-speaking household) should be able to work with a tutor in Seoul (Korean native, English-proficient) without language being the barrier.
+
+**Why:** The best tutor for a given student may not be in their city or country or language. The platform's deepest value proposition is matching the right expertise to the right student — if language is a wall, the platform has artificially constrained its own market. AI makes that wall removable in a way that wasn't possible three years ago. This is a genuine 10x feature: no tutoring platform has built real cross-language tutoring. It's a wedge into global markets.
+
+**Pros:** Opens the teacher supply side globally (dramatically increases the number of qualified teachers on the platform). Opens the student demand side globally (students anywhere can access teachers anywhere). Strong differentiation — no competitor has this. Naturally viral: a tutor in Seoul with 10 American students tells other Seoul tutors.
+
+**Cons:** Translation quality for nuanced feedback on essays or creative writing is harder than translation for factual subjects. The latency and quality bar for real-time session translation is high. Trust: students and parents need to believe the translated feedback is accurate. Privacy: who has access to session transcripts for translation?
+
+**Context:** Two distinct translation surfaces: (1) the AI chat coach in /lab — relatively easy, the LLM can respond in the student's language while the teacher's agent prompt remains in English; (2) live video sessions — harder, requires real-time audio translation or async transcript translation post-session. The /lab surface is the right place to start. The student's preferred language could be set in their profile, and the AI coach responds accordingly regardless of the teacher's native language.
+
+**Effort:** M human / S CC+gstack (for /lab chat layer); XL human / L CC+gstack (for live session translation)
+**Priority:** P3 — vision-level; do after B2B model is validated (TODO-42)
+**Depends on:** Student profile (shipped), /lab chat (shipped), video sessions (shipped)
