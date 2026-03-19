@@ -1,6 +1,6 @@
 # TODOs
 
-Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35.
+Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35. Updated 2026-03-19 — teacher profile builder review (x2 new: TODO-36, TODO-37; TODO-34 and TODO-35 superseded by accepted scope). Added 2026-03-19: TODO-38 (enterprise/districts demo flow), TODO-39 (student learning dashboard — 10x vision).
 
 ---
 
@@ -584,3 +584,75 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 **Context:** The teacher settings page is at `app/dashboard/settings/page.tsx`. The storefront is rendered by `app/teachers/[slug]/_components/TeacherStorefrontContent.tsx`. The `teachers` table has: `name`, `slug`, `subject`, `bio`, `photo_url`, `quote`, `storefront_published`, `accepting_bookings`, `google_calendar_id`, `pricing_config`. Currently `photo_url` is set manually (admin side only). The teacher onboarding wizard (`app/teacher/onboarding/page.tsx`) only captures basic info and does not have a preview.
 
 **Depends on:** Supabase Storage bucket for teacher photo uploads (not yet configured). TODO-34 (pricing guidance) could be woven into this same flow.
+
+---
+
+## TODO-36: Pricing guidance in profile builder wizard
+
+**What:** The profile builder's Pricing tab currently shows a bare number field for session price. Build a full guidance flow: benchmarks against comparable tutors in the subject/market, suggested tiered pricing structure (AI-only access vs. live sessions), and an hours-to-recoup calculator for teachers setting their rates.
+
+**Why:** Teachers have no reference point for pricing their knowledge. Getting this wrong destroys retention — too high scares parents off, too low devalues the teacher and the platform. This is the difference between teachers feeling confident at activation vs. guessing and second-guessing.
+
+**Pros:** Removes a major friction point in teacher activation. Gives the platform leverage to set healthy pricing norms (prevent race-to-bottom). Aligned financial incentives = more engaged, longer-retained teachers.
+
+**Cons:** Pricing is sensitive — teachers may resist being told what to charge. Requires market data or benchmarks to be credible. Revenue share model must be defined before this is useful.
+
+**Context:** The profile builder wizard ships first (accepted scope in 2026-03-19 review). This extends the Pricing tab of that wizard. The `pricing_config` JSONB on `teachers` can hold whatever structure we land on. Currently it's set manually with no guidance. Entry point: `app/dashboard/settings/` Pricing tab. Supersedes and extends TODO-34.
+
+**Effort:** M human / S CC+gstack
+**Priority:** P2
+**Depends on:** Profile builder wizard (accepted scope, 2026-03-19). Revenue share model definition.
+
+---
+
+## TODO-37: Teacher storefront analytics
+
+**What:** Simple per-teacher analytics: pageviews on `/teachers/[slug]`, CTA click counts ("Book a session" clicks, "Try my AI coach" clicks, contact form submissions). Visible to the teacher in their dashboard.
+
+**Why:** Once teacher pages are self-serve and live, teachers will immediately want to know if their storefront is working. Without this, they have no signal to improve their profile. It's also a retention tool — seeing "42 parents viewed your page this month" is motivating.
+
+**Pros:** Closes the feedback loop for teacher activation. Identifies which storefront sections convert parents (data to improve templates). Low implementation cost relative to the activation value.
+
+**Cons:** Adds a new data pipeline (events → aggregate → display). GDPR consideration for EU users. Need to decide: first-party tracking or a lightweight external tool (Plausible, etc.).
+
+**Context:** The storefront page at `app/teachers/[slug]/page.tsx` is the right place to instrument. The teacher dashboard is at `app/dashboard/`. The simplest implementation: a `storefront_events` table (teacher_id, event_type, created_at) with a server action on page load + CTA clicks. No external tool needed for v1.
+
+**Effort:** M human / S CC+gstack
+**Priority:** P2
+**Depends on:** Teacher profile builder shipping (accepted scope, 2026-03-19). Nothing else.
+
+---
+
+## TODO-38: "Book a Demo" flow for school districts and educational organizations
+
+**What:** Build a dedicated landing page and inquiry flow for institutional buyers — school districts, tutoring centers, and edtech companies interested in licensing or deploying the platform.
+
+**Why:** Individual teacher sign-ups are the current acquisition model, but institutional buyers represent a completely different (and much higher-value) sales motion. A district deploying the platform for 500 students is a fundamentally different conversation than a solo tutor signing up. Without a dedicated entry point, these buyers have nowhere to land and no way to signal intent.
+
+**Pros:** Opens a B2B revenue channel alongside the B2C tutor marketplace. A short intake form (org size, use case, timeline) pre-qualifies leads before any human time is spent. The page also signals platform maturity to institutional evaluators who may stumble across the site.
+
+**Cons:** Requires thinking through the institutional product offering (is it white-label? a managed deployment? per-seat pricing?) before the page can be written with conviction. Launching a vague "contact us" page is worse than no page. Should wait until there is at least one real institutional conversation to draw from.
+
+**Context:** The entry point is a new route at `/enterprise` or `/schools` (TBD). The page should communicate the platform's value to administrators and curriculum directors — different audience than the teacher-facing storefront. The intake form should collect: org name, role, student count, primary use case, timeline. Route submissions to a separate email or CRM rather than the existing `storylab.ivy@gmail.com` contact form. Consider a separate Supabase table (`demo_requests`) or just a Notion form integration.
+
+**Effort:** S human / S CC+gstack
+**Priority:** P2
+**Depends on:** At least one real institutional conversation to inform what the page should say.
+
+---
+
+## TODO-39: Student learning dashboard — the 10x product vision
+
+**What:** A unified student dashboard where all of a student's learning lives: homework assignments, drafts, feedback history, session notes, goal tracking, and AI coach interactions — all in one place, not scattered across email threads and Google Docs.
+
+**Why:** The current `/lab` is an AI essay coach. That's a tool. The 10x product is the place students *live* during their academic life — a second brain for learning that happens to have a great AI tutor built in. Right now the platform is teacher-centric (teachers have storefronts, settings, dashboards). The student experience is thin: sign in, chat, leave. The long-term defensibility of the platform is a student who has 2 years of their learning history in one place — that's not something they'll abandon for a cheaper alternative.
+
+**Pros:** Massive retention driver — the more history a student has in the platform, the stickier it becomes. Unlocks new revenue vectors (premium plans, school licensing based on student seats). Turns the AI coach from a chat window into an academic advisor with full context on the student's goals, progress, and weak spots over time.
+
+**Cons:** This is a large product surface. The risk is building a generic LMS when the differentiated value is the AI + teacher quality. Needs careful scoping to avoid becoming homework management software. The right frame is: "the place where a student's relationship with their teacher and their AI coach lives" — not "digital binder."
+
+**Context:** The foundation already exists: `student_profiles` (goals, target schools, voice), `conversations` + `conversation_messages` (full AI chat history), `sessions` (video coaching records with transcripts), `portraits` (AI-generated student portraits after each session). The data model is largely there. What's missing is a student-facing UI that surfaces all of it coherently. The vision: a student opens their dashboard and sees their essay drafts in progress, their next session, their most recent AI coach feedback, and their portrait — all in one view. Start with the most valuable slice: surfacing session history and portraits to students (currently only visible to teachers in `/admin/dashboard`).
+
+**Effort:** XL human / L CC+gstack
+**Priority:** P3 — directionally important but not the next thing to build
+**Depends on:** Teacher profile builder (so students have real teacher relationships to anchor to). Multi-student support already exists.

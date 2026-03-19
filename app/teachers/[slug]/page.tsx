@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createStaticClient } from "@/lib/supabase/server";
 import { TeacherStorefrontContent } from "./_components/TeacherStorefrontContent";
+import type { StorefrontContent } from "@/lib/types/storefront";
 
 export const revalidate = 60;
 
@@ -45,7 +46,7 @@ export default async function TeacherStorefrontPage({ params }: Props) {
 
   const { data: teacher } = await supabase
     .from("teachers")
-    .select("id, name, slug, subject, bio, photo_url, quote, storefront_published, accepting_bookings")
+    .select("id, name, slug, subject, bio, photo_url, quote, storefront_published, accepting_bookings, ai_coaching_enabled, live_sessions_enabled, primary_emphasis, storefront_content")
     .eq("slug", slug)
     .eq("storefront_published", true)
     .maybeSingle();
@@ -56,7 +57,15 @@ export default async function TeacherStorefrontPage({ params }: Props) {
     <TeacherStorefrontContent
       teacherSlug={teacher.slug}
       teacherName={teacher.name}
+      teacherBio={teacher.bio}
+      teacherPhotoUrl={teacher.photo_url}
+      teacherQuote={teacher.quote}
+      teacherSubject={teacher.subject}
       acceptingBookings={teacher.accepting_bookings ?? false}
+      aiCoachingEnabled={teacher.ai_coaching_enabled ?? false}
+      liveSessionsEnabled={teacher.live_sessions_enabled ?? false}
+      primaryEmphasis={(teacher.primary_emphasis as 'ai' | 'live' | 'equal') ?? 'ai'}
+      storefrontContent={teacher.storefront_content as StorefrontContent | null}
     />
   );
 }

@@ -6,177 +6,39 @@ import Image from "next/image";
 import { TutorStickySection, type Tutor } from "@/components/TutorCard";
 import { LogoMarquee } from "@/components/LogoMarquee";
 import { AiPreviewWidget } from "@/components/AiPreviewWidget";
+import type { StorefrontContent, CaseStudy as StorefrontCaseStudy, PhilosophyStep } from "@/lib/types/storefront";
 
-// ─── Data ────────────────────────────────────────────────────────────────────
+// ─── Internal Case Study shape (used by modal) ────────────────────────────────
 
-const caseStudySummaries = [
-  {
-    slug: "jason",
-    initial: "J",
-    name: "Jason",
-    grade: "Senior",
-    applying: "Yale, Columbia, Dartmouth",
-    outcome: "Accepted — Dartmouth",
-    color: "bg-[#2C4A3E]",
-    teaser:
-      "His first essay hit every note: leadership, service, resilience. By the second paragraph, you could predict every sentence coming. That was the problem.",
-    fullTitle: "The Predictable Essay",
-    fullBefore: `Jason's first draft was technically impressive. He'd written about leading the debate team through a losing season — finding resilience, growing as a leader, turning things around. The structure was clean. The sentences were polished. Every adult who read it said it was good.
+interface CaseStudy {
+  index: number;
+  initial: string;
+  name: string;
+  outcome: string;
+  color: string;
+  teaser: string;
+  fullTitle: string;
+  fullBefore: string;
+  fullAfter: string;
+}
 
-That was the problem. Every sentence predicted the next. The essay moved exactly the way you expected it to: adversity → reflection → growth. There was no texture, no surprise, no moment where you felt you were actually inside his mind. You could have written it about almost any student.`,
-    fullAfter: `The essay that got Jason into Dartmouth was about twenty minutes he spent alone in a parking lot after a tournament loss — not strategizing for next time, not converting the experience into a lesson. Just standing there, replaying the round in his head, letting himself actually feel what it felt like to fail.
+const CASE_STUDY_COLORS = ["bg-[#2C4A3E]", "bg-[#2A3F5A]", "bg-[#3A4A2A]"];
 
-It was about the specific way he processes a loss. The cold air. The sound of other teams celebrating nearby. The strange calm that came after he stopped trying to make the loss mean something and just let it exist.
+function mapCaseStudies(raw: StorefrontCaseStudy[]): CaseStudy[] {
+  return raw.map((cs, i) => ({
+    index: i,
+    initial: cs.student_label.charAt(0).toUpperCase(),
+    name: cs.student_label,
+    outcome: cs.outcome,
+    color: CASE_STUDY_COLORS[i % CASE_STUDY_COLORS.length],
+    teaser: cs.teaser,
+    fullTitle: cs.student_label,
+    fullBefore: cs.challenge,
+    fullAfter: cs.what_changed,
+  }));
+}
 
-Admissions officers don't remember the essays about resilience. They remember the essays that show them what it actually feels like to be you.`,
-  },
-  {
-    slug: "sarah",
-    initial: "S",
-    name: "Sarah",
-    grade: "Senior",
-    applying: "Stanford, Yale, Northwestern, Columbia",
-    outcome: "Accepted — Princeton",
-    color: "bg-[#2A3F5A]",
-    teaser:
-      "Her essay was beautifully written — clean, controlled, and emotionally distant. After 600 words, you didn't know her any better than at the top of the page.",
-    fullTitle: "The Beautiful Distance",
-    fullBefore: `Sarah was a genuinely talented writer. Her essay about her grandmother was the most technically accomplished draft I'd seen that season. Every sentence was precise. Every image earned. Every adult in her life loved it.
-
-But after 600 words, you still didn't know Sarah. The essay was controlled in a way that kept you at arm's length — careful, measured, protected. She was writing about something rather than from inside it. She was showing you a relationship without showing you what that relationship cost her.`,
-    fullAfter: `The essay that got Sarah into Princeton was about a specific Tuesday afternoon. Her grandmother had called her by the wrong name — then caught herself immediately, and they'd both pretended it hadn't happened.
-
-That moment in the room. The silence afterward. The way Sarah realized she was trying to protect her grandmother from something her grandmother already knew. The particular shame of loving someone and not knowing what to do with it.
-
-It was the essay she'd been afraid to write. Not because the subject was too personal — but because it required her to admit something she'd been quietly carrying. When she finally wrote it, it was the most honest thing on her application.`,
-  },
-  {
-    slug: "mia",
-    initial: "M",
-    name: "Mia",
-    grade: "Senior",
-    applying: "Emory, Georgetown, UVA, Boston University",
-    outcome: "Accepted — Northwestern",
-    color: "bg-[#3A4A2A]",
-    teaser:
-      "Her counselor told her not to write about filmmaking. So she wrote about everything else — and none of it was the thing that actually made her, her.",
-    fullTitle: "The Wrong Essay",
-    fullBefore: `Mia's counselor told her not to write about filmmaking. Too niche. Wouldn't resonate with most readers. So she wrote five other drafts. One about resilience after her parents' divorce. One about community and a library volunteering program. One about professional growth from a summer internship.
-
-Every essay was fine. None of them was Mia. You could read all five and not know what she actually cared about. The essays were written to seem relatable to an imagined reader — which is exactly the wrong instinct.`,
-    fullAfter: `The essay that got Mia into Northwestern was about the gap between what she sees in her head and what she can actually make with a camera.
-
-Not a story of success or mastery. A story of a problem she hasn't solved — and may never solve. The specific frustration of knowing exactly what you want a shot to feel like and not being able to get there. And why that gap, instead of stopping her, is the thing that keeps her coming back.
-
-Her counselor was wrong. Every admissions officer who read it immediately recognized someone with a real relationship to a craft. That recognition — of a person who actually cares about something, deeply, in a specific way — is what gets students admitted.`,
-  },
-];
-
-type CaseStudy = typeof caseStudySummaries[number];
-
-const philosophy: {
-  number: string;
-  belief: React.ReactNode;
-  difference: React.ReactNode;
-}[] = [
-  {
-    number: "01",
-    belief: (
-      <>
-        Admissions officers are{" "}
-        <strong className="font-semibold text-zinc-900">humanists at heart</strong>{" "}
-        and value humanities-oriented thinking in the application.
-      </>
-    ),
-    difference: (
-      <>
-        I train students, even those with STEM backgrounds, to infuse{" "}
-        <strong className="font-semibold text-emerald-800">humanistic thinking and reflection</strong>{" "}
-        in their applications.
-      </>
-    ),
-  },
-  {
-    number: "02",
-    belief: (
-      <>
-        Achievements get you in the running. Writing that dares to be{" "}
-        <strong className="font-semibold text-zinc-900">emotional and vulnerable</strong>{" "}
-        gets you admitted.
-      </>
-    ),
-    difference: (
-      <>
-        I push students beyond surface-level &ldquo;I-learned-x&rdquo; sentences to write{" "}
-        <strong className="font-semibold text-emerald-800">radically vulnerable narratives</strong>{" "}
-        admissions officers can&rsquo;t forget.
-      </>
-    ),
-  },
-  {
-    number: "03",
-    belief: (
-      <>
-        Writing is an opaque and difficult process that takes{" "}
-        <strong className="font-semibold text-zinc-900">months, if not years</strong>, to see results.
-        AI tools only make you{" "}
-        <strong className="font-semibold text-zinc-900">less distinguishable</strong>.
-      </>
-    ),
-    difference: (
-      <>
-        I teach students{" "}
-        <strong className="font-semibold text-emerald-800">the process of writing itself</strong>,
-        which sets them up for success long after the admissions process is over.
-      </>
-    ),
-  },
-  {
-    number: "04",
-    belief: (
-      <>
-        By 12th grade, many parts of the application are too late to change. Starting{" "}
-        <strong className="font-semibold text-zinc-900">as early as possible</strong> to craft a{" "}
-        <strong className="font-semibold text-zinc-900">unique narrative</strong> is a must.
-      </>
-    ),
-    difference: (
-      <>
-        Long before 12th grade, I push students away from{" "}
-        <strong className="font-semibold text-emerald-800">cliché narratives</strong> and coach them
-        to build{" "}
-        <strong className="font-semibold text-emerald-800">strong relationships with teachers</strong>.
-      </>
-    ),
-  },
-];
-
-const testimonials = [
-  {
-    quote:
-      "He didn't just comment on my ideas broadly; he engaged with individual sentences, pushing me to sharpen my thinking and present myself as clearly and authentically as possible.",
-    attribution: "Student attending University of Chicago",
-    type: "student",
-  },
-  {
-    quote:
-      "Your activities list already speaks for itself — your essays should reveal who you actually are. Sam helped me figure out what made my story genuinely mine.",
-    attribution: "Student attending Northwestern",
-    type: "student",
-  },
-  {
-    quote:
-      "What I want to emphasize most is Sam's genuine sense of care. He communicated consistently, gave thoughtful feedback, and made the whole process feel less like a grind and more like something I could actually be proud of. My mom noticed it too — his warm, encouraging messages meant a lot to her throughout the process. If anything, the application season was harder on her than it was on me, and Sam made sure she felt supported as well.",
-    attribution: "Student attending Vanderbilt",
-    type: "student",
-  },
-  {
-    quote:
-      "Sam is a teacher who truly listens to what a student is wrestling with and draws out exactly what they need. I'm certain that any family who works with him will find their child going through the college process with a healthy, grounded, and even happy mindset.",
-    attribution: "Parent of a Washington University in St Louis student",
-    type: "parent",
-  },
-];
+// ─── Static data (platform-level, not teacher-specific) ──────────────────────
 
 const tutors: Tutor[] = [
   {
@@ -351,8 +213,10 @@ function PhilosophyItemEl({
 
 function PhilosophyScrollSection({
   sectionRefCallback,
+  steps,
 }: {
   sectionRefCallback: (el: HTMLElement | null) => void;
+  steps: PhilosophyStep[];
 }) {
   const wrapperRef = useRef<HTMLElement | null>(null);
   const [step, setStep] = useState(0);
@@ -376,6 +240,32 @@ function PhilosophyScrollSection({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const stepA = steps[0];
+  const stepB = steps[1];
+
+  // Render plain text body as paragraphs
+  function renderBody(body: string) {
+    return body.split("\n\n").map((para, i) => (
+      <p key={i} className="text-base leading-relaxed text-zinc-600">
+        {para}
+      </p>
+    ));
+  }
+
+  function renderBodyDiff(body: string) {
+    return body.split("\n\n").map((para, i) => (
+      <p key={i} className="text-base leading-relaxed text-zinc-700">
+        {para}
+      </p>
+    ));
+  }
+
+  // Fallback photos if not in data
+  const photoA = stepA?.photo_url ?? "/in%20the%20crowd.png";
+  const photoB = stepB?.photo_url ?? "/photo-1.png";
+  const labelA = stepA?.label ?? "My Philosophy";
+  const labelB = stepB?.label ?? "How I'm Different";
+
   return (
     <section
       ref={setRef}
@@ -387,34 +277,33 @@ function PhilosophyScrollSection({
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
             My Approach
           </p>
-          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
-            My Philosophy
-          </p>
-          <div className="relative mt-4 mb-4 h-80 overflow-hidden rounded-xl">
-            <Image src="/in%20the%20crowd.png" alt="" fill className="object-contain" />
-          </div>
-          <div className="mt-2 space-y-1">
-            {philosophy.map((item) => (
-              <PhilosophyItemEl key={item.number} number={item.number} text={item.belief} />
-            ))}
-          </div>
-          <div className="my-10 border-t border-zinc-200" />
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
-            How I&rsquo;m Different
-          </p>
-          <div className="relative mt-4 mb-4 h-80 overflow-hidden rounded-xl">
-            <Image src="/photo-1.png" alt="" fill className="object-contain" />
-          </div>
-          <div className="mt-2 space-y-1">
-            {philosophy.map((item) => (
-              <PhilosophyItemEl
-                key={item.number}
-                number={item.number}
-                text={item.difference}
-                isDifference
-              />
-            ))}
-          </div>
+          {stepA && (
+            <>
+              <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
+                {labelA}
+              </p>
+              <div className="relative mt-4 mb-4 h-80 overflow-hidden rounded-xl">
+                <Image src={photoA} alt="" fill className="object-contain" />
+              </div>
+              <div className="mt-2 space-y-4">
+                {renderBody(stepA.body)}
+              </div>
+            </>
+          )}
+          {stepB && (
+            <>
+              <div className="my-10 border-t border-zinc-200" />
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
+                {labelB}
+              </p>
+              <div className="relative mt-4 mb-4 h-80 overflow-hidden rounded-xl">
+                <Image src={photoB} alt="" fill className="object-contain" />
+              </div>
+              <div className="mt-2 space-y-4">
+                {renderBodyDiff(stepB.body)}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -432,7 +321,7 @@ function PhilosophyScrollSection({
                     step === 0 ? "opacity-100" : "opacity-0"
                   }`}
                 >
-                  My Philosophy
+                  {labelA}
                 </h2>
                 <h2
                   style={{ gridArea: "1 / 1" }}
@@ -440,7 +329,7 @@ function PhilosophyScrollSection({
                     step === 1 ? "opacity-100" : "opacity-0"
                   }`}
                 >
-                  How I&rsquo;m Different
+                  {labelB}
                 </h2>
               </div>
               <div className="mt-6" style={{ display: "grid" }}>
@@ -450,7 +339,7 @@ function PhilosophyScrollSection({
                     step === 0 ? "opacity-100" : "opacity-0"
                   }`}
                 >
-                  <Image src="/in%20the%20crowd.png" alt="" fill className="object-contain" />
+                  <Image src={photoA} alt="" fill className="object-contain" />
                 </div>
                 <div
                   style={{ gridArea: "1 / 1" }}
@@ -458,7 +347,7 @@ function PhilosophyScrollSection({
                     step === 1 ? "opacity-100" : "opacity-0"
                   }`}
                 >
-                  <Image src="/photo-1.png" alt="" fill className="object-contain" />
+                  <Image src={photoB} alt="" fill className="object-contain" />
                 </div>
               </div>
               <div className="mt-6 flex gap-2">
@@ -467,31 +356,26 @@ function PhilosophyScrollSection({
               </div>
             </div>
             <div style={{ display: "grid" }}>
-              <div
-                style={{ gridArea: "1 / 1" }}
-                className={`space-y-1 transition-all duration-[250ms] ease-out ${
-                  step === 0 ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
-                }`}
-              >
-                {philosophy.map((item) => (
-                  <PhilosophyItemEl key={item.number} number={item.number} text={item.belief} />
-                ))}
-              </div>
-              <div
-                style={{ gridArea: "1 / 1" }}
-                className={`space-y-1 transition-all duration-[250ms] ease-out ${
-                  step === 1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
-                }`}
-              >
-                {philosophy.map((item) => (
-                  <PhilosophyItemEl
-                    key={item.number}
-                    number={item.number}
-                    text={item.difference}
-                    isDifference
-                  />
-                ))}
-              </div>
+              {stepA && (
+                <div
+                  style={{ gridArea: "1 / 1" }}
+                  className={`space-y-4 transition-all duration-[250ms] ease-out ${
+                    step === 0 ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
+                  }`}
+                >
+                  {renderBody(stepA.body)}
+                </div>
+              )}
+              {stepB && (
+                <div
+                  style={{ gridArea: "1 / 1" }}
+                  className={`space-y-4 transition-all duration-[250ms] ease-out ${
+                    step === 1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
+                  }`}
+                >
+                  {renderBodyDiff(stepB.body)}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -675,15 +559,32 @@ function ProgressDots({
   );
 }
 
-// ─── Main Component ────────────────────────────────────────────────────────────
+// ─── Props ────────────────────────────────────────────────────────────────────
 
 interface TeacherStorefrontContentProps {
   teacherSlug: string;
   teacherName: string;
+  teacherBio?: string | null;
+  teacherPhotoUrl?: string | null;
+  teacherQuote?: string | null;
+  teacherSubject?: string | null;
   acceptingBookings?: boolean;
+  aiCoachingEnabled?: boolean;
+  liveSessionsEnabled?: boolean;
+  primaryEmphasis?: 'ai' | 'live' | 'equal';
+  storefrontContent?: StorefrontContent | null;
 }
 
-export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBookings = false }: TeacherStorefrontContentProps) {
+// ─── Main Component ────────────────────────────────────────────────────────────
+
+export function TeacherStorefrontContent({
+  teacherSlug,
+  teacherName,
+  teacherPhotoUrl,
+  teacherSubject,
+  acceptingBookings = false,
+  storefrontContent,
+}: TeacherStorefrontContentProps) {
   const sectionRefs = useRef<(HTMLElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedStudent, setSelectedStudent] = useState<CaseStudy | null>(null);
@@ -709,6 +610,20 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
     sectionRefs.current[idx]?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Derived data from storefrontContent
+  const heroHeadline = storefrontContent?.hero?.headline ?? "Your story is already there. Let me help you find it.";
+  const heroSubheadline = storefrontContent?.hero?.subheadline ?? null;
+  const storyTitle = storefrontContent?.story?.title ?? `Hi, I'm ${teacherName.split(" ")[0]}.`;
+  const storyBody = storefrontContent?.story?.body ?? null;
+  const storyPhotoUrl = storefrontContent?.story?.photo_url ?? null;
+  const philosophySteps = storefrontContent?.philosophy?.steps ?? [];
+  const rawCaseStudies = storefrontContent?.case_studies ?? [];
+  const caseStudies = mapCaseStudies(rawCaseStudies);
+  const testimonials = storefrontContent?.testimonials ?? [];
+
+  const heroPhoto = teacherPhotoUrl ?? "/tutor%20photos/sam/sam_headshot.jpg";
+  const subjectLabel = teacherSubject ?? "Tutor";
+
   return (
     <>
       <ProgressDots activeIndex={activeIndex} onDotClick={scrollToSection} />
@@ -733,8 +648,8 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
               {/* Left: Photo */}
               <div className="relative aspect-square overflow-hidden rounded-[4px] max-w-sm mx-auto md:max-w-none md:mx-0">
                 <Image
-                  src="/tutor%20photos/sam/sam_headshot.jpg"
-                  alt="Sam Ahn"
+                  src={heroPhoto}
+                  alt={teacherName}
                   fill
                   className="object-cover object-top"
                   priority
@@ -746,7 +661,7 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
                 <p
                   className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#E8D5B0] mb-4"
                 >
-                  College Essay Coach
+                  {subjectLabel}
                 </p>
                 <h1
                   className="text-[clamp(2.4rem,4vw,3.5rem)] font-bold leading-[1.1] tracking-tight text-white mb-4"
@@ -754,22 +669,24 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
                 >
                   {teacherName}
                 </h1>
-                <p
-                  className="text-base text-white/70 mb-4"
-                  style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
-                >
-                  Yale &rsquo;25 · Magna Cum Laude · Phi Beta Kappa
-                </p>
+                {heroSubheadline && (
+                  <p
+                    className="text-base text-white/70 mb-4"
+                    style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
+                  >
+                    {heroSubheadline}
+                  </p>
+                )}
                 <p
                   className="text-lg italic leading-relaxed text-white/80 mb-8"
                   style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
                 >
-                  Your story is already there. Let me help you find it.
+                  {heroHeadline}
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <a
                     href="#preview"
-                    aria-label="Try a free message with Sam"
+                    aria-label="Try a free message"
                     className="inline-flex items-center rounded-[3px] bg-white px-6 py-3 text-sm font-medium text-[#2C4A3E] hover:bg-[#DEEEE9] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                     onClick={(e) => {
                       e.preventDefault();
@@ -800,47 +717,31 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
           className="scroll-snap-section section-reveal flex min-h-[100svh] items-center bg-white/50"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-16">
-            <div className="grid items-center gap-16 md:grid-cols-2">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl md:order-1">
-                <Image
-                  src="/StoryLab%20Sam%20talking.png"
-                  alt="Sam Ahn"
-                  fill
-                  className="object-cover object-center"
-                />
-              </div>
-              <div className="md:order-2">
+            <div className={`grid items-center gap-16 ${storyPhotoUrl ? "md:grid-cols-2" : ""}`}>
+              {storyPhotoUrl && (
+                <div className="relative aspect-[4/3] overflow-hidden rounded-2xl md:order-1">
+                  <Image
+                    src={storyPhotoUrl}
+                    alt={teacherName}
+                    fill
+                    className="object-cover object-center"
+                  />
+                </div>
+              )}
+              <div className={storyPhotoUrl ? "md:order-2" : ""}>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
                   My Story
                 </p>
                 <h2 className="mt-5 text-3xl font-semibold leading-[1.2] tracking-tight text-zinc-950 sm:text-4xl">
-                  Hi, I&rsquo;m Sam.
+                  {storyTitle}
                 </h2>
-                <div className="mt-6 space-y-4 text-base leading-relaxed text-zinc-600">
-                  <p>
-                    By application season, I hadn&rsquo;t won any national awards, nor had I founded
-                    an organization that made a huge social impact. I wasn&rsquo;t mobilizing
-                    movements; I was nowhere to be found in online media or press.
-                  </p>
-                  <p>
-                    By the standards of high-achieving students aiming for top schools, I was not
-                    an &ldquo;impressive&rdquo; student. All I had done was get good grades and
-                    participate in school activities.
-                  </p>
-                  <p>
-                    And yet, come March my senior year, I got into Harvard, Yale, Stanford, and
-                    Princeton — the only schools I had applied to.
-                  </p>
-                  <p>
-                    I started StoryLab to teach students the philosophy that got me in.
-                  </p>
-                  <p>
-                    At Yale, I graduated <em>magna cum laude</em> and Phi Beta Kappa with a B.A. in
-                    Comparative Literature. In college, I wrote for some of the world&rsquo;s biggest
-                    companies alongside former White House speechwriters, and evaluated high school
-                    seniors for the Yale admissions office.
-                  </p>
-                </div>
+                {storyBody ? (
+                  <div className="mt-6 space-y-4 text-base leading-relaxed text-zinc-600">
+                    {storyBody.split("\n\n").map((para, i) => (
+                      <p key={i}>{para}</p>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
@@ -872,6 +773,7 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
         {/* ── 3. PHILOSOPHY (scroll-driven) ───────────────────────────── */}
         <PhilosophyScrollSection
           sectionRefCallback={(el) => { sectionRefs.current[3] = el; }}
+          steps={philosophySteps}
         />
 
         {/* ── 4. WHY IT MATTERS (scroll-driven) ───────────────────────── */}
@@ -880,56 +782,57 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
         />
 
         {/* ── 5. STUDENT STORIES ──────────────────────────────────────── */}
-        <section
-          ref={(el) => { sectionRefs.current[5] = el; }}
-          id="cases"
-          className="scroll-snap-section section-reveal min-h-[100svh] bg-white/50 py-24"
-        >
-          <div className="mx-auto w-full max-w-6xl px-6">
-            <div className="max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-                Student Stories
-              </p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-                Meet some of my students.
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-zinc-500">
-                Every student who arrives has something real to say. They just haven&rsquo;t found it&nbsp;yet.
-              </p>
-            </div>
+        {caseStudies.length > 0 && (
+          <section
+            ref={(el) => { sectionRefs.current[5] = el; }}
+            id="cases"
+            className="scroll-snap-section section-reveal min-h-[100svh] bg-white/50 py-24"
+          >
+            <div className="mx-auto w-full max-w-6xl px-6">
+              <div className="max-w-2xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
+                  Student Stories
+                </p>
+                <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+                  Meet some of my students.
+                </h2>
+                <p className="mt-4 text-base leading-relaxed text-zinc-500">
+                  Every student who arrives has something real to say. They just haven&rsquo;t found it&nbsp;yet.
+                </p>
+              </div>
 
-            <div className="mt-14 grid gap-6 md:grid-cols-3">
-              {caseStudySummaries.map((s) => (
-                <button
-                  key={s.slug}
-                  onClick={() => setSelectedStudent(s)}
-                  className="group flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white text-left transition-all hover:border-zinc-300 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
-                >
-                  <div className="flex items-center gap-4 border-b border-zinc-100 px-6 py-5">
-                    <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${s.color} text-base font-semibold text-white`}>
-                      {s.initial}
+              <div className="mt-14 grid gap-6 md:grid-cols-3">
+                {caseStudies.map((s) => (
+                  <button
+                    key={s.index}
+                    onClick={() => setSelectedStudent(s)}
+                    className="group flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white text-left transition-all hover:border-zinc-300 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
+                  >
+                    <div className="flex items-center gap-4 border-b border-zinc-100 px-6 py-5">
+                      <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${s.color} text-base font-semibold text-white`}>
+                        {s.initial}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-zinc-900">{s.name}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-zinc-900">{s.name}</p>
-                      <p className="text-xs text-zinc-400">{s.grade}</p>
+                    <div className="flex flex-1 flex-col p-6">
+                      <p className="flex-1 text-sm leading-relaxed text-zinc-600">{s.teaser}</p>
+                      <div className="mt-8 flex items-center justify-between">
+                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-medium text-emerald-700">
+                          {s.outcome}
+                        </span>
+                        <span className="text-xs font-medium text-zinc-400 group-hover:text-zinc-700 transition-colors">
+                          Read story →
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex flex-1 flex-col p-6">
-                    <p className="flex-1 text-sm leading-relaxed text-zinc-600">{s.teaser}</p>
-                    <div className="mt-8 flex items-center justify-between">
-                      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-medium text-emerald-700">
-                        {s.outcome}
-                      </span>
-                      <span className="text-xs font-medium text-zinc-400 group-hover:text-zinc-700 transition-colors">
-                        Read story →
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* ── 6. ACCEPTANCES ──────────────────────────────────────────── */}
         <section
@@ -948,41 +851,41 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
         </section>
 
         {/* ── 7. TESTIMONIALS ─────────────────────────────────────────── */}
-        <section
-          ref={(el) => { sectionRefs.current[7] = el; }}
-          id="testimonials"
-          className="scroll-snap-section section-reveal min-h-[100svh] py-24"
-        >
-          <div className="mx-auto w-full max-w-6xl px-6">
-            <div className="max-w-xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-                What Families Say
-              </p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-                In their own words.
-              </h2>
-            </div>
+        {testimonials.length > 0 && (
+          <section
+            ref={(el) => { sectionRefs.current[7] = el; }}
+            id="testimonials"
+            className="scroll-snap-section section-reveal min-h-[100svh] py-24"
+          >
+            <div className="mx-auto w-full max-w-6xl px-6">
+              <div className="max-w-xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
+                  What Families Say
+                </p>
+                <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+                  In their own words.
+                </h2>
+              </div>
 
-            <div className="mt-12 grid gap-6 md:grid-cols-2">
-              {testimonials.map((t, i) => (
-                <figure
-                  key={i}
-                  className={`flex flex-col rounded-2xl border p-8 ${
-                    t.type === "parent" ? "border-zinc-300 bg-zinc-50" : "border-zinc-200 bg-white"
-                  }`}
-                >
-                  <blockquote className="flex-1 text-base leading-relaxed text-zinc-600">
-                    &ldquo;{t.quote}&rdquo;
-                  </blockquote>
-                  <figcaption className="mt-6 flex items-center gap-3">
-                    <div className="h-px flex-1 bg-zinc-200" />
-                    <p className="text-xs font-medium text-zinc-400">{t.attribution}</p>
-                  </figcaption>
-                </figure>
-              ))}
+              <div className="mt-12 grid gap-6 md:grid-cols-2">
+                {testimonials.map((t, i) => (
+                  <figure
+                    key={i}
+                    className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-8"
+                  >
+                    <blockquote className="flex-1 text-base leading-relaxed text-zinc-600">
+                      &ldquo;{t.quote}&rdquo;
+                    </blockquote>
+                    <figcaption className="mt-6 flex items-center gap-3">
+                      <div className="h-px flex-1 bg-zinc-200" />
+                      <p className="text-xs font-medium text-zinc-400">{t.attribution}</p>
+                    </figcaption>
+                  </figure>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* ── 8. MY OFFERINGS ─────────────────────────────────────────── */}
         <section
