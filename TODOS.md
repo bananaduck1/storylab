@@ -1,6 +1,6 @@
 # TODOs
 
-Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35. Updated 2026-03-19 — teacher profile builder review (x2 new: TODO-36, TODO-37; TODO-34 and TODO-35 superseded by accepted scope). Added 2026-03-19: TODO-38 (enterprise/districts demo flow), TODO-39 (student learning dashboard — 10x vision). Added 2026-03-19: TODO-40 (student platform research), TODO-41 (primary_emphasis section ordering). Added 2026-03-19: TODO-42 (B2B institutional hub — private school/org communities), TODO-43 (AI translation layer — cross-language tutoring). Updated 2026-03-19: TODO-42 and TODO-43 expanded with full implementation nuance from /plan-ceo-review SELECTIVE EXPANSION (chosen direction: TODO-42 = Approach C full multi-tenant subdomains; TODO-43 = build ladder A→C→B). Added 2026-03-19: TODO-44 (international teacher payout support). Stripe Connect plan reviewed 2026-03-19 — scope: Connect Express + 20% take-rate + earnings widget + admin revenue table. Implemented 2026-03-19: TODO-28 (Stripe Connect) shipped.
+Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35. Updated 2026-03-19 — teacher profile builder review (x2 new: TODO-36, TODO-37; TODO-34 and TODO-35 superseded by accepted scope). Added 2026-03-19: TODO-38 (enterprise/districts demo flow), TODO-39 (student learning dashboard — 10x vision). Added 2026-03-19: TODO-40 (student platform research), TODO-41 (primary_emphasis section ordering). Added 2026-03-19: TODO-42 (B2B institutional hub — private school/org communities), TODO-43 (AI translation layer — cross-language tutoring). Updated 2026-03-19: TODO-42 and TODO-43 expanded with full implementation nuance from /plan-ceo-review SELECTIVE EXPANSION (chosen direction: TODO-42 = Approach C full multi-tenant subdomains; TODO-43 = build ladder A→C→B). Added 2026-03-19: TODO-44 (international teacher payout support). Stripe Connect plan reviewed 2026-03-19 — scope: Connect Express + 20% take-rate + earnings widget + admin revenue table. Implemented 2026-03-19: TODO-28 (Stripe Connect) shipped. Updated 2026-03-19 — B2B institutional hub CEO review: added TODO-46 (Phase 2 subdomains + branding), TODO-47 (SSO integration), TODO-48 (org analytics caching).
 
 ---
 
@@ -785,3 +785,57 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 **Effort:** M human / S CC+gstack
 **Priority:** P2
 **Depends on:** TODO-28 (Stripe Connect foundation), teacher-student association in student_profiles, teacher_id-scoped /lab subscription model
+
+---
+
+## TODO-46: Phase 2 — B2B subdomain routing + per-org branding
+
+**What:** Add `schoolname.storylab.co` wildcard subdomain routing and per-org branding (logo, primary color applied to CSS tokens). Phase 1 ships `/org/[slug]` path-based routing; Phase 2 promotes orgs to their own subdomains.
+
+**Why:** Institutional buyers respond strongly to "this is your school's platform" — the subdomain makes it feel like the institution owns it. Phase 1 validates the B2B sales motion; Phase 2 ships when the first paying customer signs and wants the full white-label experience.
+
+**Pros:** Strong institutional brand signal. Per-org branding tokens already stubbed in Phase 1 schema (`logo_url`, `primary_color` on `organizations`). Middleware already handles org resolution — subdomain adds one lookup at the top.
+
+**Cons:** One-way door infrastructure change (DNS + Vercel wildcard domain config). Only trigger when there's a real paying customer.
+
+**Context:** Vercel: add `*.storylab.co` wildcard domain. Next.js middleware: extract `host` header → parse subdomain → resolve org from `organizations.slug` → inject into request headers. Per-org branding: read `primary_color`/`logo_url` from org row, expose as CSS custom properties on `<html>` overriding default DESIGN.md tokens for org-scoped pages.
+
+**Effort:** M human / S CC+gstack
+**Priority:** P2 — trigger on first paying institutional customer
+**Depends on:** TODO-42 Phase 1 (B2B institutional hub, org data model)
+
+---
+
+## TODO-47: SSO integration — Google Workspace / Microsoft 365
+
+**What:** Allow institutional users to log in via their school-issued Google or Microsoft account. Supabase supports both OAuth providers natively.
+
+**Why:** A common enterprise IT requirement. Many schools mandate institutional accounts for third-party tools. Can be a deal-breaker for district-level sales (TODO-38).
+
+**Pros:** Unlocks enterprise/district sales. Low effort — Supabase OAuth config + minor UI change. Domain-based auto-join (Phase 1) works naturally: email domain is verified by Google/Microsoft.
+
+**Cons:** Requires registering StoryLab as an OAuth app in Google Cloud Console and Microsoft Azure AD. Only needed for enterprise tier.
+
+**Context:** Supabase: enable Google and Microsoft OAuth providers in dashboard. Auth callback at `app/auth/callback/route.ts` requires no changes. UI: add "Sign in with Google"/"Sign in with Microsoft" buttons to login page, conditionally shown when joining an org (`?org=slug` param).
+
+**Effort:** S human / S CC+gstack
+**Priority:** P3 — enterprise tier only; defer until TODO-38 (districts) is in scope
+**Depends on:** TODO-42 (B2B institutional hub), TODO-46 (Phase 2 subdomains, optional)
+
+---
+
+## TODO-48: Org analytics caching for large cohorts
+
+**What:** Pre-compute daily analytics snapshots for each org into an `org_analytics_cache` table, updated by a cron job. Phase 1 ships with live aggregation queries; this is the scaling fix for orgs with 50+ students.
+
+**Why:** Live aggregation across conversations, usage_logs, and sessions filtered by org_id (via student JOIN) becomes slow for large orgs. Pre-computed snapshot eliminates query cost on every admin page load.
+
+**Pros:** Sub-10ms analytics page load regardless of org size. Cron pattern already exists (`vercel.json` crons). Simple daily INSERT.
+
+**Cons:** Analytics are 24h stale (acceptable for admin dashboards). Adds a cron dependency.
+
+**Context:** Schema: `org_analytics_cache(org_id, date, student_count, active_students_7d, session_count_30d, lab_messages_30d)`. Cron: `/api/cron/compute-org-analytics`, daily at 14:00 UTC. Trigger this when first large org (50+ students) reports slow analytics load.
+
+**Effort:** S human / S CC+gstack
+**Priority:** P3 — trigger when first large org (50+ students) hits the platform
+**Depends on:** TODO-42 (B2B institutional hub, Phase 1)

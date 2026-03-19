@@ -39,26 +39,30 @@
 
 ## Typography
 
-| Role | Font | Rationale |
-|---|---|---|
-| Display / Hero | **Cooper** (self-hosted, `/public/Cooper/`) | The brand font. Round serifs, warmth, distinctiveness. Not found anywhere else in edtech. |
-| Body / Reading | **Literata** (self-hosted, `/public/Literata/`) | Designed for long-form reading. Optical sizing. Works at both display and text scales. |
-| UI / Chrome | **DM Sans** | Clean, neutral, geometric. Takes no attention away from content. Used for labels, nav links, buttons, metadata. |
-| Data / Tables | **DM Sans** with `font-variant-numeric: tabular-nums` | Consistent column alignment |
-| Code | **JetBrains Mono** (CDN) | Only used in technical/admin contexts |
+**One font: Cooper.** Weight and size carry all hierarchy. No Literata, no DM Sans.
 
-**Loading:** Cooper and Literata loaded via `localFont` in `app/layout.tsx`. Both variables must be set on `<html>` for Tailwind CSS variable inheritance.
+| Role | Font | Weight | Rationale |
+|---|---|---|---|
+| Display / Hero | **Cooper** | Bold / Black | Brand font. Round serifs, warmth, unmistakably ours. |
+| Headings (H1–H3) | **Cooper** | Bold | Weight differentiates level; size closes the rest. |
+| Body / Reading | **Cooper** | Regular / Light | Round serifs are warm at text size. Line-height 1.65 for readability. |
+| UI / Labels / Nav | **Cooper** | Regular | Consistent voice throughout the interface. |
+| Eyebrow / Tag | **Cooper** | Regular | Uppercase + `letter-spacing: 0.12em` — spacing does the work. |
+| Data / Tables | **Cooper** | Regular | `font-variant-numeric: tabular-nums` (Cooper supports lining figures). |
+| Code | **JetBrains Mono** (CDN) | — | Only in technical/admin contexts where monospace is semantically meaningful. |
+
+**Loading:** Cooper loaded via `localFont` in `app/layout.tsx`. Variable must be set on `<html>` for Tailwind CSS variable inheritance. Literata and DM Sans are removed — do not import them.
 
 **Scale:**
-| Level | Size | Font |
-|---|---|---|
-| Hero | `clamp(2.4rem, 5vw, 4rem)` | Cooper |
-| H1 | `2rem` | Cooper or Literata |
-| H2 | `1.6rem` | Literata |
-| H3 | `1.15rem` | Literata |
-| Body | `1rem` | Literata |
-| Small / UI | `0.85rem` | DM Sans |
-| Label / Eyebrow | `0.7rem`, `letter-spacing: 0.18em`, uppercase | DM Sans |
+| Level | Size | Weight | Letter-spacing |
+|---|---|---|---|
+| Hero | `clamp(2.4rem, 5vw, 4rem)` | Black (900) | default |
+| H1 | `2rem` | Bold (700) | default |
+| H2 | `1.5rem` | Bold (700) | default |
+| H3 | `1.15rem` | SemiBold (600) | default |
+| Body | `1rem` | Regular (400) | default |
+| Small / UI | `0.85rem` | Regular (400) | default |
+| Label / Eyebrow | `0.7rem` | Regular (400) | `0.12em`, uppercase |
 
 ---
 
@@ -102,7 +106,7 @@
 - **Secondary / ghost button:** transparent bg, `1px border-[#C0D9CB]`, text `#2C4A3E`
 - **Accent button (CTA):** `bg-[#E8D5B0]` text `#1A2E26` — used only on parchment sections
 - **Active nav state:** border-left accent `#2C4A3E` on sidebar, underline on top nav
-- **Section eyebrow:** `0.7rem` DM Sans, `letter-spacing: 0.18em`, uppercase, `#2C4A3E` at 55% opacity
+- **Section eyebrow:** `0.7rem` Cooper Regular, `letter-spacing: 0.12em`, uppercase, `#2C4A3E` at 55% opacity
 
 ---
 
@@ -124,6 +128,7 @@
 | 2026-03-18 | Chose Literary/Organic aesthetic | Platform is about personal storytelling; edtech is a sea of clean-SaaS; literary warmth differentiates |
 | 2026-03-18 | Cooper as display font | Self-hosted, already in use, deeply distinctive for the category |
 | 2026-03-18 | Added Literata as body font | Found self-hosted in /public/Literata/; designed for reading; better than DM Sans for long-form coaching content |
+| 2026-03-19 | Cooper-only typography | Removed Literata and DM Sans — one font throughout creates a fully cohesive voice. Weight and size carry all hierarchy. Cooper at body sizes reads warmly with line-height 1.65. |
 | 2026-03-18 | Two-register color system | Dark `#2C4A3E` primary for authority/chrome; light `#DEEEE9` surface for warmth. Avoids feeling like either a stuffy institution or a generic SaaS tool |
 | 2026-03-18 | Parchment `#E8D5B0` as accent | Unexpected in edtech; thematically resonant (color of the page being written on); creates warm contrast against both greens |
 | 2026-03-18 | Assets flagged for regeneration | Existing watercolor illustrations and logo designed for light surfaces; need dark-background variants for primary sections |

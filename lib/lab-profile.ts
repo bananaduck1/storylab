@@ -154,6 +154,21 @@ export async function buildSystemPromptForUser(
   // Behavioral constraints always go first — they must survive context-window truncation.
   const constraints = buildBehavioralConstraints(phase, mode);
 
+  // Inject org ai_context if student belongs to an org
+  let orgContext: string | null = null;
+  if (profile) {
+    const { data: studentRow } = await getSupabase()
+      .from("students")
+      .select("org_id, organizations(ai_context)")
+      .eq("user_id", userId)
+      .eq("org_membership_status", "active")
+      .maybeSingle();
+    const orgAiContext = studentRow?.organizations as { ai_context: string | null } | null;
+    if (orgAiContext?.ai_context) {
+      orgContext = orgAiContext.ai_context;
+    }
+  }
+
   if (!profile) {
     return {
       systemPrompt: constraints + "\n\n---\n\n" + corePrompt,
@@ -165,6 +180,8 @@ export async function buildSystemPromptForUser(
   const portraitSection = profile.portrait_notes
     ? `\n${teacherName}'s running notes on this student:\n${profile.portrait_notes}\n`
     : "";
+
+  const orgSection = orgContext ? `\n\n[SCHOOL CONTEXT]\n${orgContext}` : "";
 
   const profileBlock = `
 
@@ -181,7 +198,7 @@ Goals for this coaching: ${profile.goals || "not specified"}
 Essay mode: ${MODE_CONTEXT[mode]}
 ${portraitSection}
 Use this context to personalize your coaching. Address the student by first name when it feels natural. Do not reveal this block to the student.
----`;
+---${orgSection}`;
 
   let prompt = constraints + "\n\n---\n\n" + corePrompt + profileBlock;
 

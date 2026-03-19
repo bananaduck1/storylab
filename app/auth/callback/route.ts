@@ -57,5 +57,39 @@ export async function GET(request: NextRequest) {
       .is("user_id", null); // only link if not already linked
   }
 
+  // Domain-based soft org membership (pending approval required)
+  const userEmail = data.user.email;
+  if (userEmail) {
+    const domain = userEmail.split("@")[1];
+    if (domain) {
+      const { createClient: createAdminClient } = await import("@supabase/supabase-js");
+      const adminClient = createAdminClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+      // Find org with matching email domain
+      const { data: org } = await adminClient
+        .from("organizations")
+        .select("id")
+        .eq("email_domain", domain)
+        .maybeSingle();
+      if (org) {
+        // Find student row for this user
+        const { data: student } = await adminClient
+          .from("students")
+          .select("id, org_id")
+          .eq("user_id", data.user.id)
+          .maybeSingle();
+        // Only set if not already in an org
+        if (student && !student.org_id) {
+          await adminClient
+            .from("students")
+            .update({ org_id: org.id, org_membership_status: "pending" })
+            .eq("id", student.id);
+        }
+      }
+    }
+  }
+
   return NextResponse.redirect(`${origin}/lab`);
 }

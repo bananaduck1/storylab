@@ -20,8 +20,9 @@ export async function middleware(request: NextRequest) {
   const isSession = pathname.startsWith("/session") || pathname.startsWith("/api/session");
   const isDashboard = pathname.startsWith("/dashboard") || pathname.startsWith("/api/teacher");
   const isTeacherReg = pathname.startsWith("/teacher");
+  const isOrg = pathname.startsWith("/org") || pathname.startsWith("/api/org");
 
-  if (!isLab && !isAdmin && !isSession && !isDashboard && !isTeacherReg) {
+  if (!isLab && !isAdmin && !isSession && !isDashboard && !isTeacherReg && !isOrg) {
     return NextResponse.next();
   }
 
@@ -95,6 +96,17 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
+  // /org routes: any authenticated user (page handles member check)
+  if (isOrg) {
+    if (!user) {
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+    return response;
+  }
+
   return response;
 }
 
@@ -109,5 +121,7 @@ export const config = {
     "/dashboard/:path*",
     "/teacher/:path*",
     "/api/teacher/:path*",
+    "/org/:path*",
+    "/api/org/:path*",
   ],
 };
