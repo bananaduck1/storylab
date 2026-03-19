@@ -1,6 +1,6 @@
 # TODOs
 
-Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35. Updated 2026-03-19 — teacher profile builder review (x2 new: TODO-36, TODO-37; TODO-34 and TODO-35 superseded by accepted scope). Added 2026-03-19: TODO-38 (enterprise/districts demo flow), TODO-39 (student learning dashboard — 10x vision). Added 2026-03-19: TODO-40 (student platform research), TODO-41 (primary_emphasis section ordering). Added 2026-03-19: TODO-42 (B2B institutional hub — private school/org communities), TODO-43 (AI translation layer — cross-language tutoring).
+Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35. Updated 2026-03-19 — teacher profile builder review (x2 new: TODO-36, TODO-37; TODO-34 and TODO-35 superseded by accepted scope). Added 2026-03-19: TODO-38 (enterprise/districts demo flow), TODO-39 (student learning dashboard — 10x vision). Added 2026-03-19: TODO-40 (student platform research), TODO-41 (primary_emphasis section ordering). Added 2026-03-19: TODO-42 (B2B institutional hub — private school/org communities), TODO-43 (AI translation layer — cross-language tutoring). Updated 2026-03-19: TODO-42 and TODO-43 expanded with full implementation nuance from /plan-ceo-review SELECTIVE EXPANSION (chosen direction: TODO-42 = Approach C full multi-tenant subdomains; TODO-43 = build ladder A→C→B).
 
 ---
 
@@ -697,17 +697,29 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 
 ## TODO-42: B2B institutional hub — private school/org communities
 
-**What:** A gated, white-label version of StoryLab for schools and institutions. Each organization gets its own private community: their teachers, their students, their branding — not visible to the public. Access controlled by invite code or domain. Configurable per institution (which features are on, what subjects, what pricing model).
+**What:** A gated, white-label version of StoryLab for schools and institutions. Each organization gets its own private community: their teachers, their students, their branding — not visible to the public. Access controlled by invite code or domain. Configurable per institution (which features are on, what subjects, what pricing model). Full subdomain per org: `schoolname.storylab.co`.
 
 **Why:** The public marketplace is one growth vector. The B2B channel is a different, potentially larger one — a school buys a StoryLab subscription and deploys it to 500 students at once. That's a very different sales motion (one contract → many users) and a very different retention profile (institutional lock-in vs. individual churn). The two models can coexist: public marketplace for consumer, institutional hub for B2B.
 
-**Pros:** Dramatically larger contract sizes. Institutional relationships are sticky — once a school adopts a platform, switching costs are high. Opens the door to the districts/enterprise pitch (TODO-38). Natural expansion path: start with one private school, prove the model, expand to district.
+**Pros:** Dramatically larger contract sizes. Institutional relationships are sticky — once a school adopts a platform, switching costs are high. Opens the door to the districts/enterprise pitch (TODO-38). Natural expansion path: start with one private school, prove the model, expand to district. Subdomains create strong brand presence for each institution.
 
-**Cons:** B2B sales is slower and more relationship-driven than consumer. Requires multi-tenancy at the data layer (isolation between institutions). Customization per institution adds product complexity. Need to figure out the right pricing model (per-seat, per-school, per-district).
+**Cons:** B2B sales is slower and more relationship-driven than consumer. Full multi-tenancy with RLS and subdomain routing is architecturally significant (see approaches below). Customization per institution adds product complexity. Per-org feature flags need a management interface. Need to figure out the right pricing model (per-seat, per-school, per-district). Subdomain routing requires Vercel wildcard domain config + Supabase-level tenant resolution middleware.
 
-**Context:** The core architecture already supports multi-teacher, multi-student. What's missing is: (1) an `organizations` table that groups teachers + students under a shared tenant, (2) an invite/access-code flow for students to join a specific org, (3) an org-level admin view for whoever runs the school's StoryLab deployment, (4) optional white-labeling (logo, colors). The public marketplace and institutional hub can share 90% of the same infrastructure.
+**Implementation approaches (reviewed in /plan-ceo-review SELECTIVE EXPANSION, 2026-03-19):**
 
-**Effort:** XL human / L CC+gstack
+- **Approach A — Lightweight org layer** (L human / M CC+gstack): Add `organizations` table, foreign key `org_id` on `teachers`/`students`, invite-code join flow, simple org admin view. No subdomains. Shared URL space (`/org/school-name`). Fastest to ship; weakest institutional brand presence. Best if you want to validate the B2B motion before committing to infra.
+
+- **Approach B — Full multi-tenant RLS isolation** (XL human / L CC+gstack): Add `organizations` table, tenant-scoped RLS policies on every table (teachers, students, conversations, sessions), per-org feature flags table. Tenant resolved from subdomain in middleware. All queries filtered by `org_id` automatically. Complete data isolation between orgs. Highest architectural complexity — touches every table and every API route.
+
+- **Approach C — Full multi-tenant with subdomains + branding** (L-M human / S-M CC+gstack, incremental on top of B): Approach B + `schoolname.storylab.co` wildcard subdomains + per-org branding (logo, primary color, custom welcome copy). This is the chosen direction. Vercel wildcard domain (`*.storylab.co`) + Next.js middleware reads subdomain → resolves org → injects org context into all queries.
+
+**→ CHOSEN DIRECTION: Approach C (full multi-tenant with subdomains + branding).** Rationale: institutional buyers respond strongly to "this is your school's platform" — the subdomain makes it feel like the institution owns it. RLS-based isolation is the right architecture for data privacy. The marginal cost of adding subdomains on top of multi-tenant is small.
+
+**Dream state (12-month horizon):** StoryLab runs as three overlapping products: (A) public marketplace for individual students and teachers, (B) institutional platform for schools deploying to their community, (C) global network where a student in Flushing can be matched with a teacher in Seoul. The B2B and consumer layers share 90% of the same infrastructure. A school admin can browse the public teacher marketplace and invite teachers into their private community.
+
+**Context:** Core schema changes: `organizations` table (`id`, `slug`, `name`, `logo_url`, `primary_color`, `invite_code`, `feature_flags` JSONB), `org_id` column on `teachers` and `students`, wildcard domain in `vercel.json`, tenant-resolution middleware in `middleware.ts`. Per-org feature flags (which AI models, which session types, pricing visibility). The public marketplace (`teachers/`, `/`) remains unchanged — teachers can exist in both the public marketplace and one or more org communities.
+
+**Effort:** XL human / L CC+gstack (full implementation); start with Approach A (L/M) to validate B2B sales motion, then migrate to Approach C
 **Priority:** P2 — strategic; do after teacher #2 onboarding validates the multi-teacher model
 **Depends on:** Multi-teacher platform (shipped), teacher profile builder (shipped)
 
@@ -715,16 +727,28 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 
 ## TODO-43: AI translation layer — cross-language tutoring
 
-**What:** Real-time or near-real-time translation woven into the tutoring experience, so a student and teacher who don't share a native language can work together fluently. A student in Flushing (Chinese-speaking household) should be able to work with a tutor in Seoul (Korean native, English-proficient) without language being the barrier.
+**What:** AI-mediated language bridging woven into the tutoring experience, so a student and teacher who don't share a native language can work together fluently. A student in Flushing (Chinese-speaking household) should be able to work with a tutor in Seoul (Korean native, English-proficient) without language being the barrier.
 
 **Why:** The best tutor for a given student may not be in their city or country or language. The platform's deepest value proposition is matching the right expertise to the right student — if language is a wall, the platform has artificially constrained its own market. AI makes that wall removable in a way that wasn't possible three years ago. This is a genuine 10x feature: no tutoring platform has built real cross-language tutoring. It's a wedge into global markets.
 
-**Pros:** Opens the teacher supply side globally (dramatically increases the number of qualified teachers on the platform). Opens the student demand side globally (students anywhere can access teachers anywhere). Strong differentiation — no competitor has this. Naturally viral: a tutor in Seoul with 10 American students tells other Seoul tutors.
+**Pros:** Opens the teacher supply side globally (dramatically increases the number of qualified teachers on the platform). Opens the student demand side globally (students anywhere can access teachers anywhere). Strong differentiation — no competitor has this. Naturally viral: a tutor in Seoul with 10 American students tells other Seoul tutors. The /lab layer in particular is nearly zero-cost to implement.
 
-**Cons:** Translation quality for nuanced feedback on essays or creative writing is harder than translation for factual subjects. The latency and quality bar for real-time session translation is high. Trust: students and parents need to believe the translated feedback is accurate. Privacy: who has access to session transcripts for translation?
+**Cons:** Translation quality for nuanced feedback on essays or creative writing is harder than translation for factual subjects. The latency and quality bar for real-time session translation is high — live audio translation is a separate, harder problem from text. Trust: students and parents need to believe the translated feedback is accurate. Privacy: who has access to session transcripts for translation?
 
-**Context:** Two distinct translation surfaces: (1) the AI chat coach in /lab — relatively easy, the LLM can respond in the student's language while the teacher's agent prompt remains in English; (2) live video sessions — harder, requires real-time audio translation or async transcript translation post-session. The /lab surface is the right place to start. The student's preferred language could be set in their profile, and the AI coach responds accordingly regardless of the teacher's native language.
+**Implementation approach — build as a ladder (reviewed in /plan-ceo-review SELECTIVE EXPANSION, 2026-03-19):**
 
-**Effort:** M human / S CC+gstack (for /lab chat layer); XL human / L CC+gstack (for live session translation)
-**Priority:** P3 — vision-level; do after B2B model is validated (TODO-42)
-**Depends on:** Student profile (shipped), /lab chat (shipped), video sessions (shipped)
+- **Approach A — /lab language preference** (S human / S CC+gstack, ship immediately): Add `preferred_language` field to `student_profiles`. Inject it into the system prompt so the AI coach responds in the student's language (e.g., Mandarin, Korean, Spanish) while the teacher's agent prompt and knowledge base stay in English. The LLM does the translation transparently. Near-zero risk, huge value for non-English students. This is the first step.
+  - Implementation: add column to `student_profiles`, add a language selector to the onboarding form and `/lab/profile` edit page, update `buildSystemPromptForUser()` in `lib/lab-profile.ts` to append `Respond in [language].`
+
+- **Approach C — Async post-session transcript translation** (M human / S-M CC+gstack, ship second): After a live video session completes (when `/api/session/[id]/complete` runs), translate the transcript into the student's preferred language and store it alongside the English original. Students who don't read English fluently can review what was said. No real-time complexity. This closes the gap for students whose native language isn't English but whose teacher works in English.
+  - Implementation: POST-session webhook triggers translation job via OpenAI or Google Translate API; store translated transcript in `sessions.transcript_translated` JSONB; surface it in the student's session history UI.
+
+- **Approach B — Real-time live session translation** (XL human / L CC+gstack, ship much later): Transcribe both sides of the video call in real time, translate each utterance, and display subtitles to the other party. Two-way translation: teacher sees student speech in English, student sees teacher speech in their native language. Extremely high value but extremely hard. Daily.co doesn't expose per-participant audio streams easily; need to route audio through a translation pipeline before display. This is a separate, much harder product surface — do not conflate with Approach A.
+
+**→ RECOMMENDED BUILD ORDER: A → C → B.** Start with /lab language preference (Approach A) — ships in one session, immediately valuable for non-English students, validates demand before investing in live translation infrastructure.
+
+**Context:** The /lab surface and the live session surface are entirely separate translation problems. Approach A (chat) is a prompt engineering change. Approach C (async transcript) is a post-processing job. Approach B (real-time video) requires audio routing infrastructure. Don't let Approach B's complexity block A and C. The key data primitive: `preferred_language` on `student_profiles`, consistent across all three approaches.
+
+**Effort:** S CC+gstack (Approach A alone); M CC+gstack (+ Approach C); XL/L (full ladder including real-time)
+**Priority:** P3 — vision-level; Approach A can ship anytime; full ladder after B2B model is validated (TODO-42)
+**Depends on:** Student profile (shipped), /lab chat (shipped), video sessions (shipped for Approach C+B)
