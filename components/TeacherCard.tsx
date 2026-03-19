@@ -19,8 +19,13 @@ export function TeacherCard({ name, slug, subject, photoUrl, quote }: TeacherCar
     .toUpperCase();
 
   return (
+    <Link
+      href={`/teachers/${slug}`}
+      className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40 rounded-[4px]"
+      aria-label={`View ${name}'s profile`}
+    >
     <article
-      className="flex flex-col overflow-hidden rounded-[4px] border border-[#C0D9CB] bg-[#DEEEE9]"
+      className="flex flex-col overflow-hidden rounded-[4px] border border-[#C0D9CB] bg-[#DEEEE9] group-hover:border-[#2C4A3E]/40 transition-colors duration-150"
       aria-label={`${name}, ${subject ?? "Teacher"}`}
     >
       {/* Photo */}
@@ -72,15 +77,15 @@ export function TeacherCard({ name, slug, subject, photoUrl, quote }: TeacherCar
         </div>
 
         {/* CTA */}
-        <Link
-          href={`/teachers/${slug}#preview`}
-          aria-label={`Try a free message with ${name}`}
-          className="inline-flex items-center justify-center rounded-[3px] bg-[#2C4A3E] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#3A6054] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+        <span
+          className="inline-flex items-center justify-center rounded-[3px] bg-[#2C4A3E] px-4 py-2.5 text-sm font-medium text-white group-hover:bg-[#3A6054] transition-colors duration-150"
+          style={{ fontFamily: "var(--font-cooper, serif)" }}
+          aria-hidden="true"
         >
-          Try a free message →
-        </Link>
+          View profile →
+        </span>
       </div>
     </article>
+    </Link>
   );
 }
