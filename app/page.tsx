@@ -33,7 +33,7 @@ export default async function HomePage() {
             href="/teachers"
             aria-label="Find a teacher on StoryLab"
             className="inline-flex items-center rounded-[3px] bg-white px-7 py-3.5 text-base font-medium text-[#2C4A3E] hover:bg-[#DEEEE9] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+            style={{ fontFamily: "var(--font-cooper, serif)" }}
           >
             Find a teacher →
           </Link>
@@ -53,17 +53,17 @@ export default async function HomePage() {
             className="text-[2rem] leading-[1.2] tracking-tight text-[#2C4A3E] mb-8 max-w-2xl"
             style={{ fontFamily: "var(--font-cooper, serif)" }}
           >
-            Schools teach students to analyze other people&rsquo;s stories. Nobody teaches them to construct their own.
+            Great teachers exist. Most students never find them.
           </h2>
           <div
             className="space-y-5 text-base leading-relaxed text-[#1A2E26] max-w-2xl"
             style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
           >
             <p>
-              The college essay is the first high-stakes moment where that skill is required — and most students discover too late that they don&rsquo;t have it. The students who navigate this successfully are not necessarily more self-aware or more interesting than their peers. They have had more practice.
+              The quality of education you get has always depended on your zip code. The brilliant history teacher, the math coach who finally makes it click, the science mentor who changes how you see the world — their expertise has been invisible to every student outside their classroom.
             </p>
             <p>
-              That expertise is currently gatekept behind private tutoring that costs $150–$500 per hour, discovered almost entirely through word-of-mouth among already-advantaged families. StoryLab changes that.
+              StoryLab connects students with exceptional teachers across every subject. Not AI replacing teachers. Real teachers, amplified.
             </p>
           </div>
           <div className="mt-10">
@@ -71,7 +71,7 @@ export default async function HomePage() {
               href="/teachers"
               aria-label="Start learning with a StoryLab teacher"
               className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-6 py-3 text-sm font-medium text-white hover:bg-[#3A6054] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
-              style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+              style={{ fontFamily: "var(--font-cooper, serif)" }}
             >
               Start learning →
             </Link>
@@ -99,10 +99,10 @@ export default async function HomePage() {
             style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
           >
             <p>
-              Great teachers retire. School counselors leave. Every departure takes decades of accumulated pedagogical expertise out of circulation permanently. There is no infrastructure for preserving or transferring that expertise.
+              Teaching is among the most skilled, demanding work in the world — and among the worst compensated. Your expertise is worth far more than a single salary, and your impact doesn&rsquo;t have to be limited to the students in the room.
             </p>
             <p>
-              StoryLab builds that infrastructure. Your voice. Your methodology. Reaching the students who need you most.
+              StoryLab lets you build a digital presence, reach students globally, and earn what your knowledge is actually worth. Your methodology. Your voice. No longer capped by the hours in your day.
             </p>
           </div>
           <div className="mt-10">
@@ -110,7 +110,7 @@ export default async function HomePage() {
               href="/teacher/onboarding"
               aria-label="Become a teacher on StoryLab"
               className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-6 py-3 text-sm font-medium text-white hover:bg-[#3A6054] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
-              style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+              style={{ fontFamily: "var(--font-cooper, serif)" }}
             >
               Become a teacher →
             </Link>
@@ -207,7 +207,7 @@ export default async function HomePage() {
             href="/teachers"
             aria-label="Browse all teachers"
             className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-7 py-3.5 text-base font-medium text-white hover:bg-[#3A6054] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+            style={{ fontFamily: "var(--font-cooper, serif)" }}
           >
             Browse teachers →
           </Link>
@@ -215,7 +215,7 @@ export default async function HomePage() {
             href="/teacher/onboarding"
             aria-label="Become a teacher on StoryLab"
             className="inline-flex items-center rounded-[3px] border border-[#2C4A3E] bg-transparent px-7 py-3.5 text-base font-medium text-[#1A2E26] hover:bg-[#2C4A3E] hover:text-white transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
+            style={{ fontFamily: "var(--font-cooper, serif)" }}
           >
             Become a teacher →
           </Link>
