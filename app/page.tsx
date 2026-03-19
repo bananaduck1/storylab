@@ -27,7 +27,7 @@ export default async function HomePage() {
             className="text-lg leading-relaxed text-white/80 mb-10 max-w-2xl mx-auto"
             style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
           >
-            StoryLab is not a tutoring company. It is infrastructure for human expertise in education.
+            StoryLab is infrastructure for human expertise in education.
           </p>
           <Link
             href="/teachers"

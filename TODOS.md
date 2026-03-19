@@ -1,6 +1,6 @@
 # TODOs
 
-Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35. Updated 2026-03-19 — teacher profile builder review (x2 new: TODO-36, TODO-37; TODO-34 and TODO-35 superseded by accepted scope). Added 2026-03-19: TODO-38 (enterprise/districts demo flow), TODO-39 (student learning dashboard — 10x vision).
+Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35. Updated 2026-03-19 — teacher profile builder review (x2 new: TODO-36, TODO-37; TODO-34 and TODO-35 superseded by accepted scope). Added 2026-03-19: TODO-38 (enterprise/districts demo flow), TODO-39 (student learning dashboard — 10x vision). Added 2026-03-19: TODO-40 (student platform research), TODO-41 (primary_emphasis section ordering).
 
 ---
 
@@ -656,3 +656,39 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 **Effort:** XL human / L CC+gstack
 **Priority:** P3 — directionally important but not the next thing to build
 **Depends on:** Teacher profile builder (so students have real teacher relationships to anchor to). Multi-student support already exists.
+
+---
+
+## TODO-40: Research existing student platforms (Google Classroom, etc.)
+
+**What:** Audit the current landscape of student-facing platforms — Google Classroom, Canvas, Schoology, Notion, and others — to understand what students already use, what they tolerate, and where those platforms fall short.
+
+**Why:** Before designing the 10x student dashboard (TODO-39), we need to know what we're differentiating from. Students have strong existing habits around Google Classroom and similar tools. Understanding those habits tells us what to integrate with, what to replace, and what to avoid building (commodity features students already have elsewhere).
+
+**Pros:** Prevents us from reinventing the wheel (e.g., homework submission) and sharpens the wedge — we build what Google Classroom can't (relationship-aware AI coaching, narrative arc over time, teacher/student co-ownership of progress).
+
+**Cons:** Research work, no code shipped. But this is a 2–3 hour exercise with CC and sets up the TODO-39 implementation to be 10x better scoped.
+
+**Context:** The key question is: where does the student's workflow currently live, and what is the highest-friction moment we can eliminate? Google Classroom owns homework distribution; Notion owns personal notes; email owns feedback. The opportunity is the AI coach + teacher relationship layer that none of them have.
+
+**Effort:** S human / S CC+gstack
+**Priority:** P3 — do before starting TODO-39 implementation
+**Depends on:** Nothing — can be done anytime as a research spike
+
+---
+
+## TODO-41: Implement primary_emphasis section ordering in TeacherStorefrontContent
+
+**What:** Wire up the `primaryEmphasis` prop in `TeacherStorefrontContent.tsx` to actually reorder and conditionally render storefront sections based on a teacher's emphasis setting.
+
+**Why:** The data model is complete (`primary_emphasis` column, feature flags, props declared) but the component ignores the value — every teacher's storefront renders in the same section order regardless of their `primary_emphasis` setting. The CEO plan defined three orderings: AI-emphasis (AI coach section early), Live-emphasis (booking section prominent), Equal (AI coach + book side by side).
+
+**Pros:** Completes the feature flags architecture. Gives future teachers meaningful control over their storefront's first impression. Differentiates an AI-focused tutor from a live-session coach at the page level.
+
+**Cons:** Requires restructuring `TeacherStorefrontContent.tsx` to conditionally render section order — moderate JSX refactor. No DB or API changes needed.
+
+**Context:** `aiCoachingEnabled`, `liveSessionsEnabled`, and `primaryEmphasis` are already passed as props (see `app/teachers/[slug]/page.tsx:67`). The component just needs to use them. Reference the section order spec in the CEO plan: `~/.gstack/projects/bananaduck1-storylab/ceo-plans/2026-03-19-teacher-profile-builder.md`. The "equal" case (AI + Book side by side) is the most design-intensive.
+
+**Effort:** M human / S CC+gstack
+**Priority:** P2 — needed before onboarding teacher #2
+**Depends on:** Teacher profile builder (shipped)
