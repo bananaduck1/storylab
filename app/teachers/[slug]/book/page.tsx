@@ -188,6 +188,8 @@ function TeacherBookingContent({ slug }: { slug: string }) {
           availability_id: selectedSlot!.id,
           teacher_id: teacher.id,
           visitor_timezone: visitorTz,
+          success_path: `/teachers/${slug}/book/confirmed`,
+          cancel_path: `/teachers/${slug}/book`,
           ...form,
         }),
       });

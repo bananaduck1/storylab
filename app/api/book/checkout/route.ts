@@ -9,7 +9,7 @@ const OFFERING_CONFIG: Record<
   consultation: {
     unitAmount: 50000, // $500.00
     productName: "StoryLab Parent Consultation",
-    description: "1-hour strategy session with Sam Ahn",
+    description: "1-hour strategy session",
     requiresSlot: true,
   },
   sprint: {
@@ -38,6 +38,8 @@ export async function POST(req: NextRequest) {
     schools,
     essay_context,
     visitor_timezone,
+    success_path,
+    cancel_path,
   } = body;
 
   if (
@@ -51,7 +53,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  const config = OFFERING_CONFIG[offering_type];
+  const config = OFFERING_CONFIG[offering_type as keyof typeof OFFERING_CONFIG];
   if (!config) {
     return NextResponse.json({ error: "Unknown offering type" }, { status: 400 });
   }
@@ -77,14 +79,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Slot is no longer available" }, { status: 409 });
     }
 
-    const { error: reserveError } = await supabase
+    const { data: reserved, error: reserveError } = await supabase
       .from("availability")
       .update({ is_booked: true })
       .eq("id", availability_id)
-      .eq("is_booked", false); // guard against race condition
+      .eq("is_booked", false) // guard against race condition
+      .select("id");
 
     if (reserveError) {
       return NextResponse.json({ error: "Failed to reserve slot" }, { status: 500 });
+    }
+    if (!reserved || reserved.length === 0) {
+      // Another request won the race — slot was booked between our read and write
+      return NextResponse.json({ error: "Slot is no longer available" }, { status: 409 });
     }
   }
 
@@ -149,8 +156,12 @@ export async function POST(req: NextRequest) {
         offering_type,
         visitor_timezone: visitor_timezone ?? "America/New_York",
       },
-      success_url: `${origin}/academy/pricing/${offering_type}/confirmed?booking_id=${booking.id}`,
-      cancel_url: `${origin}/academy/pricing/${offering_type}?cancelled=1`,
+      success_url: success_path
+        ? `${origin}${success_path}?booking_id=${booking.id}`
+        : `${origin}/academy/pricing/${offering_type}/confirmed?booking_id=${booking.id}`,
+      cancel_url: cancel_path
+        ? `${origin}${cancel_path}?cancelled=1`
+        : `${origin}/academy/pricing/${offering_type}?cancelled=1`,
     });
   } catch (err) {
     console.error("[checkout] Stripe session creation failed:", err);

@@ -13,7 +13,7 @@ export async function GET(_req: Request, { params }: Props) {
 
   const { data: teacher, error } = await supabase
     .from("teachers")
-    .select("id, name, slug, subject, bio, photo_url, quote")
+    .select("id, name, slug, subject, bio, photo_url, quote, pricing_config")
     .eq("slug", slug)
     .eq("storefront_published", true)
     .maybeSingle();
