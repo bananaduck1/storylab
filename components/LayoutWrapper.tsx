@@ -8,7 +8,6 @@ import { type ReactNode } from "react";
 
 export function LayoutWrapper({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const isHomepage = pathname === "/";
   const isAcademyOverview = pathname === "/academy";
 
   // Lab, admin, login, and auth routes manage their own layout
@@ -19,11 +18,6 @@ export function LayoutWrapper({ children }: { children: ReactNode }) {
     pathname.startsWith("/auth/")
   ) {
     return <>{children}</>;
-  }
-
-  // Homepage: no navbar/footer, just page transition
-  if (isHomepage) {
-    return <PageTransition>{children}</PageTransition>;
   }
 
   // Academy overview: non-sticky navbar that scrolls away, no footer
