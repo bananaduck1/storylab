@@ -31,14 +31,12 @@ export default async function TeacherLayout({ children, params }: Props) {
           <Link
             href="/teachers"
             className="text-[0.7rem] font-medium text-[#1A2E26]/70 hover:text-[#2C4A3E] transition-colors focus:outline-none focus-visible:underline"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
             aria-label="Back to all teachers"
           >
             ← All Teachers
           </Link>
 
           {/* Desktop: show full breadcrumb */}
-          <span className="hidden sm:flex items-center gap-2 text-[0.7rem] text-[#1A2E26]/50" style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}>
             <span aria-hidden="true">·</span>
             <span className="text-[#1A2E26]/70 font-medium">{teacher.name}</span>
             {teacher.subject && (
@@ -47,7 +45,6 @@ export default async function TeacherLayout({ children, params }: Props) {
                 <span className="text-[#1A2E26]/50">{teacher.subject}</span>
               </>
             )}
-          </span>
         </div>
       </div>
 

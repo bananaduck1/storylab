@@ -618,7 +618,6 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
               <div>
                 <p
                   className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#E8D5B0] mb-4"
-                  style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
                 >
                   College Essay Coach
                 </p>
@@ -645,7 +644,6 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
                     href="#preview"
                     aria-label="Try a free message with Sam"
                     className="inline-flex items-center rounded-[3px] bg-white px-6 py-3 text-sm font-medium text-[#2C4A3E] hover:bg-[#DEEEE9] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-                    style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
                     onClick={(e) => {
                       e.preventDefault();
                       document.getElementById("preview")?.scrollIntoView({ behavior: "smooth" });
@@ -658,7 +656,6 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
                       href={`/teachers/${teacherSlug}/book`}
                       aria-label={`Book a live session with ${teacherName}`}
                       className="inline-flex items-center rounded-[3px] border border-white/60 bg-transparent px-6 py-3 text-sm font-medium text-white hover:bg-white/10 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
-                      style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
                     >
                       Book a session →
                     </Link>
@@ -754,7 +751,6 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
             <div className="mx-auto max-w-2xl mb-10 text-center">
               <p
                 className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-3"
-                style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
               >
                 Experience the coaching
               </p>
@@ -940,14 +936,6 @@ export function TeacherStorefrontContent({ teacherSlug, teacherName, acceptingBo
               ))}
             </div>
 
-            <div className="mt-10 text-center">
-              <Link
-                href="/results"
-                className="inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
-              >
-                Read full testimonials
-              </Link>
-            </div>
           </div>
         </section>
 

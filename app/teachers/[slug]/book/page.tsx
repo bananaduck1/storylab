@@ -253,7 +253,6 @@ function TeacherBookingContent({ slug }: { slug: string }) {
       <div className="mb-12">
         <p
           className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/60 mb-3"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Live Session
         </p>
@@ -280,7 +279,6 @@ function TeacherBookingContent({ slug }: { slug: string }) {
           <div className="flex items-baseline gap-3 mb-6">
             <span
               className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/40"
-              style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
             >
               01
             </span>
@@ -293,7 +291,6 @@ function TeacherBookingContent({ slug }: { slug: string }) {
           </div>
           <p
             className="mb-6 text-sm text-[#1A2E26]/50"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
           >
             Shown in your local time with ET in parentheses.
           </p>
@@ -329,7 +326,6 @@ function TeacherBookingContent({ slug }: { slug: string }) {
                 <div key={dateKey}>
                   <p
                     className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#2C4A3E]/60"
-                    style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
                   >
                     {formatDateHeader(slotsByDate[dateKey][0].datetime, visitorTz)}
                   </p>
@@ -344,7 +340,6 @@ function TeacherBookingContent({ slug }: { slug: string }) {
                             ? "border-[#2C4A3E] bg-[#2C4A3E] text-white"
                             : "border-[#C0D9CB] bg-white text-[#1A2E26] hover:border-[#2C4A3E]/50 hover:bg-[#DEEEE9]"
                         }`}
-                        style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
                       >
                         {formatTimeDual(slot.datetime, visitorTz)}
                       </button>
@@ -357,7 +352,6 @@ function TeacherBookingContent({ slug }: { slug: string }) {
           {selectedSlot && (
             <p
               className="mt-4 text-sm text-[#2C4A3E] font-medium"
-              style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
             >
               ✓ {formatFullDual(selectedSlot.datetime, visitorTz)}
             </p>
@@ -369,7 +363,6 @@ function TeacherBookingContent({ slug }: { slug: string }) {
           <div className="flex items-baseline gap-3 mb-6">
             <span
               className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/40"
-              style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
             >
               02
             </span>
@@ -479,13 +472,11 @@ function TeacherBookingContent({ slug }: { slug: string }) {
             disabled={!formIsValid || submitting}
             aria-label={`Book a session with ${teacher.name}`}
             className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-8 py-3.5 text-sm font-medium text-white hover:bg-[#3A6054] disabled:opacity-40 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
           >
             {submitting ? "Redirecting to checkout…" : `Book & pay $${sessionPrice} →`}
           </button>
           <p
             className="text-xs text-[#1A2E26]/40"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
           >
             Secure checkout via Stripe
           </p>
@@ -506,7 +497,6 @@ export default function TeacherBookPage() {
           <div className="mx-auto max-w-2xl px-6 py-20 text-center">
             <p
               className="text-sm text-[#1A2E26]/50"
-              style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
             >
               Loading&hellip;
             </p>

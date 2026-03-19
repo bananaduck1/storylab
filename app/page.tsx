@@ -45,7 +45,6 @@ export default async function HomePage() {
         <div className="mx-auto max-w-[880px]">
           <p
             className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-5"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
           >
             For Students
           </p>
@@ -84,7 +83,6 @@ export default async function HomePage() {
         <div className="mx-auto max-w-[880px]">
           <p
             className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-5"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
           >
             For Teachers
           </p>
@@ -143,7 +141,7 @@ export default async function HomePage() {
           <div className="mt-14 pt-8 border-t border-white/20">
             <p
               className="text-[0.85rem] font-medium tracking-widest text-[#E8D5B0] tabular-nums"
-              style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)", fontVariantNumeric: "tabular-nums" }}
+              style={{ fontVariantNumeric: "tabular-nums" }}
             >
               1 teacher &nbsp;&middot;&nbsp; 47 students coached &nbsp;&middot;&nbsp; AI-powered
             </p>
@@ -156,7 +154,6 @@ export default async function HomePage() {
         <div className="mx-auto max-w-[1100px]">
           <p
             className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-5"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
           >
             Our Teachers
           </p>

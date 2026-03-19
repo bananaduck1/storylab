@@ -101,7 +101,6 @@ export function AiPreviewWidget({ teacherSlug, teacherName }: AiPreviewWidgetPro
         <div className="px-8 pt-8 pb-6 border-b border-[#C0D9CB]">
           <p
             className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E] mb-3"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
           >
             Try {firstName}&rsquo;s AI Coach — Free
           </p>
@@ -143,7 +142,6 @@ export function AiPreviewWidget({ teacherSlug, teacherName }: AiPreviewWidgetPro
                   disabled={!message.trim()}
                   aria-label={`Send your question to ${firstName}`}
                   className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#3A6054] disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
-                  style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
                 >
                   Send →
                 </button>
@@ -195,7 +193,6 @@ export function AiPreviewWidget({ teacherSlug, teacherName }: AiPreviewWidgetPro
                   type="submit"
                   aria-label="Submit your email and get your response"
                   className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#3A6054] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
-                  style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
                 >
                   Go →
                 </button>
@@ -248,7 +245,6 @@ export function AiPreviewWidget({ teacherSlug, teacherName }: AiPreviewWidgetPro
               <div className="mb-8">
                 <p
                   className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-3"
-                  style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
                 >
                   {firstName}&rsquo;s response
                 </p>
@@ -272,7 +268,6 @@ export function AiPreviewWidget({ teacherSlug, teacherName }: AiPreviewWidgetPro
                   href="/lab"
                   aria-label={`Start coaching with ${firstName}`}
                   className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#3A6054] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
-                  style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
                 >
                   Start coaching with {firstName} →
                 </Link>
@@ -293,7 +288,6 @@ export function AiPreviewWidget({ teacherSlug, teacherName }: AiPreviewWidgetPro
                 href="/lab"
                 aria-label="Sign up to continue coaching"
                 className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#3A6054] transition-colors duration-150"
-                style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
               >
                 Sign up to continue →
               </Link>

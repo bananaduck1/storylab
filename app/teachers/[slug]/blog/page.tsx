@@ -64,7 +64,6 @@ export default async function TeacherBlogPage({ params }: Props) {
       <section className="border-b border-[#C0D9CB] bg-[#2C4A3E] py-20 px-6 text-center">
         <p
           className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#E8D5B0] mb-5"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           {teacher.name}
         </p>
@@ -84,7 +83,6 @@ export default async function TeacherBlogPage({ params }: Props) {
           <Link
             href={`/teachers/${slug}`}
             className="text-sm text-[#E8D5B0]/70 hover:text-[#E8D5B0] transition-colors"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
           >
             ← Back to {firstName}&rsquo;s page
           </Link>
@@ -110,7 +108,6 @@ export default async function TeacherBlogPage({ params }: Props) {
         <div className="max-w-xl mx-auto text-center">
           <p
             className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-4"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
           >
             Stay Current
           </p>

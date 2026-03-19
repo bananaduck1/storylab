@@ -25,7 +25,6 @@ export default async function TeachersPage() {
         <div className="mx-auto max-w-[1100px]">
           <p
             className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#E8D5B0] mb-5"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
           >
             Our Teachers
           </p>
@@ -84,7 +83,6 @@ export default async function TeachersPage() {
         <div className="mx-auto max-w-[880px] text-center">
           <p
             className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-4"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
           >
             Join Us
           </p>
@@ -104,7 +102,6 @@ export default async function TeachersPage() {
             href="/teacher/onboarding"
             aria-label="Become a teacher on StoryLab"
             className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-7 py-3.5 text-base font-medium text-white hover:bg-[#3A6054] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
           >
             Become a teacher →
           </Link>

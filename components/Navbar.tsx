@@ -29,7 +29,6 @@ export function Navbar() {
               <Link
                 href="/teachers"
                 className="text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/30"
-                style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
               >
                 Teachers
               </Link>
@@ -39,7 +38,6 @@ export function Navbar() {
                 href="/teacher/onboarding"
                 aria-label="Become a teacher on StoryLab"
                 className="inline-flex items-center rounded-[3px] border border-[#2C4A3E] px-4 py-2 text-sm font-medium text-[#2C4A3E] hover:bg-[#2C4A3E] hover:text-white transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/30"
-                style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
               >
                 Become a teacher
               </Link>

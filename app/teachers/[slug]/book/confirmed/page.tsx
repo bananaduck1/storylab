@@ -82,7 +82,6 @@ export default async function TeacherBookConfirmedPage({ params, searchParams }:
 
         <p
           className="mt-6 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/60"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Booking Confirmed
         </p>
@@ -116,7 +115,6 @@ export default async function TeacherBookConfirmedPage({ params, searchParams }:
         >
           <p
             className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/60"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
           >
             Session details
           </p>
@@ -125,7 +123,6 @@ export default async function TeacherBookConfirmedPage({ params, searchParams }:
             <div>
               <dt
                 className="text-xs font-medium text-[#1A2E26]/40"
-                style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
               >
                 With
               </dt>
@@ -141,7 +138,6 @@ export default async function TeacherBookConfirmedPage({ params, searchParams }:
               <div>
                 <dt
                   className="text-xs font-medium text-[#1A2E26]/40"
-                  style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
                 >
                   Date &amp; Time
                 </dt>
@@ -158,7 +154,6 @@ export default async function TeacherBookConfirmedPage({ params, searchParams }:
               <div>
                 <dt
                   className="text-xs font-medium text-[#1A2E26]/40"
-                  style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
                 >
                   Student&rsquo;s Grade
                 </dt>
@@ -174,7 +169,6 @@ export default async function TeacherBookConfirmedPage({ params, searchParams }:
             <div>
               <dt
                 className="text-xs font-medium text-[#1A2E26]/40"
-                style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
               >
                 Session link
               </dt>
@@ -191,7 +185,6 @@ export default async function TeacherBookConfirmedPage({ params, searchParams }:
         {/* Reschedule note */}
         <p
           className="mt-8 text-sm text-[#1A2E26]/40"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Need to reschedule?{" "}
           <a
@@ -207,7 +200,6 @@ export default async function TeacherBookConfirmedPage({ params, searchParams }:
           <Link
             href={`/teachers/${teacherSlug}`}
             className="inline-flex items-center rounded-[3px] border border-[#C0D9CB] bg-white px-6 py-3 text-sm font-medium text-[#2C4A3E] hover:bg-[#DEEEE9] transition-colors"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
           >
             ← Back to {firstName}&rsquo;s profile
           </Link>

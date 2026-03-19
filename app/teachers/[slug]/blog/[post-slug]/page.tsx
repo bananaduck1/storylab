@@ -102,7 +102,6 @@ export default async function TeacherBlogPostPage({ params }: Props) {
         <Link
           href={`/teachers/${slug}/blog`}
           className="inline-flex items-center gap-2 text-[#1A2E26]/50 text-sm hover:text-[#2C4A3E] transition-colors mb-14"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           <span aria-hidden="true">←</span> All perspectives from {firstName}
         </Link>
@@ -114,7 +113,6 @@ export default async function TeacherBlogPostPage({ params }: Props) {
               <span
                 key={tag}
                 className="text-xs px-2.5 py-1 rounded-full bg-[#DEEEE9] text-[#2C4A3E] uppercase tracking-wider"
-                style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
               >
                 {tag}
               </span>
@@ -143,7 +141,6 @@ export default async function TeacherBlogPostPage({ params }: Props) {
         {/* Date + divider */}
         <p
           className="text-sm text-[#1A2E26]/40 pb-12 mb-12 border-b border-[#C0D9CB]"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           {date ?? ""}
         </p>
@@ -176,7 +173,6 @@ export default async function TeacherBlogPostPage({ params }: Props) {
           <Link
             href={`/teachers/${slug}/blog`}
             className="inline-flex items-center gap-2 text-[#1A2E26]/50 text-sm hover:text-[#2C4A3E] transition-colors"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
           >
             <span aria-hidden="true">←</span> Back to all perspectives
           </Link>

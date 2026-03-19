@@ -67,7 +67,6 @@ export function TeacherCard({ name, slug, subject, photoUrl, quote }: TeacherCar
         <div className="mb-5">
           <p
             className="text-[0.85rem] font-medium text-[#1A2E26]"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
           >
             {name}
             {subject && (

@@ -17,7 +17,6 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
       {/* Mobile: text only */}
       <p
         className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 sm:hidden"
-        style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
       >
         Step {currentStep} of {STEPS.length} — {STEPS[currentStep - 1].label}
       </p>
@@ -26,7 +25,6 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
       <div className="hidden sm:block">
         <p
           className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-4"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Step {currentStep} of {STEPS.length} — {STEPS[currentStep - 1].label}
         </p>
@@ -92,7 +90,6 @@ function Step1Profile({ onNext }: { onNext: (data: ProfileData) => void }) {
         <label
           htmlFor="name"
           className="block text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-2"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Full name
         </label>
@@ -112,7 +109,6 @@ function Step1Profile({ onNext }: { onNext: (data: ProfileData) => void }) {
         <label
           htmlFor="subject"
           className="block text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-2"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Subject / specialty
         </label>
@@ -132,7 +128,6 @@ function Step1Profile({ onNext }: { onNext: (data: ProfileData) => void }) {
         <label
           htmlFor="bio"
           className="block text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-2"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Bio
         </label>
@@ -152,7 +147,6 @@ function Step1Profile({ onNext }: { onNext: (data: ProfileData) => void }) {
         <label
           htmlFor="quote"
           className="block text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-2"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Your coaching philosophy (one sentence)
         </label>
@@ -167,7 +161,6 @@ function Step1Profile({ onNext }: { onNext: (data: ProfileData) => void }) {
         />
         <p
           className="mt-1.5 text-xs text-[#1A2E26]/40"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           This appears on your teacher card. Optional but recommended.
         </p>
@@ -177,7 +170,6 @@ function Step1Profile({ onNext }: { onNext: (data: ProfileData) => void }) {
         <button
           type="submit"
           className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-6 py-3 text-sm font-medium text-white hover:bg-[#3A6054] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Save &amp; Continue →
         </button>
@@ -223,7 +215,6 @@ function Step2AgentConfig({
         <label
           htmlFor="teaching-style"
           className="block text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-2"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Your teaching style
         </label>
@@ -243,7 +234,6 @@ function Step2AgentConfig({
         <label
           htmlFor="core-principles"
           className="block text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-2"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Your core writing beliefs
         </label>
@@ -263,7 +253,6 @@ function Step2AgentConfig({
         <label
           htmlFor="avoidances"
           className="block text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-2"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           What your agent should never do
         </label>
@@ -283,14 +272,12 @@ function Step2AgentConfig({
           type="button"
           onClick={onBack}
           className="inline-flex items-center rounded-[3px] border border-[#C0D9CB] bg-transparent px-5 py-3 text-sm font-medium text-[#1A2E26] hover:bg-[#DEEEE9] transition-colors"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           ← Back
         </button>
         <button
           type="submit"
           className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-6 py-3 text-sm font-medium text-white hover:bg-[#3A6054] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Save &amp; Continue →
         </button>
@@ -336,7 +323,6 @@ function Step3Pricing({
         <label
           htmlFor="monthly-price"
           className="block text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-2"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Monthly subscription price (USD)
         </label>
@@ -356,7 +342,6 @@ function Step3Pricing({
         </div>
         <p
           className="mt-1.5 text-xs text-[#1A2E26]/40"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           AI coaching access for students. Unlimited messages.
         </p>
@@ -366,7 +351,6 @@ function Step3Pricing({
         <label
           htmlFor="session-price"
           className="block text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-2"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Live session price (USD)
         </label>
@@ -386,7 +370,6 @@ function Step3Pricing({
         </div>
         <p
           className="mt-1.5 text-xs text-[#1A2E26]/40"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Per 1-hour live video coaching session.
         </p>
@@ -396,7 +379,6 @@ function Step3Pricing({
         <label
           htmlFor="google-calendar-id"
           className="block text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-2"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Google Calendar ID (optional)
         </label>
@@ -411,7 +393,6 @@ function Step3Pricing({
         />
         <p
           className="mt-1.5 text-xs text-[#1A2E26]/40"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Connect your Google Calendar to automatically sync your available booking slots.
           Find this in Google Calendar → Settings → your calendar → Calendar ID.
@@ -423,14 +404,12 @@ function Step3Pricing({
           type="button"
           onClick={onBack}
           className="inline-flex items-center rounded-[3px] border border-[#C0D9CB] bg-transparent px-5 py-3 text-sm font-medium text-[#1A2E26] hover:bg-[#DEEEE9] transition-colors"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           ← Back
         </button>
         <button
           type="submit"
           className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-6 py-3 text-sm font-medium text-white hover:bg-[#3A6054] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Save &amp; Continue →
         </button>
@@ -476,7 +455,6 @@ function Step4Preview({
             </div>
             <div
               className="flex-1 mx-4 px-3 py-1 text-xs text-zinc-500 bg-white rounded border border-zinc-200 truncate"
-              style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
             >
               /teachers/{teacherSlug}
             </div>
@@ -504,7 +482,6 @@ function Step4Preview({
           type="button"
           onClick={onBack}
           className="inline-flex items-center rounded-[3px] border border-[#C0D9CB] bg-transparent px-5 py-3 text-sm font-medium text-[#1A2E26] hover:bg-[#DEEEE9] transition-colors"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           ← Edit
         </button>
@@ -512,7 +489,6 @@ function Step4Preview({
           type="button"
           onClick={onNext}
           className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-6 py-3 text-sm font-medium text-white hover:bg-[#3A6054] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Looks good — Publish →
         </button>
@@ -548,7 +524,6 @@ function Step5Publish({ teacherSlug }: { teacherSlug: string | null }) {
           <Link
             href={`/teachers/${teacherSlug}`}
             className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-6 py-3 text-sm font-medium text-white hover:bg-[#3A6054] transition-colors duration-150"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
           >
             View your storefront →
           </Link>
@@ -558,7 +533,6 @@ function Step5Publish({ teacherSlug }: { teacherSlug: string | null }) {
         <Link
           href="/"
           className="text-sm text-[#1A2E26]/50 hover:text-[#2C4A3E] transition-colors"
-          style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
         >
           Back to home
         </Link>
@@ -638,7 +612,6 @@ export default function TeacherOnboardingPage() {
           <Link
             href="/"
             className="text-sm text-[#1A2E26]/50 hover:text-[#2C4A3E] transition-colors"
-            style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
           >
             ← StoryLab
           </Link>

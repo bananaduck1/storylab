@@ -22,7 +22,6 @@ export function Footer() {
               <Link
                 href="/teachers"
                 className="inline-flex items-center justify-center rounded-[3px] bg-[#DEEEE9] px-5 py-3 text-sm font-medium text-[#1A2E26] hover:bg-white transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-                style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
               >
                 Find a teacher →
               </Link>
@@ -34,7 +33,6 @@ export function Footer() {
               <div>
                 <p
                   className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-white/50"
-                  style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
                 >
                   Platform
                 </p>
@@ -43,7 +41,6 @@ export function Footer() {
                     <Link
                       className="text-white/70 hover:text-white transition-colors"
                       href="/teachers"
-                      style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
                     >
                       Teachers
                     </Link>
@@ -52,7 +49,6 @@ export function Footer() {
                     <Link
                       className="text-white/70 hover:text-white transition-colors"
                       href="/teacher/onboarding"
-                      style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
                     >
                       Become a teacher
                     </Link>
@@ -63,7 +59,6 @@ export function Footer() {
               <div>
                 <p
                   className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-white/50"
-                  style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
                 >
                   Company
                 </p>
@@ -72,7 +67,6 @@ export function Footer() {
                     <a
                       href="mailto:storylab.ivy@gmail.com"
                       className="text-white/70 hover:text-white transition-colors"
-                      style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
                     >
                       Contact
                     </a>
@@ -80,7 +74,6 @@ export function Footer() {
                 </ul>
                 <p
                   className="mt-8 text-xs text-white/40"
-                  style={{ fontFamily: "var(--font-dm-sans, 'DM Sans', sans-serif)" }}
                 >
                   © {new Date().getFullYear()} StoryLab. All rights reserved.
                 </p>
