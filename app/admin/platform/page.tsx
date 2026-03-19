@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCallerUser } from "@/lib/lab-auth";
 import { getSupabase } from "@/lib/supabase";
 import { ADMIN_EMAIL } from "@/lib/lab-auth";
+import RevenueTable from "./_components/RevenueTable";
 
 interface StatCard {
   label: string;
@@ -100,6 +101,10 @@ export default async function PlatformPage() {
         {stats.map((stat) => (
           <StatCard key={stat.label} {...stat} />
         ))}
+      </div>
+
+      <div className="mt-8">
+        <RevenueTable />
       </div>
     </div>
   );

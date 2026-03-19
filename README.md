@@ -27,6 +27,7 @@ Teacher-facing hub for managing students, scheduling sessions, and configuring t
 - Schedule and manage live video sessions
 - Session coaching sidebar (real-time nudges)
 - Agent settings and pedagogy upload
+- Payments tab: connect a Stripe account, view earnings (available/pending), 80/20 revenue split
 
 **Live Video Coaching (`/session/[id]`)**
 In-platform video sessions via Daily.co with a live AI coaching companion. Features:
@@ -39,7 +40,7 @@ In-platform video sessions via Daily.co with a live AI coaching companion. Featu
 **Admin (`/admin`)**
 Internal tools, admin-only (`samahn240@gmail.com`):
 - `/admin/dashboard` — Student tracker, session logs, portrait viewer, invite management
-- `/admin/platform` — Platform Pulse: live stats across all tables
+- `/admin/platform` — Platform Pulse: live stats across all tables + revenue table (platform fees per teacher)
 - `/admin/posts` — Blog post management (create, edit, delete, newsletter)
 - `/admin/teacher-config` — Teacher agent builder (identity, beliefs, voice, signature moves)
 - `/admin/students/[id]/view` — Read-only shadow view of any student's /lab data
@@ -64,7 +65,7 @@ Parent consultation bookings via Stripe + Google Calendar. Separate from video s
 | AI | OpenAI GPT-4o (portrait, nudge, parent email) + Claude (chat coach) |
 | Video | Daily.co (WebRTC rooms + meeting tokens) |
 | Email | Resend (invites, session emails, blog subscriptions) |
-| Payments | Stripe (consultation bookings) |
+| Payments | Stripe (consultation bookings + Connect marketplace — 20% platform fee) |
 | Calendar | Google Calendar API (booking sync) |
 | Deployment | Vercel (with cron jobs) |
 
@@ -107,8 +108,8 @@ app/api/
   lab/                  # chat, conversations, onboarding, profile, upload
   session/[id]/         # token, nudge, flag, complete, transcript, messages
   notifications/        # GET bell notifications + POST mark-read
-  admin/                # video-sessions, invite-student, lab-students, teacher-config
-  teacher/              # register, settings, invite-student
+  admin/                # video-sessions, invite-student, lab-students, teacher-config, revenue
+  teacher/              # register, settings, invite-student, connect (onboard + status)
   cron/                 # session-reminders (daily), sync-availability (daily)
 scripts/
   seed-blog.ts          # Seed sample blog posts
@@ -150,9 +151,11 @@ DAILY_API_KEY=your_daily_api_key
 # Site URL (used in email join links)
 NEXT_PUBLIC_SITE_URL=https://yourdomain.com
 
-# Stripe (consultation bookings)
+# Stripe (consultation bookings + Connect marketplace)
 STRIPE_SECRET_KEY=your_stripe_secret_key
-STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret        # booking webhook (/api/stripe/webhook)
+STRIPE_LAB_WEBHOOK_SECRET=your_lab_webhook_secret       # /lab subscription webhook (/api/webhooks/stripe)
+STRIPE_CONNECT_WEBHOOK_SECRET=your_connect_webhook_secret  # Connect events (/api/webhooks/stripe-connect)
 
 # Google Calendar (booking availability sync)
 GOOGLE_SERVICE_ACCOUNT_EMAIL=your_service_account@project.iam.gserviceaccount.com
@@ -180,7 +183,7 @@ Apply all migrations from `supabase/migrations/` in order. Key tables:
 | `conversations` | Essay coaching chat sessions |
 | `conversation_messages` | Individual chat messages |
 | `usage_logs` | Daily message quota tracking |
-| `teachers` | Teacher accounts + `agent_config` JSONB |
+| `teachers` | Teacher accounts + `agent_config` JSONB + `stripe_account_id` / `stripe_onboarding_complete` |
 | `knowledge_chunks` | Teacher RAG playbook (teacher-scoped) |
 | `sessions` | Video coaching sessions (Daily.co) |
 | `session_messages` | Pre/post-session thread |

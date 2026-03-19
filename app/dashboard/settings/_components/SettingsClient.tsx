@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { StorefrontContent, CaseStudy, Testimonial, PhilosophyStep } from "@/lib/types/storefront";
@@ -24,15 +24,18 @@ interface Teacher {
   primary_emphasis: 'ai' | 'live' | 'equal';
   storefront_content: StorefrontContent | null;
   storefront_published: boolean;
+  stripe_account_id: string | null;
+  stripe_onboarding_complete: boolean;
 }
 
-type TabId = 'profile' | 'storefront' | 'agent' | 'settings' | 'publish';
+type TabId = 'profile' | 'storefront' | 'agent' | 'settings' | 'payments' | 'publish';
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'profile', label: 'Profile' },
   { id: 'storefront', label: 'Storefront' },
   { id: 'agent', label: 'AI Agent' },
   { id: 'settings', label: 'Settings' },
+  { id: 'payments', label: 'Payments' },
   { id: 'publish', label: 'Publish' },
 ];
 
@@ -143,6 +146,17 @@ export default function SettingsClient({
   // ── Publish tab state
   const [published, setPublished] = useState(teacher.storefront_published ?? false);
 
+  // ── Payments tab state
+  const [connectStatus, setConnectStatus] = useState<{
+    onboarding_complete: boolean;
+    available: number | null;
+    pending: number | null;
+    deauthorized?: boolean;
+  } | null>(null);
+  const [connectLoading, setConnectLoading] = useState(false);
+  const [connectOnboarding, setConnectOnboarding] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
+
   // ── Tab and save state
   const [activeTab, setActiveTab] = useState<TabId>('profile');
   const [saving, setSaving] = useState(false);
@@ -175,6 +189,52 @@ export default function SettingsClient({
   function showSaved() {
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
+  }
+
+  // Switch to payments tab if the URL says so (return from Stripe onboarding)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("tab") === "payments") {
+      setActiveTab("payments");
+    }
+  }, []);
+
+  // Fetch connect status whenever the payments tab becomes active
+  useEffect(() => {
+    if (activeTab !== "payments") return;
+    if (connectStatus !== null) return; // already loaded
+
+    setConnectLoading(true);
+    setConnectError(null);
+    fetch("/api/teacher/connect/status")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.error) {
+          setConnectError(data.error);
+        } else {
+          setConnectStatus(data);
+        }
+      })
+      .catch(() => setConnectError("Failed to load payment status"))
+      .finally(() => setConnectLoading(false));
+  }, [activeTab, connectStatus]);
+
+  async function handleConnectOnboard() {
+    setConnectOnboarding(true);
+    setConnectError(null);
+    try {
+      const res = await fetch("/api/teacher/connect/onboard", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setConnectError(data.error ?? "Failed to start payout setup");
+        return;
+      }
+      window.location.href = data.url;
+    } catch {
+      setConnectError("Failed to start payout setup");
+    } finally {
+      setConnectOnboarding(false);
+    }
   }
 
   async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -831,6 +891,106 @@ export default function SettingsClient({
               >
                 {saving ? "Saving…" : saved ? "Saved ✓" : "Save settings"}
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── PAYMENTS TAB ─────────────────────────────────────────────── */}
+        {activeTab === 'payments' && (
+          <div className="space-y-8">
+            <div>
+              <h1 className="text-2xl font-semibold text-white mb-1">Payouts</h1>
+              <p className="text-zinc-400 text-sm">
+                Connect a Stripe account to receive 80% of session payments automatically.
+                StoryLab retains 20%.
+              </p>
+            </div>
+
+            {connectError && (
+              <div className="rounded-lg border border-red-800/40 bg-red-950/20 px-4 py-3 text-sm text-red-400">
+                {connectError}
+              </div>
+            )}
+
+            {connectLoading ? (
+              <div className="rounded-xl border border-zinc-800 p-6">
+                <p className="text-sm text-zinc-500">Loading payout status…</p>
+              </div>
+            ) : connectStatus ? (
+              <>
+                {/* Status card */}
+                <div className="rounded-xl border border-zinc-800 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm font-semibold text-white">Payout Account</p>
+                    {connectStatus.deauthorized ? (
+                      <span className="rounded-full bg-red-900/40 px-3 py-1 text-xs font-medium text-red-400">Disconnected</span>
+                    ) : connectStatus.onboarding_complete ? (
+                      <span className="rounded-full bg-emerald-900/40 px-3 py-1 text-xs font-medium text-emerald-400">Active</span>
+                    ) : teacher.stripe_account_id ? (
+                      <span className="rounded-full bg-yellow-900/40 px-3 py-1 text-xs font-medium text-yellow-400">Pending KYC</span>
+                    ) : (
+                      <span className="rounded-full bg-zinc-800 px-3 py-1 text-xs font-medium text-zinc-500">Not connected</span>
+                    )}
+                  </div>
+
+                  {connectStatus.onboarding_complete && !connectStatus.deauthorized ? (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="rounded-lg bg-zinc-900 px-4 py-3">
+                        <p className="text-xs text-zinc-500 mb-1">Available</p>
+                        <p className="text-xl font-semibold text-white">
+                          ${((connectStatus.available ?? 0) / 100).toFixed(2)}
+                        </p>
+                      </div>
+                      <div className="rounded-lg bg-zinc-900 px-4 py-3">
+                        <p className="text-xs text-zinc-500 mb-1">Pending</p>
+                        <p className="text-xl font-semibold text-white">
+                          ${((connectStatus.pending ?? 0) / 100).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-zinc-500 mt-1">
+                      {connectStatus.deauthorized
+                        ? "Your Stripe account was disconnected. Reconnect to resume payouts."
+                        : teacher.stripe_account_id
+                        ? "Complete Stripe's verification to activate payouts. This usually takes a few minutes."
+                        : "Set up a Stripe account to receive 80% of every session payment automatically."}
+                    </p>
+                  )}
+                </div>
+
+                {/* CTA */}
+                {(!connectStatus.onboarding_complete || connectStatus.deauthorized) && (
+                  <button
+                    onClick={handleConnectOnboard}
+                    disabled={connectOnboarding}
+                    className="rounded-lg bg-white text-zinc-900 px-5 py-2.5 text-sm font-medium hover:bg-zinc-100 disabled:opacity-50 transition-colors"
+                  >
+                    {connectOnboarding
+                      ? "Redirecting…"
+                      : connectStatus.deauthorized
+                      ? "Reconnect Stripe account"
+                      : teacher.stripe_account_id
+                      ? "Complete setup →"
+                      : "Set up payouts →"}
+                  </button>
+                )}
+              </>
+            ) : null}
+
+            <div className="rounded-xl border border-zinc-800/50 p-5">
+              <p className="text-xs font-semibold text-zinc-600 uppercase tracking-widest mb-2">Revenue split</p>
+              <div className="flex items-center gap-6">
+                <div>
+                  <p className="text-2xl font-bold text-white">80%</p>
+                  <p className="text-xs text-zinc-500 mt-0.5">To you</p>
+                </div>
+                <div className="h-8 w-px bg-zinc-800" />
+                <div>
+                  <p className="text-2xl font-bold text-zinc-600">20%</p>
+                  <p className="text-xs text-zinc-500 mt-0.5">StoryLab platform fee</p>
+                </div>
+              </div>
             </div>
           </div>
         )}

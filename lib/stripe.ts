@@ -40,3 +40,50 @@ export async function getOrCreateStripeCustomer(
 
   return customer.id;
 }
+
+/**
+ * Return the existing Stripe Connect Express account ID for this teacher,
+ * or create a new Express account and persist its ID to teachers.
+ *
+ * Returns the acct_xxx string.
+ */
+export async function getOrCreateConnectAccount(
+  teacherId: string,
+  teacherEmail: string
+): Promise<string> {
+  // Recheck DB to avoid race condition with concurrent onboard calls
+  const { data: teacher } = await getSupabase()
+    .from("teachers")
+    .select("stripe_account_id")
+    .eq("id", teacherId)
+    .single();
+
+  if (teacher?.stripe_account_id) return teacher.stripe_account_id;
+
+  const account = await getStripe().accounts.create({
+    type: "express",
+    email: teacherEmail,
+    metadata: { teacher_id: teacherId },
+  });
+
+  const { error: writeError } = await getSupabase()
+    .from("teachers")
+    .update({ stripe_account_id: account.id })
+    .eq("id", teacherId);
+
+  if (writeError) {
+    // Unique constraint violation: a concurrent call already wrote an account ID.
+    // Re-read to get the winner and return that instead of the orphaned one we just created.
+    if ((writeError as { code?: string }).code === "23505") {
+      const { data: fresh } = await getSupabase()
+        .from("teachers")
+        .select("stripe_account_id")
+        .eq("id", teacherId)
+        .single();
+      if (fresh?.stripe_account_id) return fresh.stripe_account_id;
+    }
+    throw writeError;
+  }
+
+  return account.id;
+}

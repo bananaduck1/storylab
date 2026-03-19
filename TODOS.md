@@ -1,6 +1,6 @@
 # TODOs
 
-Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35. Updated 2026-03-19 — teacher profile builder review (x2 new: TODO-36, TODO-37; TODO-34 and TODO-35 superseded by accepted scope). Added 2026-03-19: TODO-38 (enterprise/districts demo flow), TODO-39 (student learning dashboard — 10x vision). Added 2026-03-19: TODO-40 (student platform research), TODO-41 (primary_emphasis section ordering). Added 2026-03-19: TODO-42 (B2B institutional hub — private school/org communities), TODO-43 (AI translation layer — cross-language tutoring). Updated 2026-03-19: TODO-42 and TODO-43 expanded with full implementation nuance from /plan-ceo-review SELECTIVE EXPANSION (chosen direction: TODO-42 = Approach C full multi-tenant subdomains; TODO-43 = build ladder A→C→B).
+Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35. Updated 2026-03-19 — teacher profile builder review (x2 new: TODO-36, TODO-37; TODO-34 and TODO-35 superseded by accepted scope). Added 2026-03-19: TODO-38 (enterprise/districts demo flow), TODO-39 (student learning dashboard — 10x vision). Added 2026-03-19: TODO-40 (student platform research), TODO-41 (primary_emphasis section ordering). Added 2026-03-19: TODO-42 (B2B institutional hub — private school/org communities), TODO-43 (AI translation layer — cross-language tutoring). Updated 2026-03-19: TODO-42 and TODO-43 expanded with full implementation nuance from /plan-ceo-review SELECTIVE EXPANSION (chosen direction: TODO-42 = Approach C full multi-tenant subdomains; TODO-43 = build ladder A→C→B). Added 2026-03-19: TODO-44 (international teacher payout support). Stripe Connect plan reviewed 2026-03-19 — scope: Connect Express + 20% take-rate + earnings widget + admin revenue table. Implemented 2026-03-19: TODO-28 (Stripe Connect) shipped.
 
 ---
 
@@ -455,7 +455,7 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 
 ---
 
-## TODO-28: Stripe Connect + platform take-rate
+## TODO-28: Stripe Connect + platform take-rate ✅ DONE
 
 **What:** Implement Stripe Connect marketplace payments — teacher connected accounts, automatic platform fee extraction on each transaction, teacher payouts.
 
@@ -470,6 +470,8 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 **Effort:** L human / M with CC | **Priority:** P1 | **Depends on:** marketplace-reframe plan (`/teachers/[slug]` storefront + platform homepage) must ship first. Once storefront is live, this is unblocked.
 
 **Update (2026-03-18):** Prerequisite noted. Marketplace-reframe plan (CEO review 2026-03-18) builds the storefront that Stripe Connect needs as its UI entry point.
+
+**Completed: 2026-03-19** — Shipped: Connect Express onboarding, `account.updated` webhook, 20% `application_fee_amount` on `/api/book/checkout`, teacher Payments tab in `/dashboard/settings`, admin revenue table on `/admin/platform`. DB: `teachers.stripe_account_id` + `stripe_onboarding_complete`. Deferred: /lab subscription fee (TODO-45), international payouts (TODO-44).
 
 ---
 
@@ -752,3 +754,34 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 **Effort:** S CC+gstack (Approach A alone); M CC+gstack (+ Approach C); XL/L (full ladder including real-time)
 **Priority:** P3 — vision-level; Approach A can ship anytime; full ladder after B2B model is validated (TODO-42)
 **Depends on:** Student profile (shipped), /lab chat (shipped), video sessions (shipped for Approach C+B)
+
+---
+
+## TODO-44: International teacher payout support
+
+**What:** Validate and document which countries Stripe Connect Express supports for teacher payouts before opening the platform to non-US teachers. Add a country eligibility check to the Connect onboarding flow so teachers in unsupported countries see a clear message rather than failing silently mid-KYC.
+
+**Why:** Stripe Express doesn't support all countries equally — some require Standard accounts instead, some are unsupported entirely. A teacher in Korea, Canada, or India will have a different onboarding experience. Before recruiting international teachers, we need to know what we can actually offer them.
+
+**Context:** Stripe's supported countries for Connect Express are listed at https://stripe.com/docs/connect/express-accounts. The `teachers.stripe_account_id` created in the Stripe Connect PR (TODO-28) works globally for charge routing, but payout eligibility (can money actually land in the teacher's bank?) is country-dependent. Research spike: for each target country (Korea, Canada, India, UK — wherever teacher #3+ might come from), confirm: (a) Express supported, (b) payout timeline, (c) any additional identity verification requirements.
+
+**Effort:** S research spike | **Priority:** P3
+**Depends on:** Stripe Connect foundation (TODO-28, shipped), international teacher recruitment
+
+---
+
+## TODO-45: Platform fee on /lab recurring subscriptions
+
+**What:** Extend the student's `/lab` subscription checkout (`app/api/payments/subscribe/route.ts`) to route through the teacher's Connect account with a 20% platform fee — so when a student subscribes to teacher #2's AI coaching plan, 80% goes to the teacher automatically.
+
+**Why:** The Connect foundation (TODO-28) extracts fees on one-time session bookings. But /lab monthly subscriptions (`mode: "subscription"`) currently go straight to the platform account. Once teacher #2 has /lab students subscribing, this fee capture is missing.
+
+**Pros:** Completes the marketplace revenue model — 20% cut on both live sessions AND AI subscription revenue. Foundation already exists after TODO-28.
+
+**Cons:** Connect + subscriptions have edge cases: teacher deauthorizes mid-subscription (what happens to the recurring charge?), teacher leaves platform. Need clear policies before implementing.
+
+**Context:** `app/api/payments/subscribe/route.ts` creates a Stripe Checkout session in `mode: "subscription"`. To add Connect routing, add `application_fee_percent: 20` (not `application_fee_amount` — percent is used for subscriptions) and `transfer_data.destination: teacher.stripe_account_id` to the session. Also need `subscription_data.transfer_data`. The student profile must be associated with a specific teacher_id for this to work — right now `subscribe` doesn't know which teacher the student is subscribing to.
+
+**Effort:** M human / S CC+gstack
+**Priority:** P2
+**Depends on:** TODO-28 (Stripe Connect foundation), teacher-student association in student_profiles, teacher_id-scoped /lab subscription model
