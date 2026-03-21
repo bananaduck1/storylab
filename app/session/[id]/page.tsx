@@ -4,6 +4,7 @@ import { getSupabase } from "@/lib/supabase";
 import PreSessionBrief from "./_components/PreSessionBrief";
 import PreSessionThread from "./_components/PreSessionThread";
 import VideoRoom from "./_components/VideoRoom";
+import ConsentGate from "./_components/ConsentGate";
 import type { Portrait } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +38,7 @@ export default async function SessionPage({
   }
 
   // Students may only join their own session
+  let studentHasConsented = false;
   if (role === "student") {
     const studentId = await getCallerStudentId(user.id);
     if (!studentId || studentId !== session.student_id) {
@@ -46,6 +48,15 @@ export default async function SessionPage({
         </div>
       );
     }
+
+    // Check for prior consent so returning students skip the modal
+    const { data: consentRow } = await supabase
+      .from("session_consents")
+      .select("id")
+      .eq("session_id", id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    studentHasConsented = !!consentRow;
   }
 
   // Fetch messages for thread (both roles)
@@ -112,11 +123,20 @@ export default async function SessionPage({
           teacherName={teacherName}
         />
       )}
-      <VideoRoom
-        sessionId={id}
-        roomName={session.daily_room_name}
-        isTeacher={isTeacher}
-      />
+      {/* Students see ConsentGate unless they've already consented this session */}
+      {isTeacher || studentHasConsented ? (
+        <VideoRoom
+          sessionId={id}
+          roomName={session.daily_room_name}
+          isTeacher={isTeacher}
+        />
+      ) : (
+        <ConsentGate
+          sessionId={id}
+          roomName={session.daily_room_name}
+          teacherName={teacherName}
+        />
+      )}
     </div>
   );
 }
