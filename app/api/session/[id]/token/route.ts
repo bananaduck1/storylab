@@ -47,6 +47,38 @@ export async function GET(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     isOwner = false;
+
+    // ── Server-side consent enforcement ───────────────────────────────────
+    // The client modal is UX — this is the actual gate.
+
+    // 1. Check recordings_consent — student may have withdrawn via Data Rights Center
+    const { data: profile } = await supabase
+      .from("student_profiles")
+      .select("recordings_consent")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (profile && profile.recordings_consent === false) {
+      return NextResponse.json(
+        { error: "consent required", reason: "recordings_consent_withdrawn" },
+        { status: 403 }
+      );
+    }
+
+    // 2. Check session-specific consent row
+    const { data: consentRow } = await supabase
+      .from("session_consents")
+      .select("id")
+      .eq("session_id", id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!consentRow) {
+      return NextResponse.json(
+        { error: "consent required", reason: "no_session_consent" },
+        { status: 403 }
+      );
+    }
   }
 
   // Mark session as in_progress when someone joins (idempotent)
