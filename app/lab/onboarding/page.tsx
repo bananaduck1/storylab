@@ -19,7 +19,7 @@ export default async function OnboardingPage() {
       .select("teacher_id, teachers(name)")
       .eq("user_id", user.id)
       .maybeSingle();
-    const teacher = studentRow?.teachers as { name: string } | null;
+    const teacher = studentRow?.teachers as unknown as { name: string } | null;
     if (teacher?.name) {
       teacherName = teacher.name.split(" ")[0];
     }

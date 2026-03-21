@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
-import { getCallerUser, getUserRole } from "@/lib/lab-auth";
+import { getCallerUser, getUserRole, getCallerStudentId } from "@/lib/lab-auth";
 
 export async function POST(
   req: NextRequest,
@@ -21,16 +21,22 @@ export async function POST(
     return NextResponse.json({ error: "Teachers do not require consent" }, { status: 400 });
   }
 
-  // Verify the session exists and the student belongs to it
+  // Verify the session exists and belongs to this student
   const supabase = getSupabase();
   const { data: session } = await supabase
     .from("sessions")
-    .select("id")
+    .select("id, student_id")
     .eq("id", sessionId)
     .single();
 
   if (!session) {
     return NextResponse.json({ error: "Session not found" }, { status: 404 });
+  }
+
+  // Ownership check: ensure the authenticated user is the student on this session
+  const studentId = await getCallerStudentId(user.id);
+  if (!studentId || studentId !== session.student_id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   // Forward IP for audit trail (best-effort)
