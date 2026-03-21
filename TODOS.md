@@ -875,3 +875,32 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 **Effort:** XS human / XS CC+gstack
 **Priority:** P3 — add when the second or third org is signed; not needed for first deal
 **Depends on:** TODO-49 (sales-led org pricing)
+
+---
+
+## TODO-51: Consent and user agreement to recording for live sessions
+
+**What:** Before a student (or parent, if minor) joins a `/session/[id]` video session, surface a clear consent prompt acknowledging that the session may be recorded and used for coaching/transcript purposes. Gate entry to the Daily.co room until consent is accepted. Log the consent event (user ID, session ID, timestamp, version of the agreement) to the database for compliance purposes.
+
+**Why:** The platform already captures transcripts via Web Speech API and stores them in the `sessions` table. Recording individuals without informed consent is a legal liability (FERPA for minors, state wiretapping laws, GDPR if international). A lightweight consent gate protects both the platform and users, and is standard practice for any edtech product handling student data.
+
+**Scope:**
+- Pre-session modal on `/session/[id]` (student side only; teacher is implicitly consenting as platform operator)
+- Consent text: "This session may be recorded and transcribed to support your coaching. By clicking 'I Agree', you consent to this recording." Include link to Privacy Policy.
+- DB: `session_consents` table — `id`, `session_id`, `user_id`, `consented_at`, `agreement_version TEXT`, `ip_address TEXT`
+- Migration: new file `supabase/migrations/20260319_session_consents.sql`
+- API: `POST /api/session/[id]/consent` — inserts consent row, returns 200; idempotent (upsert on session_id + user_id)
+- Gate: `VideoRoom.tsx` renders consent modal first; only mounts Daily.co iframe after consent API call succeeds
+- Agreement version: hardcode `'v1'` now; bump when text changes
+
+**Edge cases:**
+- Teacher joins → skip consent gate (check role via token claims)
+- Student refreshes mid-session → re-check consent via GET or store in session state to avoid re-prompting
+- Parent email link → if parent joins, they should also see the consent
+
+**Pros:** Legal compliance, trust signal for parents, defensible audit trail.
+**Cons:** Adds one extra click before sessions start. Minor UX friction.
+
+**Effort:** S human / S CC+gstack
+**Priority:** P1 — must ship before any live sessions go out; legal requirement
+**Depends on:** `/session/[id]` video infrastructure (already shipped)
