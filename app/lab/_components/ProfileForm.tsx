@@ -473,6 +473,14 @@ export default function ProfileForm({
               Account settings →
             </a>
           </div>
+          <div className="mt-4 pt-4 border-t border-zinc-100">
+            <a
+              href="/lab/data"
+              className="text-xs text-zinc-400 hover:text-zinc-700 transition-colors"
+            >
+              Your StoryLab data →
+            </a>
+          </div>
         </section>
       </div>
     </div>

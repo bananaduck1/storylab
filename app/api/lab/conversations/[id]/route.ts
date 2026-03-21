@@ -8,6 +8,7 @@ async function getOwnedConversation(convId: string, userId: string) {
     .select("id")
     .eq("id", convId)
     .eq("user_id", userId)
+    .is("deleted_at", null)
     .maybeSingle();
   return data;
 }
@@ -83,9 +84,10 @@ export async function DELETE(
   const conv = await getOwnedConversation(id, user.id);
   if (!conv) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  // Soft delete — messages remain in DB. Hard delete is deferred.
   const { error } = await getSupabase()
     .from("conversations")
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

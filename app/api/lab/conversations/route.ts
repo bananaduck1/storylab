@@ -10,6 +10,7 @@ export async function GET() {
     .from("conversations")
     .select("id, title, updated_at, essay_mode")
     .eq("user_id", user.id)
+    .is("deleted_at", null)
     .order("updated_at", { ascending: false })
     .limit(50);
 
