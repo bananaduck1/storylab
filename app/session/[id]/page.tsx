@@ -57,6 +57,17 @@ export default async function SessionPage({
 
   const threadMessages = messages ?? [];
 
+  // Resolve teacher name for student-facing thread (non-blocking)
+  let teacherName = "your coach";
+  if (session.teacher_id) {
+    const { data: teacher } = await supabase
+      .from("teachers")
+      .select("name")
+      .eq("id", session.teacher_id)
+      .maybeSingle();
+    if (teacher?.name) teacherName = teacher.name.split(" ")[0];
+  }
+
   // For teacher: fetch student + portrait for pre-session brief
   let studentName = "";
   let portrait: Portrait | null = null;
@@ -98,6 +109,7 @@ export default async function SessionPage({
         <PreSessionThread
           sessionId={id}
           initialMessages={threadMessages}
+          teacherName={teacherName}
         />
       )}
       <VideoRoom

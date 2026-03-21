@@ -29,9 +29,11 @@ interface Stats {
 export default function ProfileForm({
   profile: initial,
   stats,
+  teacherName = "your coach",
 }: {
   profile: ProfileData;
   stats: Stats;
+  teacherName?: string;
 }) {
   const [fullName, setFullName] = useState(initial.full_name ?? "");
   const [grade, setGrade] = useState(initial.grade ?? "");
@@ -116,7 +118,7 @@ export default function ProfileForm({
   }
 
   async function handleResetPortrait() {
-    if (!window.confirm("Clear Sam's coaching memory about you? This can't be undone.")) return;
+    if (!window.confirm(`Clear ${teacherName}'s coaching memory about you? This can't be undone.`)) return;
     setResetting(true);
     setResetError("");
     try {
@@ -158,7 +160,7 @@ export default function ProfileForm({
           </div>
           <p className="text-xs text-zinc-400">
             {filledCount === totalOptional
-              ? "Profile complete — Sam has full context"
+              ? `Profile complete — ${teacherName} has full context`
               : `${filledCount} of ${totalOptional} optional fields filled`}
           </p>
         </div>
@@ -262,7 +264,7 @@ export default function ProfileForm({
           {/* Favorites */}
           <div className="space-y-4 pt-2 border-t border-zinc-100">
             <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide pt-2">
-              A few favorites <span className="normal-case font-normal">(optional — helps Sam get to know you)</span>
+              A few favorites <span className="normal-case font-normal">(optional — helps {teacherName} get to know you)</span>
             </p>
             <div>
               <label className="block text-xs text-zinc-400 mb-1">Favorite book</label>
@@ -390,18 +392,18 @@ export default function ProfileForm({
             </div>
           ) : (
             <p className="text-sm text-zinc-400 italic">
-              No portrait yet — Sam will build one as you chat.
+              No portrait yet — {teacherName} will build one as you chat.
             </p>
           )}
           {refreshError && <p className="mt-2 text-xs text-red-500">{refreshError}</p>}
         </section>
 
-        {/* What Sam remembers */}
+        {/* Coaching memory */}
         <section className="border-t border-zinc-100 pt-8">
           <div className="flex items-start justify-between mb-3">
             <div>
               <h2 className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
-                What Sam remembers
+                What {teacherName} remembers
               </h2>
               <p className="text-xs text-zinc-400 mt-0.5">AI-generated. Updates after each session.</p>
             </div>
@@ -421,7 +423,7 @@ export default function ProfileForm({
             </p>
           ) : (
             <p className="text-sm text-zinc-400 italic">
-              No coaching memory yet. Sam will build this as you chat.
+              No coaching memory yet. {teacherName} will build this as you chat.
             </p>
           )}
           {resetError && (

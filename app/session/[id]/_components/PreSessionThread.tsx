@@ -12,9 +12,11 @@ interface SessionMessage {
 export default function PreSessionThread({
   sessionId,
   initialMessages,
+  teacherName = "your coach",
 }: {
   sessionId: string;
   initialMessages: SessionMessage[];
+  teacherName?: string;
 }) {
   const [messages, setMessages] = useState<SessionMessage[]>(initialMessages);
   const [input, setInput] = useState("");
@@ -70,7 +72,7 @@ export default function PreSessionThread({
     if (cantMakeSent) return;
     const sessionInfo = document.title; // fallback
     await sendMessage(
-      "Hi Sam, I won't be able to make our session. Can we reschedule?"
+      `Hi ${teacherName}, I won't be able to make our session. Can we reschedule?`
     );
     setCantMakeSent(true);
   }
@@ -86,7 +88,7 @@ export default function PreSessionThread({
     <div className="border-b border-zinc-800 bg-zinc-900 px-6 py-5">
       <div className="mx-auto max-w-2xl space-y-4">
         <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
-          Message Sam
+          Message {teacherName}
         </p>
 
         {/* Thread */}
@@ -97,7 +99,7 @@ export default function PreSessionThread({
         >
           {messages.length === 0 ? (
             <p className="text-sm italic text-zinc-500">
-              No messages yet. Leave Sam a note before your session.
+              No messages yet. Leave {teacherName} a note before your session.
             </p>
           ) : (
             messages.map((m) =>
@@ -114,7 +116,7 @@ export default function PreSessionThread({
                   className="pl-4 text-zinc-200 text-sm italic"
                   style={{ borderLeft: "none" }}
                 >
-                  <span className="text-xs text-zinc-500 not-italic mr-2">Sam</span>
+                  <span className="text-xs text-zinc-500 not-italic mr-2">{teacherName}</span>
                   {m.body}
                 </div>
               )
@@ -158,7 +160,7 @@ export default function PreSessionThread({
             aria-label="Notify teacher you can't make this session"
             className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
           >
-            Can&apos;t make it? Let Sam know →
+            Can&apos;t make it? Let {teacherName} know →
           </button>
         )}
       </div>

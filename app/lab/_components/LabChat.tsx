@@ -51,6 +51,8 @@ interface LabChatProps {
   isFounder?: boolean;
   /** True if teacher opens /lab but has no student_profile yet — show lifelong learner banner. */
   showTeacherLearnerBanner?: boolean;
+  /** First name of the assigned teacher. Defaults to "your coach". */
+  teacherName?: string;
 }
 
 function formatRelativeDate(dateStr: string): string {
@@ -101,6 +103,7 @@ export default function LabChat({
   isTeacher = false,
   isFounder = false,
   showTeacherLearnerBanner = false,
+  teacherName = "your coach",
 }: LabChatProps) {
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
@@ -783,10 +786,10 @@ export default function LabChat({
               {messages.length === 0 && (
                 <div className="text-center py-12">
                   <div className="w-10 h-10 rounded-full bg-zinc-900 flex items-center justify-center mx-auto mb-4">
-                    <span className="text-white text-sm font-semibold">S</span>
+                    <span className="text-white text-sm font-semibold">{(teacherName || "C")[0].toUpperCase()}</span>
                   </div>
                   <p className="text-zinc-500 text-sm mb-6">
-                    Hi {firstName}! I&apos;m Sam, your essay coach. What would you like to work on today?
+                    Hi {firstName}! I&apos;m {teacherName}, your essay coach. What would you like to work on today?
                   </p>
                   {/* Mode picker — only shown before the first message */}
                   <div className="inline-flex flex-col items-start gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-5 py-4">

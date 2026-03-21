@@ -27,10 +27,10 @@ export async function POST(
 
   const supabase = getSupabase();
 
-  // Fetch session to get student_id
+  // Fetch session to get student_id and teacher name
   const { data: session } = await supabase
     .from("sessions")
-    .select("student_id")
+    .select("student_id, teacher_id, teachers(name)")
     .eq("id", id)
     .single();
 
@@ -55,9 +55,12 @@ Voice characteristics: ${(portrait.content_json as any).voice_characteristics ??
 `.trim()
     : "No portrait yet for this student.";
 
-  const systemPrompt = `You are a real-time coaching assistant for a college essay tutor named Sam.
+  const sessionTeacher = (session as any).teachers as { name: string } | null;
+  const teacherFirstName = sessionTeacher?.name?.split(" ")[0] ?? "the tutor";
+
+  const systemPrompt = `You are a real-time coaching assistant for a college essay tutor named ${teacherFirstName}.
 During a live tutoring session, you receive the last few minutes of conversation transcript
-and the student's portrait. You surface 1-2 brief, specific coaching nudges for Sam.
+and the student's portrait. You surface 1-2 brief, specific coaching nudges for ${teacherFirstName}.
 
 Rules:
 - Each nudge is 1 sentence, max 15 words
@@ -75,7 +78,7 @@ LIVE TRANSCRIPT (last ~3 minutes):
 ${transcript_snippet.slice(-2000)}
 </transcript>
 
-What should Sam notice or try right now?`;
+What should ${teacherFirstName} notice or try right now?`;
 
   try {
     const res = await fetch("https://api.openai.com/v1/chat/completions", {

@@ -13,9 +13,12 @@ export default async function ProfilePage() {
 
   // Fetch profile and conversation IDs in parallel
   const [{ data: profile }, { data: convRows }] = await Promise.all([
-    db.from("student_profiles").select("*").eq("user_id", user.id).maybeSingle(),
+    db.from("student_profiles").select("*, teachers(name)").eq("user_id", user.id).maybeSingle(),
     db.from("conversations").select("id").eq("user_id", user.id),
   ]);
+
+  const teacherRow = profile?.teachers as { name: string } | null;
+  const teacherName = teacherRow?.name?.split(" ")[0] ?? "your coach";
 
   if (!profile || !profile.onboarding_done) {
     redirect("/lab/onboarding");
@@ -41,6 +44,7 @@ export default async function ProfilePage() {
         msgCount,
         email: user.email ?? "",
       }}
+      teacherName={teacherName}
     />
   );
 }

@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   const db = getSupabase();
   const { data: student, error } = await db
     .from("students")
-    .select("id, name, email, user_id")
+    .select("id, name, email, user_id, teacher_id, teachers(name)")
     .eq("id", student_id)
     .maybeSingle();
 
@@ -31,6 +31,9 @@ export async function POST(req: NextRequest) {
   const claimUrl = `${siteUrl}/lab/claim/${student.id}`;
   const from = process.env.CONTACT_FROM_EMAIL ?? "onboarding@resend.dev";
 
+  const studentTeacher = (student as any).teachers as { name: string } | null;
+  const teacherFirstName = studentTeacher?.name?.split(" ")[0] ?? "Your coach";
+
   const resend = new Resend(process.env.RESEND_API_KEY);
   const { error: sendError } = await resend.emails.send({
     from,
@@ -39,7 +42,7 @@ export async function POST(req: NextRequest) {
     text: [
       `Hi ${student.name},`,
       "",
-      "Sam has set up your IvyStoryLab account. Click the link below to connect your account and start working with your AI essay coach:",
+      `${teacherFirstName} has set up your IvyStoryLab account. Click the link below to connect your account and start working with your AI essay coach:`,
       "",
       claimUrl,
       "",
@@ -50,7 +53,7 @@ export async function POST(req: NextRequest) {
     html: `
       <div style="font-family:Georgia,serif;max-width:520px;margin:0 auto;padding:40px 24px;color:#3f3f46;font-size:17px;line-height:1.75;">
         <p style="margin:0 0 16px;">Hi ${student.name},</p>
-        <p style="margin:0 0 24px;">Sam has set up your IvyStoryLab account. Click below to connect your account and start working with your AI essay coach:</p>
+        <p style="margin:0 0 24px;">${teacherFirstName} has set up your IvyStoryLab account. Click below to connect your account and start working with your AI essay coach:</p>
         <a href="${claimUrl}" style="display:inline-block;background:#18181b;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-size:15px;font-family:sans-serif;">
           Access your account →
         </a>

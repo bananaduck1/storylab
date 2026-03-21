@@ -28,7 +28,7 @@ export default async function LabPage(props: {
   // Fetch profile + conversations in parallel, then checkQuota reuses the profile row.
   // Always check for linked students record (any role may have one).
   const [{ data: profile }, { data: conversations }, linkedStudentRow] = await Promise.all([
-    db.from("student_profiles").select("*").eq("user_id", user.id).maybeSingle(),
+    db.from("student_profiles").select("*, teachers(name)").eq("user_id", user.id).maybeSingle(),
     db
       .from("conversations")
       .select("id, title, updated_at, essay_mode")
@@ -51,6 +51,9 @@ export default async function LabPage(props: {
       .maybeSingle();
     upcomingSession = nextSession ?? null;
   }
+  const teacherRow = profile?.teachers as { name: string } | null;
+  const teacherName = teacherRow?.name?.split(" ")[0] ?? "your coach";
+
   const quota = await checkQuota(user.id, profile);
 
   // isLinked: true if this user has a linked students record (or is a teacher/founder with no student record)
@@ -121,6 +124,7 @@ export default async function LabPage(props: {
         isTeacher={isTeacher}
         isFounder={isFounder}
         showTeacherLearnerBanner={isTeacher && (!profile || !profile.onboarding_done)}
+        teacherName={teacherName}
       />
     </>
   );

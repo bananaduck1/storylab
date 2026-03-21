@@ -23,7 +23,7 @@ export async function GET(
   const supabase = getSupabase();
   const { data: session, error } = await supabase
     .from("sessions")
-    .select("id, student_id, daily_room_name, scheduled_at, status")
+    .select("id, student_id, daily_room_name, scheduled_at, status, teacher_id, teachers(name)")
     .eq("id", id)
     .single();
 
@@ -57,7 +57,9 @@ export async function GET(
       .eq("id", id);
   }
 
-  const userName = role === "teacher" ? "Sam" : "Student";
+  const sessionTeacher = (session as any).teachers as { name: string } | null;
+  const teacherDisplayName = sessionTeacher?.name?.split(" ")[0] ?? "Coach";
+  const userName = role === "teacher" ? teacherDisplayName : "Student";
   const scheduledAt = session.scheduled_at ? new Date(session.scheduled_at) : undefined;
 
   let roomName = session.daily_room_name;

@@ -10,16 +10,18 @@ interface Message {
   content: string;
 }
 
-const TEACHER_SYSTEM_PROMPT_PREFIX = `You are not speaking directly to the student right now. You are advising the teacher (Sam) who is running a live session. Everything in this playbook describes how Sam works — use it to coach him in real-time on what to notice, what to ask, and what move to make next.
+function buildTeacherSystemPromptPrefix(teacherName: string): string {
+  return `You are not speaking directly to the student right now. You are advising the teacher (${teacherName}) who is running a live session. Everything in this playbook describes how ${teacherName} works — use it to coach them in real-time on what to notice, what to ask, and what move to make next.
 
-Your job: translate the principles below into live session guidance. Be concise and directive. Speak like a thoughtful colleague observing from the side: "Try asking...", "I'd notice...", "This feels like a moment to...". Surface patterns from the student's portrait. Name what's happening. Help Sam stay in his own mode of working rather than drifting into generic tutoring.
+Your job: translate the principles below into live session guidance. Be concise and directive. Speak like a thoughtful colleague observing from the side: "Try asking...", "I'd notice...", "This feels like a moment to...". Surface patterns from the student's portrait. Name what's happening. Help ${teacherName} stay in their own mode of working rather than drifting into generic tutoring.
 
-You are NOT the counselor in this conversation — Sam is. You are the voice in his ear.
+You are NOT the counselor in this conversation — ${teacherName} is. You are the voice in their ear.
 
 The full playbook follows. Apply it to the live session:
 
 ---
 `;
+}
 
 export async function POST(req: NextRequest) {
   const { studentId, messages, mode = "student" } = (await req.json()) as {
@@ -35,7 +37,7 @@ export async function POST(req: NextRequest) {
   // ── fetch student context ──────────────────────────────────────────────────
 
   const [studentRes, portraitRes, sessionsRes] = await Promise.all([
-    getSupabase().from("students").select("name, development_stage").eq("id", studentId).single(),
+    (getSupabase() as any).from("students").select("name, development_stage, teacher_id, teachers(name)").eq("id", studentId).single(),
     getSupabase()
       .from("portraits")
       .select("content_json")
@@ -55,6 +57,9 @@ export async function POST(req: NextRequest) {
   if (!student) {
     return new Response(JSON.stringify({ error: "Student not found" }), { status: 404 });
   }
+
+  const studentTeacher = student.teachers as { name: string } | null;
+  const teacherName = studentTeacher?.name?.split(" ")[0] || "Coach";
 
   const portrait = portraitRes.data?.content_json as { portrait_narrative?: string } | null;
   const recentSessions = sessionsRes.data ?? [];
@@ -103,7 +108,7 @@ export async function POST(req: NextRequest) {
   contextBlocks.push(`---`);
 
   const basePrompt = mode === "teacher"
-    ? TEACHER_SYSTEM_PROMPT_PREFIX + SYSTEM_PROMPT
+    ? buildTeacherSystemPromptPrefix(teacherName) + SYSTEM_PROMPT
     : SYSTEM_PROMPT;
 
   const finalSystemPrompt = basePrompt + "\n\n" + contextBlocks.join("\n");

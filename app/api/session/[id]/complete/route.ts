@@ -9,7 +9,8 @@ import { getCallerUser, getUserRole } from "@/lib/lab-auth";
 import { generatePortrait } from "@/lib/portrait-generation";
 import type { Student } from "@/lib/supabase";
 
-const PARENT_EMAIL_SYSTEM_PROMPT = `You are writing a brief parent update email on behalf of Sam Ahn, a college essay tutor.
+function buildParentEmailPrompt(teacherName: string): string {
+  return `You are writing a brief parent update email on behalf of ${teacherName}, a college essay tutor.
 
 The email should:
 - Be 3-5 sentences
@@ -19,7 +20,8 @@ The email should:
 - Sound warm and direct, like a thoughtful tutor writing quickly after a session
 - NOT be formatted with bullet points or headers
 
-Return only the email body (no subject line, no greeting, no signature). Sam will add those.`;
+Return only the email body (no subject line, no greeting, no signature). ${teacherName} will add those.`;
+}
 
 export async function POST(
   req: NextRequest,
@@ -48,6 +50,17 @@ export async function POST(
     return NextResponse.json({ error: "Session not found" }, { status: 404 });
   }
 
+  // Resolve teacher display name for transcript labels and parent email
+  let teacherFirstName = "Coach";
+  if (session.teacher_id) {
+    const { data: teacher } = await supabase
+      .from("teachers")
+      .select("name")
+      .eq("id", session.teacher_id)
+      .maybeSingle();
+    if (teacher?.name) teacherFirstName = teacher.name.split(" ")[0];
+  }
+
   // Read all transcript chunks for this session, sorted by timestamp
   const { data: chunks } = await supabase
     .from("transcript_chunks")
@@ -55,9 +68,9 @@ export async function POST(
     .eq("session_id", id)
     .order("timestamp_ms", { ascending: true });
 
-  // Build labelled dialogue: "Sam: ...\nStudent: ..."
+  // Build labelled dialogue: "{TeacherName}: ...\nStudent: ..."
   const dialogue = (chunks ?? [])
-    .map((c) => `${c.speaker === "teacher" ? "Sam" : "Student"}: ${c.text}`)
+    .map((c) => `${c.speaker === "teacher" ? teacherFirstName : "Student"}: ${c.text}`)
     .join("\n");
 
   const transcriptQuality =
@@ -144,7 +157,7 @@ Write the parent update email body.`;
         body: JSON.stringify({
           model: "gpt-4o-mini",
           messages: [
-            { role: "system", content: PARENT_EMAIL_SYSTEM_PROMPT },
+            { role: "system", content: buildParentEmailPrompt(teacherFirstName) },
             { role: "user", content: userPrompt },
           ],
           temperature: 0.5,
