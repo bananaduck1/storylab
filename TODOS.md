@@ -1,6 +1,6 @@
 # TODOs
 
-Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35. Updated 2026-03-19 — teacher profile builder review (x2 new: TODO-36, TODO-37; TODO-34 and TODO-35 superseded by accepted scope). Added 2026-03-19: TODO-38 (enterprise/districts demo flow), TODO-39 (student learning dashboard — 10x vision). Added 2026-03-19: TODO-40 (student platform research), TODO-41 (primary_emphasis section ordering). Added 2026-03-19: TODO-42 (B2B institutional hub — private school/org communities), TODO-43 (AI translation layer — cross-language tutoring). Updated 2026-03-19: TODO-42 and TODO-43 expanded with full implementation nuance from /plan-ceo-review SELECTIVE EXPANSION (chosen direction: TODO-42 = Approach C full multi-tenant subdomains; TODO-43 = build ladder A→C→B). Added 2026-03-19: TODO-44 (international teacher payout support). Stripe Connect plan reviewed 2026-03-19 — scope: Connect Express + 20% take-rate + earnings widget + admin revenue table. Implemented 2026-03-19: TODO-28 (Stripe Connect) shipped. Updated 2026-03-19 — B2B institutional hub CEO review: added TODO-46 (Phase 2 subdomains + branding), TODO-47 (SSO integration), TODO-48 (org analytics caching). Added 2026-03-19: TODO-49 (sales-led org pricing — contact Sam flow), TODO-50 (org pricing tier tracking).
+Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35. Updated 2026-03-19 — teacher profile builder review (x2 new: TODO-36, TODO-37; TODO-34 and TODO-35 superseded by accepted scope). Added 2026-03-19: TODO-38 (enterprise/districts demo flow), TODO-39 (student learning dashboard — 10x vision). Added 2026-03-19: TODO-40 (student platform research), TODO-41 (primary_emphasis section ordering). Added 2026-03-19: TODO-42 (B2B institutional hub — private school/org communities), TODO-43 (AI translation layer — cross-language tutoring). Updated 2026-03-19: TODO-42 and TODO-43 expanded with full implementation nuance from /plan-ceo-review SELECTIVE EXPANSION (chosen direction: TODO-42 = Approach C full multi-tenant subdomains; TODO-43 = build ladder A→C→B). Added 2026-03-19: TODO-44 (international teacher payout support). Stripe Connect plan reviewed 2026-03-19 — scope: Connect Express + 20% take-rate + earnings widget + admin revenue table. Implemented 2026-03-19: TODO-28 (Stripe Connect) shipped. Updated 2026-03-19 — B2B institutional hub CEO review: added TODO-46 (Phase 2 subdomains + branding), TODO-47 (SSO integration), TODO-48 (org analytics caching). Added 2026-03-19: TODO-49 (sales-led org pricing — contact Sam flow), TODO-50 (org pricing tier tracking). Implemented 2026-03-21: TODO-38 (For Schools marketing hub + demo funnel) shipped. Added 2026-03-21: TODO-53 (ROI calculator), TODO-54 (partner logos), TODO-55 (demo confirmation email), TODO-56 (PDF one-pager).
 
 ---
 
@@ -625,7 +625,9 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 
 ---
 
-## TODO-38: "Book a Demo" flow for school districts and educational organizations
+## TODO-38: "Book a Demo" flow for school districts and educational organizations ✅ DONE
+
+**Completed:** 2026-03-21 — shipped as `/for-schools` marketing hub + `/demo` intake form + `/for-schools/overview` printable one-pager. Navbar updated with "For Schools" link + "Schedule a Demo" button. Homepage institutional section added between Teachers and Manifesto sections. Email-only via Resend (no DB — add `demo_inquiries` table when volume justifies it).
 
 **What:** Build a dedicated landing page and inquiry flow for institutional buyers — school districts, tutoring centers, and edtech companies interested in licensing or deploying the platform.
 
@@ -928,3 +930,71 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 **Effort:** M human / S CC+gstack
 **Priority:** P2 — must resolve before 100 students or first K-12 school deal
 **Depends on:** TODO-51 (consent gate shipped)
+
+---
+
+## TODO-53: Interactive "how many students could benefit?" calculator on /for-schools
+
+**What:** An interactive calculator on `/for-schools` where an administrator enters their student count and sees a projected impact figure (e.g., "486 students could receive individualized coaching — at $8/student/month").
+
+**Why:** Makes the ROI tangible before the demo call. Principals and district admins think in cohorts and budgets — showing the math removes a friction point and pre-qualifies higher-intent leads.
+
+**Pros:** High-value conversion tool; makes the pitch concrete. Low build cost with CC.
+**Cons:** Requires locking in pricing model first (per-seat/month). If pricing changes, calculator needs updating. Don't build until there's a real price to show.
+
+**Context:** The `/for-schools` page currently has stat-based problem framing and pilot pathway. The calculator would go after the stakeholder cards and before the FERPA compliance section. Simple: one `<input type="range">` or `<input type="number">` → computed display of cost and student count. No server needed.
+
+**Effort:** S human / S CC+gstack
+**Priority:** P3 — defer until pricing is locked
+**Depends on:** Institutional pricing decision (TODO-49 resolution)
+
+---
+
+## TODO-54: Partner school logos / social proof section on /for-schools
+
+**What:** A logo strip or social proof section on `/for-schools` showing schools/districts that have run a pilot.
+
+**Why:** Institutional buyers make decisions based on peer adoption. "Lincoln Prep ran a pilot and expanded to 400 students" is worth more than any copy we can write.
+
+**Pros:** Single highest-impact trust signal for institutional conversion. Zero maintenance once built.
+**Cons:** Can't build this until at least one school signs. Placeholder logos look worse than nothing.
+
+**Context:** Add a `partner_schools` table (name, logo_url, testimonial, show_on_for_schools boolean). The section renders above or below the stakeholder cards on `/for-schools`. The `/for-schools/overview` printable one-pager should also show logos if available.
+
+**Effort:** S human / S CC+gstack
+**Priority:** P3 — unblocks when first institutional client signs
+**Depends on:** First K-12 school or district completing a pilot
+
+---
+
+## TODO-55: Demo auto-confirmation email with calendar link
+
+**What:** When an admin submits `/demo`, send them a confirmation email with a direct Google Calendar booking link (Calendly-style, but direct) so they can immediately schedule the call without a follow-up exchange.
+
+**Why:** The current flow emails the admin inbox and relies on a human to reply with times. A calendar link removes 1–2 back-and-forth emails and compresses the time-to-call from days to minutes.
+
+**Pros:** Faster time-to-demo. More professional experience. Low engineering effort.
+**Cons:** Requires a public booking calendar (Google Cal public slot, Calendly, or similar). Adds an env var (calendar link URL). The `/api/demo` route would send two emails instead of one (admin notification + applicant confirmation).
+
+**Context:** The `/api/demo` route already calls Resend. Add a second `resend.emails.send()` call to the applicant's email with a calendar booking link. The link is just an env var (`DEMO_CALENDAR_URL`) — no calendar API integration needed. When `DEMO_CALENDAR_URL` is not set, skip the applicant email (graceful degradation).
+
+**Effort:** S human / S CC+gstack
+**Priority:** P2 — high value, low effort; build when first demo requests arrive
+**Depends on:** TODO-38 shipped (this is a polish pass on it)
+
+---
+
+## TODO-56: Admin one-pager as downloadable PDF
+
+**What:** Replace the printable `/for-schools/overview` page with a real PDF download button that generates a server-rendered PDF.
+
+**Why:** "Print to PDF" works but produces varying quality across browsers and requires user action in a print dialog. A server-generated PDF is a single click, produces consistent output, and can be branded properly with watermarks and fonts.
+
+**Pros:** Better leave-behind artifact. Consistent branding across all devices. Single click instead of browser print dialog.
+**Cons:** Requires a PDF generation library (Puppeteer, `@react-pdf/renderer`, or similar). Puppeteer adds ~150MB to the bundle and requires a serverless-compatible setup. `@react-pdf/renderer` has limited CSS support. Adds server rendering complexity.
+
+**Context:** The printable page at `/for-schools/overview` already exists and works. This is a polish pass. The simplest path: use `@react-pdf/renderer` for a React-native PDF component, or keep the printable page and add a service-worker-based "Save as PDF" button using `window.print()` with CSS `@media print` optimizations (already in place). The content is static — doesn't change per request — so a static PDF asset generated at build time is also viable.
+
+**Effort:** M human / S CC+gstack
+**Priority:** P3 — current printable page is sufficient for now
+**Depends on:** TODO-38 shipped (this is a polish pass on it)

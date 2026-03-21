@@ -1,13 +1,5 @@
-import { Resend } from "resend";
 import { NextRequest, NextResponse } from "next/server";
-
-const getResend = () => {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    return null;
-  }
-  return new Resend(apiKey);
-};
+import { getResend } from "@/lib/resend";
 
 export async function POST(request: NextRequest) {
   try {

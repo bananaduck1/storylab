@@ -32,14 +32,20 @@ export function Navbar() {
               >
                 Teachers
               </Link>
-
-              {/* Become a teacher CTA */}
               <Link
-                href="/teacher/onboarding"
-                aria-label="Become a teacher on StoryLab"
-                className="inline-flex items-center rounded-[3px] border border-[#2C4A3E] px-4 py-2 text-sm font-medium text-[#2C4A3E] hover:bg-[#2C4A3E] hover:text-white transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/30"
+                href="/for-schools"
+                className="text-sm font-medium text-zinc-700 hover:text-zinc-950 focus:outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/30"
               >
-                Become a teacher
+                For Schools
+              </Link>
+
+              {/* Schedule a Demo CTA */}
+              <Link
+                href="/demo"
+                aria-label="Schedule a demo with StoryLab"
+                className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-4 py-2 text-sm font-medium text-white hover:bg-[#3A6054] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/30"
+              >
+                Schedule a Demo
               </Link>
             </nav>
           </div>
@@ -77,12 +83,19 @@ export function Navbar() {
               Teachers
             </Link>
             <Link
-              href="/teacher/onboarding"
-              aria-label="Become a teacher on StoryLab"
-              className="mt-2 block rounded-[3px] border border-[#2C4A3E] px-4 py-3 text-sm font-medium text-center text-[#2C4A3E] hover:bg-[#2C4A3E] hover:text-white transition-colors"
+              href="/for-schools"
+              className="block px-2 py-3 text-sm font-medium text-zinc-900 hover:text-[#2C4A3E] border-b border-[#C0D9CB]/40"
               onClick={() => setMobileOpen(false)}
             >
-              Become a teacher
+              For Schools
+            </Link>
+            <Link
+              href="/demo"
+              aria-label="Schedule a demo with StoryLab"
+              className="mt-2 block rounded-[3px] bg-[#2C4A3E] px-4 py-3 text-sm font-medium text-center text-white hover:bg-[#3A6054] transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              Schedule a Demo
             </Link>
           </div>
         </nav>

@@ -116,6 +116,52 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* ── 3.5 FOR SCHOOLS ──────────────────────────────────────── */}
+      <section className="bg-[#DEEEE9] px-6 py-20 md:py-28">
+        <div className="mx-auto max-w-[880px]">
+          <p
+            className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-5"
+          >
+            For Schools
+          </p>
+          <h2
+            className="text-[2rem] leading-[1.2] tracking-tight text-[#2C4A3E] mb-8 max-w-2xl"
+            style={{ fontFamily: "var(--font-cooper, serif)" }}
+          >
+            Extend what your teachers can do.
+          </h2>
+          <div
+            className="space-y-5 text-base leading-relaxed text-[#1A2E26] max-w-2xl"
+            style={{ fontFamily: "var(--font-body, serif)" }}
+          >
+            <p>
+              Every student in your school deserves individualized writing coaching. The problem isn&rsquo;t your teachers — it&rsquo;s that there aren&rsquo;t enough hours in their day. StoryLab gives every student coached feedback grounded in your teachers&rsquo; methodology, between class periods, at scale.
+            </p>
+            <p>
+              A 12-week pilot. 30 students. No long-term commitment. We deliver a progress report at week ten.
+            </p>
+          </div>
+          <div className="mt-10 flex flex-col sm:flex-row gap-4">
+            <Link
+              href="/demo"
+              aria-label="Schedule a demo with StoryLab"
+              className="inline-flex items-center rounded-[3px] bg-[#2C4A3E] px-6 py-3 text-sm font-medium text-white hover:bg-[#3A6054] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
+              style={{ fontFamily: "var(--font-cooper, serif)" }}
+            >
+              Schedule a Demo →
+            </Link>
+            <Link
+              href="/for-schools"
+              aria-label="Learn more about StoryLab for schools"
+              className="inline-flex items-center rounded-[3px] border border-[#2C4A3E] px-6 py-3 text-sm font-medium text-[#1A2E26] hover:bg-[#2C4A3E] hover:text-white transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]/40"
+              style={{ fontFamily: "var(--font-cooper, serif)" }}
+            >
+              Learn more →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ── 4. PLATFORM MANIFESTO ─────────────────────────────────── */}
       <section className="bg-[#2C4A3E] px-6 py-20 md:py-28">
         <div className="mx-auto max-w-[880px]">
