@@ -1,0 +1,16 @@
+{
+  "name": "StoryLab",
+  "short_name": "StoryLab",
+  "description": "Infrastructure for human expertise in education.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#FAFAF8",
+  "theme_color": "#2C4A3E",
+  "icons": [
+    {
+      "src": "/storylab-logo3.png",
+      "type": "image/png",
+      "sizes": "any"
+    }
+  ]
+}
