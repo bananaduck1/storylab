@@ -11,7 +11,7 @@ export default async function SettingsPage() {
 
   const { data: teacher } = await getSupabase()
     .from("teachers")
-    .select("id, name, email, subject, agent_config, bio, photo_url, quote, pricing_config, ai_coaching_enabled, live_sessions_enabled, primary_emphasis, storefront_content, storefront_published, stripe_account_id, stripe_onboarding_complete")
+    .select("id, name, email, subject, agent_config, bio, photo_url, quote, pricing_config, ai_coaching_enabled, live_sessions_enabled, primary_emphasis, accepting_students, storefront_content, storefront_published, stripe_account_id, stripe_onboarding_complete")
     .eq("user_id", user.id)
     .maybeSingle();
 

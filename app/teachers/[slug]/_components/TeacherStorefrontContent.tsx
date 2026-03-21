@@ -562,6 +562,7 @@ function ProgressDots({
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 interface TeacherStorefrontContentProps {
+  teacherId: string;
   teacherSlug: string;
   teacherName: string;
   teacherBio?: string | null;
@@ -569,6 +570,7 @@ interface TeacherStorefrontContentProps {
   teacherQuote?: string | null;
   teacherSubject?: string | null;
   acceptingBookings?: boolean;
+  acceptingStudents?: boolean;
   aiCoachingEnabled?: boolean;
   liveSessionsEnabled?: boolean;
   primaryEmphasis?: 'ai' | 'live' | 'equal';
@@ -578,16 +580,42 @@ interface TeacherStorefrontContentProps {
 // ─── Main Component ────────────────────────────────────────────────────────────
 
 export function TeacherStorefrontContent({
+  teacherId,
   teacherSlug,
   teacherName,
   teacherPhotoUrl,
   teacherSubject,
   acceptingBookings = false,
+  acceptingStudents = true,
+  aiCoachingEnabled = true,
+  liveSessionsEnabled = false,
+  primaryEmphasis = 'ai',
   storefrontContent,
 }: TeacherStorefrontContentProps) {
   const sectionRefs = useRef<(HTMLElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [selectedStudent, setSelectedStudent] = useState<CaseStudy | null>(null);
+
+  // Waitlist form state (shown when acceptingStudents=false)
+  const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistName, setWaitlistName] = useState("");
+  const [waitlistStatus, setWaitlistStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+
+  async function handleWaitlistSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setWaitlistStatus("submitting");
+    try {
+      const res = await fetch(`/api/teachers/${teacherId}/waitlist`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: waitlistEmail, name: waitlistName || undefined }),
+      });
+      if (!res.ok && res.status !== 200) throw new Error("failed");
+      setWaitlistStatus("success");
+    } catch {
+      setWaitlistStatus("error");
+    }
+  }
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -683,28 +711,85 @@ export function TeacherStorefrontContent({
                 >
                   {heroHeadline}
                 </p>
-                <div className="flex flex-wrap gap-4">
-                  <a
-                    href="#preview"
-                    aria-label="Try a free message"
-                    className="inline-flex items-center rounded-[3px] bg-white px-6 py-3 text-sm font-medium text-[#2C4A3E] hover:bg-[#DEEEE9] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      document.getElementById("preview")?.scrollIntoView({ behavior: "smooth" });
-                    }}
-                  >
-                    Try a free message →
-                  </a>
-                  {acceptingBookings && (
-                    <Link
-                      href={`/teachers/${teacherSlug}/book`}
-                      aria-label={`Book a live session with ${teacherName}`}
-                      className="inline-flex items-center rounded-[3px] border border-white/60 bg-transparent px-6 py-3 text-sm font-medium text-white hover:bg-white/10 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
-                    >
-                      Book a session →
-                    </Link>
+                {/* Availability badge */}
+                <div className="mb-6">
+                  {acceptingStudents ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DEEEE9]/20 px-3 py-1 text-xs font-medium text-[#DEEEE9] ring-1 ring-inset ring-[#DEEEE9]/30">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#DEEEE9]" aria-hidden="true" />
+                      Accepting students
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E8D5B0]/15 px-3 py-1 text-xs font-medium text-[#E8D5B0] ring-1 ring-inset ring-[#E8D5B0]/30">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#E8D5B0]" aria-hidden="true" />
+                      Waitlist only
+                    </span>
                   )}
                 </div>
+
+                {acceptingStudents ? (
+                  <div className="flex flex-wrap gap-4">
+                    <a
+                      href="#preview"
+                      aria-label="Try a free message"
+                      className="inline-flex items-center rounded-[3px] bg-white px-6 py-3 text-sm font-medium text-[#2C4A3E] hover:bg-[#DEEEE9] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        document.getElementById("preview")?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                    >
+                      Try a free message →
+                    </a>
+                    {acceptingBookings && (
+                      <Link
+                        href={`/teachers/${teacherSlug}/book`}
+                        aria-label={`Book a live session with ${teacherName}`}
+                        className="inline-flex items-center rounded-[3px] border border-white/60 bg-transparent px-6 py-3 text-sm font-medium text-white hover:bg-white/10 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+                      >
+                        Book a session →
+                      </Link>
+                    )}
+                  </div>
+                ) : (
+                  /* Waitlist form */
+                  <div className="w-full max-w-sm">
+                    {waitlistStatus === "success" ? (
+                      <p className="text-sm text-[#DEEEE9]">
+                        You&apos;re on the list. {teacherName.split(" ")[0]} will reach out when a spot opens.
+                      </p>
+                    ) : (
+                      <form onSubmit={handleWaitlistSubmit} className="space-y-3">
+                        <p className="text-sm text-white/70 mb-2">
+                          {teacherName.split(" ")[0]} is currently full. Join the waitlist and you&apos;ll hear as soon as a spot opens.
+                        </p>
+                        <input
+                          type="text"
+                          placeholder="Your name (optional)"
+                          value={waitlistName}
+                          onChange={(e) => setWaitlistName(e.target.value)}
+                          className="w-full rounded-[3px] border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white placeholder-white/40 focus:border-white/40 focus:outline-none focus:ring-1 focus:ring-white/20"
+                        />
+                        <input
+                          type="email"
+                          required
+                          placeholder="Your email"
+                          value={waitlistEmail}
+                          onChange={(e) => setWaitlistEmail(e.target.value)}
+                          className="w-full rounded-[3px] border border-white/20 bg-white/10 px-4 py-2.5 text-sm text-white placeholder-white/40 focus:border-white/40 focus:outline-none focus:ring-1 focus:ring-white/20"
+                        />
+                        {waitlistStatus === "error" && (
+                          <p className="text-xs text-red-300">Something went wrong. Please try again.</p>
+                        )}
+                        <button
+                          type="submit"
+                          disabled={waitlistStatus === "submitting"}
+                          className="inline-flex w-full items-center justify-center rounded-[3px] bg-[#E8D5B0] px-6 py-3 text-sm font-medium text-[#2C4A3E] hover:bg-[#e0c99a] transition-colors duration-150 disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8D5B0]/50"
+                        >
+                          {waitlistStatus === "submitting" ? "Joining…" : "Join the waitlist →"}
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -776,10 +861,12 @@ export function TeacherStorefrontContent({
           steps={philosophySteps}
         />
 
-        {/* ── 4. WHY IT MATTERS (scroll-driven) ───────────────────────── */}
-        <WhyItMattersScrollSection
-          sectionRefCallback={(el) => { sectionRefs.current[4] = el; }}
-        />
+        {/* ── 4. WHY IT MATTERS — AI + equal emphasis only ────────────── */}
+        {primaryEmphasis !== 'live' && (
+          <WhyItMattersScrollSection
+            sectionRefCallback={(el) => { sectionRefs.current[4] = el; }}
+          />
+        )}
 
         {/* ── 5. STUDENT STORIES ──────────────────────────────────────── */}
         {caseStudies.length > 0 && (
@@ -834,57 +921,86 @@ export function TeacherStorefrontContent({
           </section>
         )}
 
-        {/* ── 6. ACCEPTANCES ──────────────────────────────────────────── */}
-        <section
-          ref={(el) => { sectionRefs.current[6] = el; }}
-          id="acceptances"
-          className="scroll-snap-section section-reveal flex min-h-[100svh] items-center bg-white/50"
-        >
-          <div className="mx-auto w-full max-w-6xl px-6 py-16">
-            <h2 className="text-center text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-              My students&rsquo; acceptances
-            </h2>
-            <div className="mt-12">
-              <LogoMarquee />
-            </div>
-          </div>
-        </section>
+        {/* ── 6 & 7. ACCEPTANCES + TESTIMONIALS — order swaps by emphasis ─ */}
+        {/* Live emphasis: Testimonials first, then Acceptances */}
+        {/* AI / Equal emphasis: Acceptances first, then Testimonials */}
 
-        {/* ── 7. TESTIMONIALS ─────────────────────────────────────────── */}
-        {testimonials.length > 0 && (
-          <section
-            ref={(el) => { sectionRefs.current[7] = el; }}
-            id="testimonials"
-            className="scroll-snap-section section-reveal min-h-[100svh] py-24"
-          >
-            <div className="mx-auto w-full max-w-6xl px-6">
-              <div className="max-w-xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-                  What Families Say
-                </p>
-                <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-                  In their own words.
-                </h2>
+        {primaryEmphasis === 'live' ? (
+          <>
+            {testimonials.length > 0 && (
+              <section
+                ref={(el) => { sectionRefs.current[6] = el; }}
+                id="testimonials"
+                className="scroll-snap-section section-reveal min-h-[100svh] py-24"
+              >
+                <div className="mx-auto w-full max-w-6xl px-6">
+                  <div className="max-w-xl">
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">What Families Say</p>
+                    <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">In their own words.</h2>
+                  </div>
+                  <div className="mt-12 grid gap-6 md:grid-cols-2">
+                    {testimonials.map((t, i) => (
+                      <figure key={i} className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-8">
+                        <blockquote className="flex-1 text-base leading-relaxed text-zinc-600">&ldquo;{t.quote}&rdquo;</blockquote>
+                        <figcaption className="mt-6 flex items-center gap-3">
+                          <div className="h-px flex-1 bg-zinc-200" />
+                          <p className="text-xs font-medium text-zinc-400">{t.attribution}</p>
+                        </figcaption>
+                      </figure>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+            <section
+              ref={(el) => { sectionRefs.current[7] = el; }}
+              id="acceptances"
+              className="scroll-snap-section section-reveal flex min-h-[100svh] items-center bg-white/50"
+            >
+              <div className="mx-auto w-full max-w-6xl px-6 py-16">
+                <h2 className="text-center text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">My students&rsquo; acceptances</h2>
+                <div className="mt-12"><LogoMarquee /></div>
               </div>
-
-              <div className="mt-12 grid gap-6 md:grid-cols-2">
-                {testimonials.map((t, i) => (
-                  <figure
-                    key={i}
-                    className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-8"
-                  >
-                    <blockquote className="flex-1 text-base leading-relaxed text-zinc-600">
-                      &ldquo;{t.quote}&rdquo;
-                    </blockquote>
-                    <figcaption className="mt-6 flex items-center gap-3">
-                      <div className="h-px flex-1 bg-zinc-200" />
-                      <p className="text-xs font-medium text-zinc-400">{t.attribution}</p>
-                    </figcaption>
-                  </figure>
-                ))}
+            </section>
+          </>
+        ) : (
+          <>
+            <section
+              ref={(el) => { sectionRefs.current[6] = el; }}
+              id="acceptances"
+              className="scroll-snap-section section-reveal flex min-h-[100svh] items-center bg-white/50"
+            >
+              <div className="mx-auto w-full max-w-6xl px-6 py-16">
+                <h2 className="text-center text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">My students&rsquo; acceptances</h2>
+                <div className="mt-12"><LogoMarquee /></div>
               </div>
-            </div>
-          </section>
+            </section>
+            {testimonials.length > 0 && (
+              <section
+                ref={(el) => { sectionRefs.current[7] = el; }}
+                id="testimonials"
+                className="scroll-snap-section section-reveal min-h-[100svh] py-24"
+              >
+                <div className="mx-auto w-full max-w-6xl px-6">
+                  <div className="max-w-xl">
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">What Families Say</p>
+                    <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">In their own words.</h2>
+                  </div>
+                  <div className="mt-12 grid gap-6 md:grid-cols-2">
+                    {testimonials.map((t, i) => (
+                      <figure key={i} className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-8">
+                        <blockquote className="flex-1 text-base leading-relaxed text-zinc-600">&ldquo;{t.quote}&rdquo;</blockquote>
+                        <figcaption className="mt-6 flex items-center gap-3">
+                          <div className="h-px flex-1 bg-zinc-200" />
+                          <p className="text-xs font-medium text-zinc-400">{t.attribution}</p>
+                        </figcaption>
+                      </figure>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+          </>
         )}
 
         {/* ── 8. MY OFFERINGS ─────────────────────────────────────────── */}
@@ -933,29 +1049,102 @@ export function TeacherStorefrontContent({
           </div>
         </section>
 
-        {/* ── 9. AI PREVIEW WIDGET ─────────────────────────────────────── */}
-        <section
-          ref={(el) => { sectionRefs.current[9] = el; }}
-          id="preview"
-          className="scroll-snap-section section-reveal bg-[#FAFAF8] px-6 py-16 md:py-24"
-        >
-          <div className="mx-auto max-w-6xl">
-            <div className="mx-auto max-w-2xl mb-10 text-center">
-              <p
-                className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-3"
-              >
-                Experience the coaching
-              </p>
-              <h2
-                className="text-2xl font-semibold tracking-tight text-[#1A2E26]"
-                style={{ fontFamily: "var(--font-cooper, serif)" }}
-              >
-                One free message. No account required.
-              </h2>
+        {/* ── 9. AI PREVIEW + BOOK — layout controlled by primaryEmphasis ─ */}
+        {primaryEmphasis === 'equal' && aiCoachingEnabled && liveSessionsEnabled ? (
+          /* Equal: AI Preview + Book a Session side by side */
+          <section
+            ref={(el) => { sectionRefs.current[9] = el; }}
+            id="preview"
+            className="scroll-snap-section section-reveal bg-[#FAFAF8] px-6 py-16 md:py-24"
+          >
+            <div className="mx-auto max-w-6xl">
+              <div className="grid gap-16 md:grid-cols-2 items-start">
+                {/* AI coaching column */}
+                <div>
+                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-3">
+                    Experience the coaching
+                  </p>
+                  <h2 className="text-2xl font-semibold tracking-tight text-[#1A2E26] mb-8" style={{ fontFamily: "var(--font-cooper, serif)" }}>
+                    One free message. No account required.
+                  </h2>
+                  <AiPreviewWidget teacherSlug={teacherSlug} teacherName={teacherName} />
+                </div>
+                {/* Live session column */}
+                <div className="flex flex-col justify-center rounded-2xl border border-zinc-200 bg-white p-10">
+                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-3">
+                    Live sessions
+                  </p>
+                  <h2 className="text-2xl font-semibold tracking-tight text-zinc-950 mb-4" style={{ fontFamily: "var(--font-cooper, serif)" }}>
+                    Work with {teacherName.split(" ")[0]} directly.
+                  </h2>
+                  <p className="text-base leading-relaxed text-zinc-500 mb-8">
+                    One-on-one video coaching, tailored to where you are and where you&rsquo;re trying to go.
+                  </p>
+                  {acceptingStudents ? (
+                    <Link
+                      href={`/teachers/${teacherSlug}/book`}
+                      className="inline-flex items-center justify-center rounded-[3px] bg-[#2C4A3E] px-8 py-3.5 text-sm font-medium text-white hover:bg-[#3a5c4f] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2C4A3E]"
+                    >
+                      Book a session →
+                    </Link>
+                  ) : (
+                    <p className="text-sm text-zinc-400 italic">Currently full — join the waitlist above.</p>
+                  )}
+                </div>
+              </div>
             </div>
-            <AiPreviewWidget teacherSlug={teacherSlug} teacherName={teacherName} />
-          </div>
-        </section>
+          </section>
+        ) : primaryEmphasis === 'live' ? (
+          /* Live: prominent book CTA, no AI preview */
+          <section
+            ref={(el) => { sectionRefs.current[9] = el; }}
+            id="preview"
+            className="scroll-snap-section section-reveal bg-[#2C4A3E] px-6 py-16 md:py-24"
+          >
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#DEEEE9]/70 mb-4">
+                Ready to get started?
+              </p>
+              <h2 className="text-3xl font-semibold tracking-tight text-white mb-6" style={{ fontFamily: "var(--font-cooper, serif)" }}>
+                Work with {teacherName.split(" ")[0]} directly.
+              </h2>
+              <p className="text-lg leading-relaxed text-white/70 mb-10">
+                One-on-one video coaching, tailored to where you are and where you&rsquo;re trying to go.
+              </p>
+              {acceptingStudents && liveSessionsEnabled ? (
+                <Link
+                  href={`/teachers/${teacherSlug}/book`}
+                  className="inline-flex items-center rounded-[3px] bg-[#E8D5B0] px-10 py-4 text-base font-medium text-[#2C4A3E] hover:bg-[#e0c99a] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8D5B0]"
+                >
+                  Book a session →
+                </Link>
+              ) : (
+                <p className="text-base text-white/60 italic">Currently accepting students via the waitlist above.</p>
+              )}
+            </div>
+          </section>
+        ) : (
+          /* AI (default): AI preview widget */
+          aiCoachingEnabled && (
+            <section
+              ref={(el) => { sectionRefs.current[9] = el; }}
+              id="preview"
+              className="scroll-snap-section section-reveal bg-[#FAFAF8] px-6 py-16 md:py-24"
+            >
+              <div className="mx-auto max-w-6xl">
+                <div className="mx-auto max-w-2xl mb-10 text-center">
+                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-3">
+                    Experience the coaching
+                  </p>
+                  <h2 className="text-2xl font-semibold tracking-tight text-[#1A2E26]" style={{ fontFamily: "var(--font-cooper, serif)" }}>
+                    One free message. No account required.
+                  </h2>
+                </div>
+                <AiPreviewWidget teacherSlug={teacherSlug} teacherName={teacherName} />
+              </div>
+            </section>
+          )
+        )}
 
         {/* ── HIDDEN: OUR TUTORS (not shown on storefront) ────────────── */}
         <section

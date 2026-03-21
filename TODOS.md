@@ -541,7 +541,7 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 
 ---
 
-## TODO-33: Per-teacher accepting-new-students toggle
+## TODO-33: Per-teacher accepting-new-students toggle ✅ DONE
 
 **What:** Add `accepting_students` boolean to `teachers` table. Surface it on the teacher storefront ("Currently accepting new students" / "Waitlist only") and make it controllable from `/dashboard`.
 
@@ -679,7 +679,7 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 
 ---
 
-## TODO-41: Implement primary_emphasis section ordering in TeacherStorefrontContent
+## TODO-41: Implement primary_emphasis section ordering in TeacherStorefrontContent ✅ DONE
 
 **What:** Wire up the `primaryEmphasis` prop in `TeacherStorefrontContent.tsx` to actually reorder and conditionally render storefront sections based on a teacher's emphasis setting.
 
@@ -842,7 +842,7 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 
 ---
 
-## TODO-49: Sales-led org pricing — replace direct Stripe checkout with "contact us" flow
+## TODO-49: Sales-led org pricing — replace direct Stripe checkout with "contact us" flow ✅ DONE
 
 **What:** Replace the "Subscribe" → Stripe Checkout button in `/org/[slug]/admin` with a "Contact us to get started" CTA that routes to a short intake form or direct email to Sam. Sam negotiates price and manually creates a custom Stripe subscription per org via the Stripe Dashboard (or a thin internal API).
 
@@ -860,7 +860,7 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 
 ---
 
-## TODO-50: Org pricing tier tracking — record deal context per org
+## TODO-50: Org pricing tier tracking — record deal context per org ✅ DONE
 
 **What:** Add a `pricing_tier` field (or equivalent metadata) to the `organizations` table so Sam can record what pricing category each org was given and why. Values: `'standard'` | `'reduced'` | `'sponsored'`. Store a short `deal_notes` text field alongside it for Sam's internal context (e.g., "Title I school, 80% discount," "strategic partnership").
 
@@ -878,7 +878,7 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 
 ---
 
-## TODO-51: Consent and user agreement to recording for live sessions
+## TODO-51: Consent and user agreement to recording for live sessions ✅ DONE
 
 **What:** Before a student (or parent, if minor) joins a `/session/[id]` video session, surface a clear consent prompt acknowledging that the session may be recorded and used for coaching/transcript purposes. Gate entry to the Daily.co room until consent is accepted. Log the consent event (user ID, session ID, timestamp, version of the agreement) to the database for compliance purposes.
 
@@ -904,3 +904,27 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 **Effort:** S human / S CC+gstack
 **Priority:** P1 — must ship before any live sessions go out; legal requirement
 **Depends on:** `/session/[id]` video infrastructure (already shipped)
+
+---
+
+## TODO-52: Parental consent for minor students
+
+**What:** Add age verification to the student profile and require parental email confirmation before students under 13 can consent to session recording. Parental consent must be re-confirmed annually.
+
+**Why:** COPPA (Children's Online Privacy Protection Act) requires verifiable parental consent for collecting personal data from users under 13. FERPA adds additional protections for students in K-12. The current consent gate applies to all students regardless of age — this is a legal gap that must be closed before the platform scales to school accounts.
+
+**Scope:**
+- Add `birth_year INT` and `parent_email TEXT` to `student_profiles`
+- Add `parent_consent_status TEXT DEFAULT 'not_required'` (values: `'not_required'`, `'pending'`, `'confirmed'`)
+- Flow: if `birth_year` present and age < 13 → send verification email to `parent_email` → parent clicks link → `parent_consent_status = 'confirmed'` → student can proceed
+- Gate: if student age < 13 and `parent_consent_status != 'confirmed'`, block session join with "Parental consent required"
+- Annual re-confirmation: cron resets `parent_consent_status = 'pending'` each year; parent gets email to re-confirm
+
+**Pros:** COPPA/FERPA compliance. Required for institutional (K-12 school) accounts.
+**Cons:** Adds friction for families with younger students. Requires `birth_year` field (currently not collected).
+
+**Context:** Must resolve before 100 student accounts OR before any K-12 school contract is signed, whichever comes first. The simplest first step: add `birth_year` to the onboarding form now (optional), so data accumulates before the gate logic is built.
+
+**Effort:** M human / S CC+gstack
+**Priority:** P2 — must resolve before 100 students or first K-12 school deal
+**Depends on:** TODO-51 (consent gate shipped)

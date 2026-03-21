@@ -22,6 +22,7 @@ interface Teacher {
   ai_coaching_enabled: boolean;
   live_sessions_enabled: boolean;
   primary_emphasis: 'ai' | 'live' | 'equal';
+  accepting_students: boolean;
   storefront_content: StorefrontContent | null;
   storefront_published: boolean;
   stripe_account_id: string | null;
@@ -142,6 +143,7 @@ export default function SettingsClient({
   const [aiEnabled, setAiEnabled] = useState(teacher.ai_coaching_enabled ?? false);
   const [liveEnabled, setLiveEnabled] = useState(teacher.live_sessions_enabled ?? false);
   const [emphasis, setEmphasis] = useState<'ai' | 'live' | 'equal'>(teacher.primary_emphasis ?? 'ai');
+  const [acceptingStudents, setAcceptingStudents] = useState(teacher.accepting_students ?? true);
 
   // ── Publish tab state
   const [published, setPublished] = useState(teacher.storefront_published ?? false);
@@ -337,6 +339,7 @@ export default function SettingsClient({
           ai_coaching_enabled: aiEnabled,
           live_sessions_enabled: liveEnabled,
           primary_emphasis: emphasis,
+          accepting_students: acceptingStudents,
         }),
       });
       if (!res.ok) { const d = await res.json(); setError(d.error ?? "Save failed"); return; }
@@ -863,6 +866,31 @@ export default function SettingsClient({
                   <span
                     className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 mt-0.5 ${
                       liveEnabled ? "translate-x-5" : "translate-x-0.5"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between rounded-xl border border-zinc-800 px-5 py-4">
+                <div>
+                  <p className="text-sm font-semibold text-white">Accepting students</p>
+                  <p className="text-xs text-zinc-500 mt-0.5">
+                    {acceptingStudents
+                      ? "Open — new students can find and book you"
+                      : "Closed — visitors see a waitlist form instead"}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setAcceptingStudents(!acceptingStudents)}
+                  className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${
+                    acceptingStudents ? "bg-emerald-500" : "bg-zinc-700"
+                  }`}
+                  role="switch"
+                  aria-checked={acceptingStudents}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 mt-0.5 ${
+                      acceptingStudents ? "translate-x-5" : "translate-x-0.5"
                     }`}
                   />
                 </button>

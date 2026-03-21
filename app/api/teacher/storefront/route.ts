@@ -59,7 +59,7 @@ export async function PATCH(req: NextRequest) {
   if (!teacher) return NextResponse.json({ error: "Not a teacher" }, { status: 403 });
 
   const body = await req.json();
-  const { storefront_content, ai_coaching_enabled, live_sessions_enabled, primary_emphasis } = body;
+  const { storefront_content, ai_coaching_enabled, live_sessions_enabled, primary_emphasis, accepting_students } = body;
 
   // Validate feature flags
   if (primary_emphasis !== undefined && !["ai", "live", "equal"].includes(primary_emphasis)) {
@@ -77,6 +77,7 @@ export async function PATCH(req: NextRequest) {
   if (typeof ai_coaching_enabled === "boolean") updates.ai_coaching_enabled = ai_coaching_enabled;
   if (typeof live_sessions_enabled === "boolean") updates.live_sessions_enabled = live_sessions_enabled;
   if (primary_emphasis !== undefined) updates.primary_emphasis = primary_emphasis;
+  if (typeof accepting_students === "boolean") updates.accepting_students = accepting_students;
 
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: "No fields to update" }, { status: 400 });
