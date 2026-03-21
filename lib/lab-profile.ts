@@ -5,6 +5,7 @@ import {
   type SessionPhase,
   type EssayMode,
 } from "@/lib/behavioral-constraints";
+import { isWritingSubject as checkIsWritingSubject } from "@/types/teacher";
 
 // portrait_notes lifecycle:
 // NULL ──[first conv ends]──► "note" ──[each conv ends]──► "note\nnote\n..."
@@ -76,8 +77,15 @@ const MODE_OPENING: Record<EssayMode, string> = {
 };
 
 // Assembles a full system prompt from teacher agent_config JSONB fields.
-// Falls back to SYSTEM_PROMPT if any required field is missing.
+// Checks ai_methodology first (new single-narrative format from onboarding wizard).
+// Falls back to the legacy structured fields, then to SYSTEM_PROMPT if nothing usable.
 function assemblePromptFromConfig(config: Record<string, unknown>): string | null {
+  // New format: single narrative ai_methodology block
+  if (typeof config.ai_methodology === "string" && config.ai_methodology.trim().length >= 50) {
+    return config.ai_methodology.trim();
+  }
+
+  // Legacy format: structured identity + supporting fields
   const identity = typeof config.identity === "string" ? config.identity.trim() : "";
   const coreBeliefs = typeof config.core_beliefs === "string" ? config.core_beliefs.trim() : "";
   const diagnosticEye = typeof config.diagnostic_eye === "string" ? config.diagnostic_eye.trim() : "";
@@ -111,7 +119,7 @@ export async function buildSystemPromptForUser(
   phase: SessionPhase = "OPENING",
   mode: EssayMode = "common_app",
   callerIsTeacher?: boolean
-): Promise<{ systemPrompt: string; teacherName: string; teacherId: string | null }> {
+): Promise<{ systemPrompt: string; teacherName: string; teacherId: string | null; teacherSubject: string | null }> {
   const { data: profile } = await getSupabase()
     .from("student_profiles")
     .select("full_name, grade, schools, essay_focus, writing_voice, goals, portrait_notes, teacher_id")
@@ -120,6 +128,7 @@ export async function buildSystemPromptForUser(
 
   // Load teacher if student has one linked
   let teacherName = "Sam";
+  let teacherSubject: string | null = null;
   let corePrompt: string = SYSTEM_PROMPT;
 
   if (profile?.teacher_id) {
@@ -131,6 +140,7 @@ export async function buildSystemPromptForUser(
 
     if (teacher) {
       teacherName = teacher.name.split(" ")[0]; // First name only for prompts
+      teacherSubject = teacher.subject ?? null;
       const config = teacher.agent_config as Record<string, unknown> | null;
       if (config && Object.keys(config).length > 0) {
         const assembled = assemblePromptFromConfig(config);
@@ -152,7 +162,8 @@ export async function buildSystemPromptForUser(
   }
 
   // Behavioral constraints always go first — they must survive context-window truncation.
-  const constraints = buildBehavioralConstraints(phase, mode);
+  // isWritingSubject controls whether essay-specific MODE_CONSTRAINTS are injected.
+  const constraints = buildBehavioralConstraints(phase, mode, checkIsWritingSubject(teacherSubject));
 
   // Inject org ai_context if student belongs to an org
   let orgContext: string | null = null;
@@ -174,6 +185,7 @@ export async function buildSystemPromptForUser(
       systemPrompt: constraints + "\n\n---\n\n" + corePrompt,
       teacherName,
       teacherId: null,
+      teacherSubject,
     };
   }
 
@@ -237,7 +249,7 @@ Use this context to personalize your coaching. Address the student by first name
     }
   }
 
-  return { systemPrompt: prompt, teacherName, teacherId: profile.teacher_id ?? null };
+  return { systemPrompt: prompt, teacherName, teacherId: profile.teacher_id ?? null, teacherSubject };
 }
 
 // Appends a new note to portrait_notes with a rolling 2000-char cap.

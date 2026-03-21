@@ -135,7 +135,7 @@ export default async function HomePage() {
             style={{ fontFamily: "var(--font-body, serif)" }}
           >
             <p>
-              Every student in your school deserves individualized writing coaching. The problem isn&rsquo;t your teachers — it&rsquo;s that there aren&rsquo;t enough hours in their day. StoryLab gives every student coached feedback grounded in your teachers&rsquo; methodology, between class periods, at scale.
+              Every student in your school deserves individualized coaching — in any subject. The problem isn&rsquo;t your teachers — it&rsquo;s that there aren&rsquo;t enough hours in their day. StoryLab gives every student coached support grounded in your teachers&rsquo; methodology, between class periods, at scale.
             </p>
             <p>
               A 12-week pilot. 30 students. No long-term commitment. We deliver a progress report at week ten.
@@ -176,7 +176,7 @@ export default async function HomePage() {
             style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
           >
             <p>
-              A college counselor with twenty years of transformative experience retires and takes every insight with them. The self-authorship gap is not randomly distributed — it falls hardest on first-generation students, immigrant families, and students whose cultural backgrounds didn&rsquo;t emphasize personal narrative.
+              A math teacher with twenty years of transformative experience retires and takes every insight with them. The expertise gap is not randomly distributed — it falls hardest on first-generation students, students in under-resourced schools, and every family that couldn&rsquo;t afford the private tutor.
             </p>
             <p>
               StoryLab exists to fix this.

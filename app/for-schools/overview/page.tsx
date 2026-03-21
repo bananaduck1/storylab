@@ -30,11 +30,11 @@ export default function OverviewPage() {
           className="text-[2.2rem] font-bold leading-[1.1] tracking-tight text-[#1A2E26]"
           style={{ fontFamily: "var(--font-cooper, serif)" }}
         >
-          Every student deserves a writing coach.
+          Every student deserves a great teacher. Now any student can have one.
         </h1>
         <p className="mt-3 text-base text-[#1A2E26]/70 max-w-xl" style={{ fontFamily: "var(--font-body, serif)" }}>
-          StoryLab is AI-powered writing coaching grounded in your teachers&rsquo; methodology.
-          Individualized feedback for every student. No additional headcount.
+          StoryLab gives any teacher in any subject the ability to deploy their methodology as
+          an AI agent — individualized coaching for every student, 24/7, with no additional headcount.
         </p>
       </div>
 
@@ -47,10 +47,10 @@ export default function OverviewPage() {
           What is StoryLab?
         </h2>
         <p className="text-sm leading-relaxed text-[#1A2E26]/80" style={{ fontFamily: "var(--font-body, serif)" }}>
-          StoryLab is a writing coaching platform for schools. Your teachers configure the AI
-          coach with their methodology, voice, and standards. Students then receive individualized
-          coaching between class periods — structured, on-demand, and grounded in how your
-          department actually teaches writing. Teachers review sessions; they don&rsquo;t run them.
+          StoryLab is an AI tutoring platform for schools. Any teacher — in any subject — can
+          configure an AI agent with their methodology, voice, and standards. Students then receive
+          individualized coaching between class periods: structured, on-demand, and grounded in how
+          your department actually teaches. Teachers review sessions; they don&rsquo;t run them.
         </p>
       </section>
 

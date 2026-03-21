@@ -65,14 +65,12 @@ export function TeacherCard({ name, slug, subject, photoUrl, quote }: TeacherCar
 
         {/* Name / subject */}
         <div className="mb-5">
-          <p
-            className="text-[0.85rem] font-medium text-[#1A2E26]"
-          >
-            {name}
-            {subject && (
-              <span className="text-[#1A2E26]/60"> · {subject}</span>
-            )}
-          </p>
+          <p className="text-[0.85rem] font-medium text-[#1A2E26]">{name}</p>
+          {subject && (
+            <span className="mt-1 inline-block rounded-full border border-[#C0D9CB] px-2.5 py-0.5 text-[0.7rem] font-medium text-[#1A2E26]/70 leading-none">
+              {subject}
+            </span>
+          )}
         </div>
 
         {/* CTA */}

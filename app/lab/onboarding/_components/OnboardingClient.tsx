@@ -76,7 +76,7 @@ export default function OnboardingClient({ teacherName }: { teacherName: string 
       {/* Brand */}
       <div className="mb-8 text-center">
         <p className="text-xs font-medium tracking-widest text-zinc-400 uppercase mb-1">IvyStoryLab</p>
-        <h1 className="text-2xl font-semibold text-zinc-900">Meet {teacherName}, your essay coach</h1>
+        <h1 className="text-2xl font-semibold text-zinc-900">Meet {teacherName}, your AI coach</h1>
       </div>
 
       {/* Progress dots */}

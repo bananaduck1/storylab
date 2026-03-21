@@ -134,7 +134,8 @@ S9. Is there a specific moment or story that makes the abstract concrete?
 
 export function buildBehavioralConstraints(
   phase: SessionPhase,
-  mode: EssayMode = "common_app"
+  mode: EssayMode = "common_app",
+  isWritingSubject: boolean = true
 ): string {
   const phaseLines = (Object.keys(PHASE_GUIDANCE) as SessionPhase[])
     .map((p) =>
@@ -157,7 +158,8 @@ FEEDBACK PHASE — ADDITIONAL CONSTRAINTS:
 `
       : "";
 
-  const modeBlock = MODE_CONSTRAINTS[mode];
+  // MODE_CONSTRAINTS are essay-specific — skip for non-writing subjects.
+  const modeBlock = isWritingSubject ? MODE_CONSTRAINTS[mode] : "";
 
   return `SESSION CONSTRAINTS — THESE OVERRIDE EVERYTHING ELSE:
 

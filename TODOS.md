@@ -1,6 +1,6 @@
 # TODOs
 
-Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35. Updated 2026-03-19 — teacher profile builder review (x2 new: TODO-36, TODO-37; TODO-34 and TODO-35 superseded by accepted scope). Added 2026-03-19: TODO-38 (enterprise/districts demo flow), TODO-39 (student learning dashboard — 10x vision). Added 2026-03-19: TODO-40 (student platform research), TODO-41 (primary_emphasis section ordering). Added 2026-03-19: TODO-42 (B2B institutional hub — private school/org communities), TODO-43 (AI translation layer — cross-language tutoring). Updated 2026-03-19: TODO-42 and TODO-43 expanded with full implementation nuance from /plan-ceo-review SELECTIVE EXPANSION (chosen direction: TODO-42 = Approach C full multi-tenant subdomains; TODO-43 = build ladder A→C→B). Added 2026-03-19: TODO-44 (international teacher payout support). Stripe Connect plan reviewed 2026-03-19 — scope: Connect Express + 20% take-rate + earnings widget + admin revenue table. Implemented 2026-03-19: TODO-28 (Stripe Connect) shipped. Updated 2026-03-19 — B2B institutional hub CEO review: added TODO-46 (Phase 2 subdomains + branding), TODO-47 (SSO integration), TODO-48 (org analytics caching). Added 2026-03-19: TODO-49 (sales-led org pricing — contact Sam flow), TODO-50 (org pricing tier tracking). Implemented 2026-03-21: TODO-38 (For Schools marketing hub + demo funnel) shipped. Added 2026-03-21: TODO-53 (ROI calculator), TODO-54 (partner logos), TODO-55 (demo confirmation email), TODO-56 (PDF one-pager).
+Captured during /plan-eng-review on 2026-03-12. Updated during /plan-ceo-review on 2026-03-17 (x4). Updated during /plan-ceo-review on 2026-03-17 — live coaching companion review (x3). Updated during /plan-ceo-review on 2026-03-18 — multi-teacher platform vision (x3 new, x2 closed). Updated during /plan-ceo-review on 2026-03-18 — teacher platform architecture (x3 new). Updated during /plan-ceo-review on 2026-03-18 — multi-role identity (x2 new). Implemented 2026-03-18: TODO-10, TODO-15, TODO-16, TODO-23, TODO-24, TODO-26 all shipped. Added 2026-03-19: TODO-34, TODO-35. Updated 2026-03-19 — teacher profile builder review (x2 new: TODO-36, TODO-37; TODO-34 and TODO-35 superseded by accepted scope). Added 2026-03-19: TODO-38 (enterprise/districts demo flow), TODO-39 (student learning dashboard — 10x vision). Added 2026-03-19: TODO-40 (student platform research), TODO-41 (primary_emphasis section ordering). Added 2026-03-19: TODO-42 (B2B institutional hub — private school/org communities), TODO-43 (AI translation layer — cross-language tutoring). Updated 2026-03-19: TODO-42 and TODO-43 expanded with full implementation nuance from /plan-ceo-review SELECTIVE EXPANSION (chosen direction: TODO-42 = Approach C full multi-tenant subdomains; TODO-43 = build ladder A→C→B). Added 2026-03-19: TODO-44 (international teacher payout support). Stripe Connect plan reviewed 2026-03-19 — scope: Connect Express + 20% take-rate + earnings widget + admin revenue table. Implemented 2026-03-19: TODO-28 (Stripe Connect) shipped. Updated 2026-03-19 — B2B institutional hub CEO review: added TODO-46 (Phase 2 subdomains + branding), TODO-47 (SSO integration), TODO-48 (org analytics caching). Added 2026-03-19: TODO-49 (sales-led org pricing — contact Sam flow), TODO-50 (org pricing tier tracking). Implemented 2026-03-21: TODO-38 (For Schools marketing hub + demo funnel) shipped. Added 2026-03-21: TODO-53 (ROI calculator), TODO-54 (partner logos), TODO-55 (demo confirmation email), TODO-56 (PDF one-pager). Added 2026-03-21: TODO-57 (subject landing pages), TODO-58 (teacher recruiting engine), TODO-59 (subject outcome dashboards), TODO-60 (subject SEO pages) — all from platform identity pivot CEO review.
 
 ---
 
@@ -998,3 +998,71 @@ The architecture is enabled by TODO-23 (knowledge_chunks.teacher_id). Build TODO
 **Effort:** M human / S CC+gstack
 **Priority:** P3 — current printable page is sufficient for now
 **Depends on:** TODO-38 shipped (this is a polish pass on it)
+
+---
+
+## TODO-57: Subject-specific institutional landing pages
+
+**What:** Build `/for-schools/math`, `/for-schools/science`, `/for-schools/english`, etc. — subject-targeted pages showing department-specific proof points, pilot outcomes, and CTA copy.
+
+**Why:** A district math coordinator evaluating StoryLab doesn't identify with "writing coaching." They want to see math-specific pilot data and use cases. Subject landing pages compress the sales cycle for non-English departments and enable subject-specific SEM campaigns.
+
+**Pros:** Unlocks institutional sales beyond English departments. Enables subject-specific CTA ("schedule a math pilot"). Strong for SEO on "AI math tutor for schools" queries.
+**Cons:** Requires real proof points per subject before these pages have credibility. Shipping empty subject pages is worse than not having them.
+
+**Context:** Platform identity pivot (2026-03-21) establishes the multi-subject infrastructure. /for-schools remains a generic hub after the pivot. Subject-specific pages are the next layer — but require 2+ teachers per subject with pilot data first. The infrastructure for subject taxonomy (enum + filter) ships with the pivot and creates the foundation for these pages.
+
+**Effort:** M human / S CC+gstack
+**Priority:** P2 — blocked by needing non-writing teacher pilot data first
+**Depends on:** Platform identity pivot shipped + 2+ non-writing teachers with pilot outcomes
+
+---
+
+## TODO-58: Teacher recruiting engine
+
+**What:** Build a teacher application form with subject-track routing, a teacher profile review queue in admin, and an onboarding track per subject.
+
+**Why:** The platform identity pivot is only valuable if we can recruit calculus, science, and language teachers. The identity pivot creates urgency — the infrastructure now supports any subject, but teacher supply is the constraint. Without a recruiting funnel, the "any subject" promise is unfulfilled.
+
+**Pros:** Converts the identity pivot into reality. Creates a flywheel: more subjects → more students → more revenue → more teachers. Teacher recruiting is the leverage point of the entire platform.
+**Cons:** Recruiting quality teachers is hard. Application volume will be low initially. Requires admin bandwidth to vet applicants.
+
+**Context:** The current teacher onboarding wizard (app/teacher/onboarding/) handles self-signup but has no application/vetting layer. The subject taxonomy (from identity pivot) creates natural tracks. Suggested approach: public application form at /teach (or /for-teachers) → admin queue in /admin → approval triggers onboarding invite → teacher completes wizard with subject + ai_methodology.
+
+**Effort:** L human / ~1 hr CC+gstack
+**Priority:** P1 — this is the hard constraint on the platform thesis post-pivot
+**Depends on:** Platform identity pivot shipped (subject taxonomy + ai_methodology field)
+
+---
+
+## TODO-59: Subject-level outcome dashboards for institutional clients
+
+**What:** Build subject-disaggregated outcome reporting for district admins — pilot results broken down by subject, teacher, and student cohort.
+
+**Why:** Principals and district admins buying multi-department contracts need to see performance by subject, not just aggregate platform metrics. A math department head wants to see math scores; a language arts director wants writing scores. One dashboard that shows "here's what happened in your math pilot vs. your English pilot" is the artifact that closes a district-wide renewal.
+
+**Pros:** Makes multi-subject institutional sales tractable. Creates compelling leave-behind for renewal conversations. Differentiates from single-subject competitors.
+**Cons:** Requires real multi-subject pilot data to have content. Complex data model if subjects have different performance metrics.
+
+**Context:** The current admin dashboard (/admin/dashboard) tracks individual students. The /admin/pipeline tracks deal stage. Missing: a performance reporting view aggregated by subject/teacher/cohort. This is the third leg of the institutional sales stool (pipeline + reporting + subject pages). Blocked until we have multi-subject pilot data.
+
+**Effort:** M human / ~30 min CC+gstack
+**Priority:** P2 — blocked by needing real multi-subject pilot data
+**Depends on:** Platform identity pivot shipped + 2+ subjects with pilot data + TODO-57 (subject landing pages as context)
+
+---
+
+## TODO-60: Subject-based SEO pages
+
+**What:** Build subject/intent-specific SEO landing pages: "/ai-math-tutor", "/ap-calculus-ai-coach", "/spanish-tutor-ai", "/ap-english-writing-coach", etc.
+
+**Why:** Organic search is the cheapest student acquisition channel at scale. "AI math tutor" and "AP prep AI" have high search volume and low current competition from real-teacher-backed products. These pages capture demand from individual students (not just institutional buyers) and funnel them to the /teachers discovery page.
+
+**Pros:** Compound organic growth. Reaches students directly, not just through schools. Each subject page targets a different high-intent query. Low marginal cost once infrastructure exists.
+**Cons:** SEO takes time (3-6 months to rank). Requires non-writing teachers to feature. Generic AI tutor pages without real teacher profiles won't rank well — needs substance.
+
+**Context:** The platform identity pivot creates the subject taxonomy. The teacher grid with subject filter (/teachers) becomes the destination. SEO pages are landing-page wrappers that capture search intent and hand off to /teachers filtered by subject. Blocked until 2+ non-writing teachers have public profiles. Structure: `/ai-[subject]-tutor` → header → subject-specific value prop → featured teachers in that subject → CTA to /teachers?subject=X.
+
+**Effort:** M human / ~30 min CC+gstack
+**Priority:** P2 — blocked by needing real non-writing teacher profiles first
+**Depends on:** Platform identity pivot shipped (subject filter on /teachers) + 2+ non-writing teachers with public profiles

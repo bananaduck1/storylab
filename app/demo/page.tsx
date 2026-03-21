@@ -5,7 +5,7 @@ import { DemoForm } from "./_components/DemoForm";
 export const metadata: Metadata = {
   title: "Schedule a Demo — StoryLab",
   description:
-    "See how StoryLab gives every student in your school individualized writing coaching — without hiring more teachers.",
+    "See how StoryLab gives every student in your school individualized AI coaching in any subject — without hiring more teachers.",
 };
 
 export default function DemoPage() {

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { SUBJECT_VALUES } from "@/types/teacher";
 
 const STEPS = [
   { number: 1, label: "PROFILE" },
@@ -112,16 +113,19 @@ function Step1Profile({ onNext }: { onNext: (data: ProfileData) => void }) {
         >
           Subject / specialty
         </label>
-        <input
+        <select
           id="subject"
-          type="text"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           required
-          placeholder="College Essay Coach"
-          className="w-full rounded-[4px] border border-[#C0D9CB] bg-white px-4 py-3 text-base text-[#1A2E26] placeholder-[#1A2E26]/30 focus:outline-none focus:ring-2 focus:ring-[#2C4A3E]/30"
+          className="w-full rounded-[4px] border border-[#C0D9CB] bg-white px-4 py-3 text-base text-[#1A2E26] focus:outline-none focus:ring-2 focus:ring-[#2C4A3E]/30 appearance-none"
           style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
-        />
+        >
+          <option value="" disabled>Select a subject…</option>
+          {SUBJECT_VALUES.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
       </div>
 
       <div>
@@ -187,13 +191,19 @@ function Step2AgentConfig({
   onNext: (data: AgentConfigData) => void;
   onBack: () => void;
 }) {
-  const [teachingStyle, setTeachingStyle] = useState("");
-  const [corePrinciples, setCorePrinciples] = useState("");
-  const [avoidances, setAvoidances] = useState("");
+  const [aiMethodology, setAiMethodology] = useState("");
+
+  const wordCount = aiMethodology.trim().split(/\s+/).filter(Boolean).length;
+  const wordCountColor =
+    wordCount >= 200 && wordCount <= 400
+      ? "text-[#2C4A3E]"
+      : wordCount > 500 || (wordCount > 0 && wordCount < 50)
+      ? "text-amber-600"
+      : "text-[#1A2E26]/40";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onNext({ teachingStyle, corePrinciples, avoidances });
+    onNext({ ai_methodology: aiMethodology });
   };
 
   return (
@@ -208,63 +218,34 @@ function Step2AgentConfig({
         className="text-base leading-relaxed text-[#1A2E26]/60"
         style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
       >
-        Your AI agent is trained on your coaching philosophy. The more you share here, the more it sounds like you.
+        Describe your teaching methodology in your own words. This is what your AI agent learns from — the more specific and personal, the more it sounds like you.
       </p>
 
       <div>
-        <label
-          htmlFor="teaching-style"
-          className="block text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-2"
-        >
-          Your teaching style
-        </label>
+        <div className="flex items-baseline justify-between mb-2">
+          <label
+            htmlFor="ai-methodology"
+            className="block text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70"
+          >
+            Your teaching methodology
+          </label>
+          <span className={`text-xs tabular-nums ${wordCountColor}`}>
+            {wordCount} {wordCount === 1 ? "word" : "words"}
+          </span>
+        </div>
         <textarea
-          id="teaching-style"
-          value={teachingStyle}
-          onChange={(e) => setTeachingStyle(e.target.value)}
+          id="ai-methodology"
+          value={aiMethodology}
+          onChange={(e) => setAiMethodology(e.target.value)}
           required
-          rows={4}
-          placeholder="Describe how you approach coaching sessions. Do you ask lots of questions? Focus on structure first? Use Socratic dialogue?"
+          rows={8}
+          placeholder="Write as if you're explaining your approach to a new student. Cover: how you structure sessions, what you believe about learning, how you give feedback, what you push students toward, and what you never do. The sweet spot is 200–400 words."
           className="w-full resize-none rounded-[4px] border border-[#C0D9CB] bg-white px-4 py-3 text-base text-[#1A2E26] placeholder-[#1A2E26]/30 focus:outline-none focus:ring-2 focus:ring-[#2C4A3E]/30"
           style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
         />
-      </div>
-
-      <div>
-        <label
-          htmlFor="core-principles"
-          className="block text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-2"
-        >
-          Your core writing beliefs
-        </label>
-        <textarea
-          id="core-principles"
-          value={corePrinciples}
-          onChange={(e) => setCorePrinciples(e.target.value)}
-          required
-          rows={4}
-          placeholder="What do you believe about great writing? What principles guide your feedback? e.g., 'Specificity beats generality every time.'"
-          className="w-full resize-none rounded-[4px] border border-[#C0D9CB] bg-white px-4 py-3 text-base text-[#1A2E26] placeholder-[#1A2E26]/30 focus:outline-none focus:ring-2 focus:ring-[#2C4A3E]/30"
-          style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
-        />
-      </div>
-
-      <div>
-        <label
-          htmlFor="avoidances"
-          className="block text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#2C4A3E]/70 mb-2"
-        >
-          What your agent should never do
-        </label>
-        <textarea
-          id="avoidances"
-          value={avoidances}
-          onChange={(e) => setAvoidances(e.target.value)}
-          rows={3}
-          placeholder="e.g., 'Never write the essay for the student. Never give feedback without asking at least one clarifying question.'"
-          className="w-full resize-none rounded-[4px] border border-[#C0D9CB] bg-white px-4 py-3 text-base text-[#1A2E26] placeholder-[#1A2E26]/30 focus:outline-none focus:ring-2 focus:ring-[#2C4A3E]/30"
-          style={{ fontFamily: "var(--font-body, 'Literata', serif)" }}
-        />
+        <p className="mt-1.5 text-xs text-[#1A2E26]/40">
+          Aim for 200–400 words. Too short and the AI won&rsquo;t have enough to work with; too long and it loses focus.
+        </p>
       </div>
 
       <div className="flex gap-4 pt-2">
@@ -551,9 +532,7 @@ interface ProfileData {
 }
 
 interface AgentConfigData {
-  teachingStyle: string;
-  corePrinciples: string;
-  avoidances: string;
+  ai_methodology: string;
 }
 
 interface PricingData {

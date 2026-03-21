@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${teacher.name} — StoryLab`,
-    description: teacher.quote ?? `${teacher.name} is a ${teacher.subject ?? "writing coach"} on StoryLab.`,
+    description: teacher.quote ?? `${teacher.name} is a ${teacher.subject ?? "teacher"} on StoryLab.`,
   };
 }
 

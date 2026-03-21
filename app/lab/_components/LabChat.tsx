@@ -53,6 +53,8 @@ interface LabChatProps {
   showTeacherLearnerBanner?: boolean;
   /** First name of the assigned teacher. Defaults to "your coach". */
   teacherName?: string;
+  /** Subject of the assigned teacher (e.g. "Math", "English/Writing"). */
+  teacherSubject?: string | null;
 }
 
 function formatRelativeDate(dateStr: string): string {
@@ -104,6 +106,7 @@ export default function LabChat({
   isFounder = false,
   showTeacherLearnerBanner = false,
   teacherName = "your coach",
+  teacherSubject,
 }: LabChatProps) {
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
@@ -548,7 +551,14 @@ export default function LabChat({
         <div className="px-4 py-4 border-b border-zinc-100">
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-1">
-              <span className="text-sm font-semibold text-zinc-900">StoryLab</span>
+              {teacherSubject ? (
+                <div aria-label={`Your AI coach: ${teacherName}, ${teacherSubject}`}>
+                  <p className="text-sm font-semibold text-zinc-900 leading-tight">{teacherName}</p>
+                  <p className="text-xs text-zinc-400 leading-tight">{teacherSubject}</p>
+                </div>
+              ) : (
+                <span className="text-sm font-semibold text-zinc-900">StoryLab AI Coach</span>
+              )}
               {/* Role context switcher — only shown for multi-role users */}
               {(isTeacher || isFounder) && (
                 <div className="flex items-center gap-1.5">
@@ -789,25 +799,27 @@ export default function LabChat({
                     <span className="text-white text-sm font-semibold">{(teacherName || "C")[0].toUpperCase()}</span>
                   </div>
                   <p className="text-zinc-500 text-sm mb-6">
-                    Hi {firstName}! I&apos;m {teacherName}, your essay coach. What would you like to work on today?
+                    Hi {firstName}! I&apos;m {teacherName}{teacherSubject ? `, your ${teacherSubject} coach` : ", your essay coach"}. What would you like to work on today?
                   </p>
-                  {/* Mode picker — only shown before the first message */}
-                  <div className="inline-flex flex-col items-start gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-5 py-4">
-                    <p className="text-xs font-medium text-zinc-500 mb-1">Essay type</p>
-                    {(["common_app", "transfer", "academic", "supplemental"] as const).map((m) => (
-                      <label key={m} className="flex items-center gap-2.5 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="essay_mode"
-                          value={m}
-                          checked={selectedMode === m}
-                          onChange={() => setSelectedMode(m)}
-                          className="accent-zinc-900"
-                        />
-                        <span className="text-sm text-zinc-700">{MODE_LABELS[m]}</span>
-                      </label>
-                    ))}
-                  </div>
+                  {/* Mode picker — only shown for writing teachers before the first message */}
+                  {(!teacherSubject || teacherSubject === "English/Writing") && (
+                    <div className="inline-flex flex-col items-start gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-5 py-4">
+                      <p className="text-xs font-medium text-zinc-500 mb-1">Essay type</p>
+                      {(["common_app", "transfer", "academic", "supplemental"] as const).map((m) => (
+                        <label key={m} className="flex items-center gap-2.5 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="essay_mode"
+                            value={m}
+                            checked={selectedMode === m}
+                            onChange={() => setSelectedMode(m)}
+                            className="accent-zinc-900"
+                          />
+                          <span className="text-sm text-zinc-700">{MODE_LABELS[m]}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
               {messages.map((msg) => (

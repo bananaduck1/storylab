@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "For Schools — StoryLab",
   description:
-    "Every student in your district deserves individualized writing coaching. StoryLab makes that possible without hiring 50 more English teachers.",
+    "Every student deserves a great teacher. StoryLab gives any teacher in any subject the ability to deploy their methodology as an AI agent — available to students 24/7.",
 };
 
 const stats = [
@@ -14,13 +14,13 @@ const stats = [
     source: "NAEP, 2019",
   },
   {
-    figure: "3×",
-    label: "less likely to have access to private college counseling",
-    source: "First-generation students — Pell Institute",
+    figure: "1 in 5",
+    label: "students receive individualized academic support outside school",
+    source: "Education Longitudinal Study, NCES",
   },
   {
     figure: "$150–$400/hr",
-    label: "cost of private writing and college application coaching",
+    label: "cost of private subject tutoring and coaching",
     source: "National Tutoring Association",
   },
 ];
@@ -34,12 +34,12 @@ const steps = [
   {
     n: "02",
     title: "Students access StoryLab",
-    body: "Up to 30 students get individualized AI coaching grounded in your teachers' methodology.",
+    body: "Up to 30 students get individualized AI coaching in any subject — grounded in your teachers' methodology.",
   },
   {
     n: "03",
     title: "You see results",
-    body: "At week 10 you receive a progress report. At week 12 you decide whether to expand.",
+    body: "At week 10 you receive a subject performance report. At week 12 you decide whether to expand.",
   },
 ];
 
@@ -47,17 +47,17 @@ const stakeholders = [
   {
     role: "Principal",
     headline: "Measurable improvement. No additional headcount.",
-    body: "StoryLab produces essay improvement data you can show parents and your board. AI handles coaching between sessions — it amplifies your teachers, not replaces them. Cost per student is a fraction of private tutoring.",
+    body: "StoryLab produces subject performance data you can show parents and your board. AI handles coaching between sessions — it amplifies your teachers, not replaces them. Cost per student is a fraction of private tutoring.",
   },
   {
     role: "Department Head",
     headline: "Your methodology, scaled to every student.",
-    body: "The AI coach is grounded in how your department teaches. Teachers review sessions, they don't run them. No additional workload — just broader reach and coaching continuity between class periods.",
+    body: "The AI agent is grounded in how your department teaches — any subject, any grade. Teachers configure their own agent; StoryLab handles the rest. No additional workload, just broader reach and continuity between class periods.",
   },
   {
     role: "District Administrator",
     headline: "FERPA compliant. Scalable to 500 students.",
-    body: "Deploy to an entire grade without expanding your teacher team. Student data is never sold or used to train AI models. Full compliance documentation available for your IT and legal review.",
+    body: "Deploy across any department without expanding your teacher team. Student data is never sold or used to train AI models. Full compliance documentation available for your IT and legal review.",
   },
 ];
 
@@ -83,14 +83,14 @@ export default function ForSchoolsPage() {
               className="text-[clamp(2.2rem,5vw,3.6rem)] font-bold leading-[1.1] tracking-tight text-white mb-6"
               style={{ fontFamily: "var(--font-cooper, serif)" }}
             >
-              Every student deserves a writing coach.
+              Every student deserves a great teacher. Now any student can have one.
             </h1>
             <p
               className="text-lg leading-relaxed text-white/80 mb-10 max-w-2xl mx-auto"
               style={{ fontFamily: "var(--font-body, serif)" }}
             >
-              StoryLab makes individualized writing coaching possible for every student in your
-              school — without hiring 50 more English teachers.
+              StoryLab lets any teacher in any subject deploy their methodology as an AI agent —
+              available to students 24/7, in any class your school already teaches.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
@@ -297,7 +297,8 @@ export default function ForSchoolsPage() {
               style={{ fontFamily: "var(--font-body, serif)" }}
             >
               A 30-minute call. No commitment. We&rsquo;ll walk through the pilot, answer your
-              compliance questions, and confirm whether this is the right fit.
+              compliance questions, and show you what this looks like for the subjects your
+              teachers already teach.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
