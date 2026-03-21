@@ -163,7 +163,7 @@ export async function buildSystemPromptForUser(
       .eq("user_id", userId)
       .eq("org_membership_status", "active")
       .maybeSingle();
-    const orgAiContext = studentRow?.organizations as { ai_context: string | null } | null;
+    const orgAiContext = studentRow?.organizations as unknown as { ai_context: string | null } | null;
     if (orgAiContext?.ai_context) {
       orgContext = orgAiContext.ai_context;
     }
