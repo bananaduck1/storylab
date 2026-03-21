@@ -44,6 +44,12 @@ export function AdminNav() {
         >
           Platform
         </Link>
+        <Link
+          href="/admin/pipeline"
+          className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
+        >
+          Pipeline
+        </Link>
       </div>
       <button
         onClick={signOut}
